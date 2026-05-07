@@ -1,0 +1,145 @@
+<?php
+
+namespace Webkul\SuperAdmin\Http\Controllers\Marketing\Communications;
+
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Event;
+use Illuminate\View\View;
+use Webkul\Marketing\Repositories\CampaignRepository;
+use Webkul\Marketing\Repositories\TemplateRepository;
+use Webkul\SuperAdmin\DataGrids\Marketing\Communications\CampaignDataGrid;
+use Webkul\SuperAdmin\Http\Controllers\Controller;
+
+class CampaignController extends Controller
+{
+    /**
+     * Create a new controller instance.
+     *
+     * @return void
+     */
+    public function __construct(
+        protected CampaignRepository $campaignRepository,
+        protected TemplateRepository $templateRepository,
+    ) {}
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @return View
+     */
+    public function index()
+    {
+
+        return $this->superadminListing('superadmin::marketing.communications.campaigns.index', [], CampaignDataGrid::class);
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return View
+     */
+    public function create()
+    {
+        $templates = $this->templateRepository->findByField('status', 'active');
+
+        return view('superadmin::marketing.communications.campaigns.create', compact('templates'));
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @return Response
+     */
+    public function store()
+    {
+        $validatedData = $this->validate(request(), [
+            'name' => 'required',
+            'subject' => 'required',
+            'marketing_template_id' => 'required',
+            'marketing_event_id' => 'required',
+            'channel_id' => 'required',
+            'customer_group_id' => 'required',
+            'status' => 'sometimes|required|in:0,1',
+        ]);
+
+        Event::dispatch('marketing.campaigns.create.before');
+
+        $campaign = $this->campaignRepository->create($validatedData);
+
+        Event::dispatch('marketing.campaigns.create.after', $campaign);
+
+        session()->flash('success', trans('superadmin::app.marketing.communications.campaigns.create-success'));
+
+        return redirect()->route('superadmin.marketing.communications.campaigns.index');
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @return View
+     */
+    public function edit(int $id)
+    {
+        $campaign = $this->campaignRepository->findOrFail($id);
+
+        $templates = $this->templateRepository->findByField('status', 'active');
+
+        return view('superadmin::marketing.communications.campaigns.edit', compact('campaign', 'templates'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @return Response
+     */
+    public function update(int $id)
+    {
+        $validatedData = $this->validate(request(), [
+            'name' => 'required',
+            'subject' => 'required',
+            'marketing_template_id' => 'required',
+            'marketing_event_id' => 'required',
+            'channel_id' => 'required',
+            'customer_group_id' => 'required',
+        ]);
+
+        Event::dispatch('marketing.campaigns.update.before', $id);
+
+        $campaign = $this->campaignRepository->update([
+            ...$validatedData,
+            'status' => request()->input('status') ? 1 : 0,
+        ], $id);
+
+        Event::dispatch('marketing.campaigns.update.after', $campaign);
+
+        session()->flash('success', trans('superadmin::app.marketing.communications.campaigns.update-success'));
+
+        return redirect()->route('superadmin.marketing.communications.campaigns.index');
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(int $id): JsonResponse
+    {
+        try {
+            Event::dispatch('marketing.campaigns.delete.before', $id);
+
+            $this->campaignRepository->delete($id);
+
+            Event::dispatch('marketing.campaigns.delete.after', $id);
+
+            return new JsonResponse([
+                'message' => trans('superadmin::app.marketing.communications.campaigns.delete-success'),
+            ]);
+        } catch (\Exception $e) {
+        }
+
+        return new JsonResponse([
+            'message' => trans('superadmin::app.marketing.communications.campaigns.delete-failed', [
+                'name' => 'superadmin::app.marketing.communications.campaigns.email-campaign',
+            ]),
+        ], 500);
+    }
+}

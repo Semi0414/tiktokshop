@@ -1,0 +1,11 @@
+<svg width="130" height="36" viewBox="0 0 130 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Installer logo: TikTok original logo -->
+  <rect width="130" height="36" rx="6" fill="black"/>
+  <image
+    href="/images/tiktok-logo.png"
+    x="8"
+    y="4"
+    height="28"
+    preserveAspectRatio="xMidYMid meet"
+  />
+</svg>

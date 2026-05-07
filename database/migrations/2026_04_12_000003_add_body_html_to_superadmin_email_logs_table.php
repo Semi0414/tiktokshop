@@ -1,0 +1,34 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        if (! Schema::hasTable('superadmin_email_logs')) {
+            return;
+        }
+
+        if (! Schema::hasColumn('superadmin_email_logs', 'body_html')) {
+            Schema::table('superadmin_email_logs', function (Blueprint $table) {
+                $table->longText('body_html')->nullable();
+            });
+        }
+    }
+
+    public function down(): void
+    {
+        if (! Schema::hasTable('superadmin_email_logs')) {
+            return;
+        }
+
+        if (Schema::hasColumn('superadmin_email_logs', 'body_html')) {
+            Schema::table('superadmin_email_logs', function (Blueprint $table) {
+                $table->dropColumn('body_html');
+            });
+        }
+    }
+};

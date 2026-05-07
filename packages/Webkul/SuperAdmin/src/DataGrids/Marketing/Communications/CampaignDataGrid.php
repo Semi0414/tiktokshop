@@ -1,0 +1,120 @@
+<?php
+
+namespace Webkul\SuperAdmin\DataGrids\Marketing\Communications;
+
+use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\DB;
+use Webkul\DataGrid\DataGrid;
+
+class CampaignDataGrid extends DataGrid
+{
+    /**
+     * Prepare query builder.
+     *
+     * @return Builder
+     */
+    public function prepareQueryBuilder()
+    {
+        $queryBuilder = DB::table('marketing_campaigns')
+            ->select(
+                'id',
+                'name',
+                'subject',
+                'status'
+            );
+
+        $this->addFilter('status', 'marketing_campaigns.status');
+
+        return $queryBuilder;
+    }
+
+    /**
+     * Add columns.
+     *
+     * @return void
+     */
+    public function prepareColumns()
+    {
+        $this->addColumn([
+            'index' => 'id',
+            'label' => trans('superadmin::app.marketing.communications.campaigns.index.datagrid.id'),
+            'type' => 'integer',
+            'sortable' => true,
+            'filterable' => true,
+        ]);
+
+        $this->addColumn([
+            'index' => 'name',
+            'label' => trans('superadmin::app.marketing.communications.campaigns.index.datagrid.name'),
+            'type' => 'string',
+            'searchable' => true,
+            'sortable' => true,
+            'filterable' => true,
+        ]);
+
+        $this->addColumn([
+            'index' => 'subject',
+            'label' => trans('superadmin::app.marketing.communications.campaigns.index.datagrid.subject'),
+            'type' => 'string',
+            'searchable' => true,
+            'sortable' => true,
+            'filterable' => true,
+        ]);
+
+        $this->addColumn([
+            'index' => 'status',
+            'label' => trans('superadmin::app.marketing.communications.campaigns.index.datagrid.status'),
+            'type' => 'boolean',
+            'searchable' => true,
+            'sortable' => true,
+            'filterable' => true,
+            'filterable_options' => [
+                [
+                    'label' => trans('superadmin::app.marketing.communications.campaigns.index.datagrid.active'),
+                    'value' => 1,
+                ],
+                [
+                    'label' => trans('superadmin::app.marketing.communications.campaigns.index.datagrid.inactive'),
+                    'value' => 0,
+                ],
+            ],
+            'closure' => function ($value) {
+                if ($value->status) {
+                    return trans('superadmin::app.marketing.communications.campaigns.index.datagrid.active');
+                }
+
+                return trans('superadmin::app.marketing.communications.campaigns.index.datagrid.inactive');
+            },
+        ]);
+    }
+
+    /**
+     * Prepare actions.
+     *
+     * @return void
+     */
+    public function prepareActions()
+    {
+        if (bouncer()->hasPermission('marketing.communications.campaigns.edit')) {
+            $this->addAction([
+                'icon' => 'icon-edit',
+                'title' => trans('superadmin::app.marketing.communications.campaigns.index.datagrid.edit'),
+                'method' => 'GET',
+                'url' => function ($row) {
+                    return route('superadmin.marketing.communications.campaigns.edit', $row->id);
+                },
+            ]);
+        }
+
+        if (bouncer()->hasPermission('marketing.communications.campaigns.delete')) {
+            $this->addAction([
+                'icon' => 'icon-delete',
+                'title' => trans('superadmin::app.marketing.communications.campaigns.index.datagrid.delete'),
+                'method' => 'DELETE',
+                'url' => function ($row) {
+                    return route('superadmin.marketing.communications.campaigns.delete', $row->id);
+                },
+            ]);
+        }
+    }
+}
