@@ -62,7 +62,7 @@
     </script>
 
     <script type="module">
-        app.component('v-datagrid-search', {
+        (window.app || globalThis.app)?.component?.('v-datagrid-search', {
             template: '#v-datagrid-search-template',
 
             props: ['isLoading', 'available', 'applied'],

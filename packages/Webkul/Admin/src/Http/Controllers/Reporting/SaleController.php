@@ -30,9 +30,34 @@ class SaleController extends Controller
      */
     public function index()
     {
+        $totalSales = $this->reportingHelper->getTotalSalesStats();
+        $averageSales = $this->reportingHelper->getAverageSalesStats();
+        $totalOrders = $this->reportingHelper->getTotalOrdersStats();
+        $refunds = $this->reportingHelper->getRefundsStats();
+        $taxCollected = $this->reportingHelper->getTaxCollectedStats();
+        $shippingCollected = $this->reportingHelper->getShippingCollectedStats();
+        $topPaymentMethods = $this->reportingHelper->getTopPaymentMethods('table');
+        $totalSalesTable = $this->reportingHelper->getTotalSalesStats('table');
+        $averageSalesTable = $this->reportingHelper->getAverageSalesStats('table');
+        $totalOrdersTable = $this->reportingHelper->getTotalOrdersStats('table');
+        $refundsTable = $this->reportingHelper->getRefundsStats('table');
+
         return view('admin::reporting.sales.index')->with([
             'startDate' => $this->reportingHelper->getStartDate(),
             'endDate' => $this->reportingHelper->getEndDate(),
+            'staticSummary' => [
+                'total_sales' => $totalSales['sales']['current']['formatted'] ?? null,
+                'average_sales' => $averageSales['sales']['current']['formatted'] ?? null,
+                'total_orders' => $totalOrders['orders']['current']['total'] ?? null,
+                'refunds' => $refunds['refunds']['current']['formatted'] ?? null,
+                'tax_collected' => $taxCollected['tax_collected']['current']['formatted'] ?? null,
+                'shipping_collected' => $shippingCollected['shipping_collected']['current']['formatted'] ?? null,
+            ],
+            'totalSalesTable' => $totalSalesTable,
+            'averageSalesTable' => $averageSalesTable,
+            'totalOrdersTable' => $totalOrdersTable,
+            'refundsTable' => $refundsTable,
+            'topPaymentMethodsTable' => $topPaymentMethods,
         ]);
     }
 

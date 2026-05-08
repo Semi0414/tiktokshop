@@ -95,7 +95,7 @@
     </script>
 
     <script type="module">
-        app.component('v-datagrid-pagination', {
+        (window.app || globalThis.app)?.component?.('v-datagrid-pagination', {
             template: '#v-datagrid-pagination-template',
 
             props: ['isLoading', 'available', 'applied'],

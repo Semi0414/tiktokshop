@@ -135,7 +135,7 @@ class OrderDataGrid extends DataGrid
 
         $this->addColumn([
             'index' => 'order_status_raw',
-            'label' => '',
+            'label' => 'Order Status Raw',
             'type' => 'string',
             'visibility' => false,
             'exportable' => false,

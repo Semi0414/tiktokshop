@@ -23,7 +23,9 @@ class FinancialStatementController extends Controller
 
         [$start, $end] = $this->resolvePeriodRange($period);
 
-        $base = Order::query()->where('seller_id', $seller->id);
+        $base = Order::query()
+            ->where('seller_id', $seller->id)
+            ->where('seller_approval_status', 'approved');
 
         if ($start && $end) {
             $base->whereBetween('created_at', [$start, $end]);
@@ -50,22 +52,27 @@ class FinancialStatementController extends Controller
 
         $dailyRows = Order::query()
             ->where('seller_id', $seller->id)
+            ->where('seller_approval_status', 'approved')
             ->when($start && $end, fn ($q) => $q->whereBetween('created_at', [$start, $end]))
             ->select([
                 DB::raw('DATE(created_at) as statement_date'),
                 DB::raw('COUNT(*) as orders_count'),
-                DB::raw('SUM(grand_total) as day_revenue'),
+                DB::raw("SUM(CASE WHEN status IN ('".Order::STATUS_COMPLETED."', '".Order::STATUS_CLOSED."') THEN grand_total ELSE 0 END) as completed_revenue"),
+                DB::raw("SUM(CASE WHEN status IN ('".Order::STATUS_PENDING."', '".Order::STATUS_PENDING_PAYMENT."', '".Order::STATUS_PROCESSING."') THEN grand_total ELSE 0 END) as pending_revenue"),
             ])
             ->groupBy('statement_date')
             ->orderBy('statement_date', 'desc')
             ->get()
             ->map(function ($row) use ($margin) {
-                $revenue = (float) $row->day_revenue;
+                $completedRevenue = (float) $row->completed_revenue;
+                $pendingRevenue = (float) $row->pending_revenue;
 
                 return (object) [
                     'date' => $row->statement_date,
                     'orders_count' => (int) $row->orders_count,
-                    'profit' => round($revenue * $margin, 2),
+                    'sales' => $completedRevenue,
+                    'pending_amount' => $pendingRevenue,
+                    'profit' => round($completedRevenue * $margin, 2),
                 ];
             });
 

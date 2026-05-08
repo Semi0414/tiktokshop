@@ -19,6 +19,27 @@ class ProductWarehouseController extends Controller
     public function index()
     {
         if (request()->ajax()) {
+            if (request()->boolean('debug_payload')) {
+                $dataGrid = app(WarehouseProductDataGrid::class);
+                $query = $dataGrid->prepareQueryBuilder();
+
+                $perPage = max(1, min((int) request()->input('per_page', 10), 100));
+                $page = max((int) request()->input('page', 1), 1);
+                $paginator = $query->paginate($perPage, ['*'], 'page', $page);
+
+                return new JsonResponse([
+                    'data' => $paginator->items(),
+                    'meta' => [
+                        'current_page' => $paginator->currentPage(),
+                        'per_page' => $paginator->perPage(),
+                        'from' => $paginator->firstItem(),
+                        'to' => $paginator->lastItem(),
+                        'total' => $paginator->total(),
+                        'last_page' => $paginator->lastPage(),
+                    ],
+                ]);
+            }
+
             return datagrid(WarehouseProductDataGrid::class)->process();
         }
 
@@ -35,11 +56,48 @@ class ProductWarehouseController extends Controller
 
         $currentCommission = (float) (session(self::SESSION_COMMISSION_KEY) ?? $rule['default']);
 
+        $debugDataGrid = app(WarehouseProductDataGrid::class);
+        $debugQuery = $debugDataGrid->prepareQueryBuilder();
+        $debugPaginator = $debugQuery->paginate(10);
+        $debugPageIds = collect($debugPaginator->items())
+            ->pluck('product_id')
+            ->map(fn ($id) => (int) $id)
+            ->filter()
+            ->values()
+            ->all();
+
+        $sellerExistingProductIds = [];
+
+        if (! empty($debugPageIds)) {
+            $sellerExistingProductIds = DB::table('seller_store_products')
+                ->where('seller_id', $seller->id)
+                ->whereIn('product_id', $debugPageIds)
+                ->pluck('product_id')
+                ->map(fn ($id) => (int) $id)
+                ->values()
+                ->all();
+        }
+
+        $warehouseDebugPayload = [
+            'data' => $debugPaginator->items(),
+            'meta' => [
+                'current_page' => $debugPaginator->currentPage(),
+                'per_page' => $debugPaginator->perPage(),
+                'from' => $debugPaginator->firstItem(),
+                'to' => $debugPaginator->lastItem(),
+                'total' => $debugPaginator->total(),
+                'last_page' => $debugPaginator->lastPage(),
+            ],
+        ];
+
         return view('admin::seller.product-warehouse.index', [
             'seller' => $seller,
             'commissionRule' => $rule,
             'warehouseTotalProducts' => $totalProducts,
             'currentCommissionPercent' => $currentCommission,
+            'warehouseDebugPayload' => $warehouseDebugPayload,
+            'warehouseDebugPaginator' => $debugPaginator,
+            'sellerExistingProductIds' => $sellerExistingProductIds,
         ]);
     }
 

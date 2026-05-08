@@ -167,7 +167,7 @@
     </script>
 
     <script type="module">
-        app.component('v-datagrid-table', {
+        (window.app || globalThis.app)?.component?.('v-datagrid-table', {
             template: '#v-datagrid-table-template',
 
             props: ['isLoading', 'available', 'applied'],

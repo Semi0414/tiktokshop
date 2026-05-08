@@ -858,7 +858,7 @@
     </script>
 
     <script type="module">
-        app.component('v-datagrid-filter', {
+        (window.app || globalThis.app)?.component?.('v-datagrid-filter', {
             template: '#v-datagrid-filter-template',
 
             props: ['isLoading', 'available', 'applied', 'src'],

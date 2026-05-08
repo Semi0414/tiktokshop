@@ -233,8 +233,15 @@
     </script>
 
     <script type="module">
-        app.component('v-create-customer-form', {
-            template: '#v-create-customer-form-template',
+        const createCustomerApp = (window.app && typeof window.app.component === 'function')
+            ? window.app
+            : (typeof app !== 'undefined' && typeof app.component === 'function' ? app : null);
+
+        if (! createCustomerApp) {
+            console.error('Vue app instance not found for v-create-customer-form');
+        } else {
+            createCustomerApp.component('v-create-customer-form', {
+                template: '#v-create-customer-form-template',
 
             data() {
                 return {
@@ -275,6 +282,7 @@
                         });
                 }
             }
-        })
+            })
+        }
     </script>
 @endPushOnce

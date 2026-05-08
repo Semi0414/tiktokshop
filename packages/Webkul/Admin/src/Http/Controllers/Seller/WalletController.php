@@ -23,6 +23,7 @@ class WalletController extends Controller
     {
         /** @var Admin $seller */
         $seller = Auth::guard('admin')->user();
+        $walletType = (string) request()->query('wallet_type', 'all');
 
         $totalCredits = SellerWalletTransaction::query()
             ->where('seller_id', $seller->id)
@@ -30,11 +31,21 @@ class WalletController extends Controller
             ->where('status', SellerWalletTransaction::STATUS_COMPLETED)
             ->sum('amount');
 
-        $transactions = SellerWalletTransaction::query()
+        $transactionsQuery = SellerWalletTransaction::query()
             ->where('seller_id', $seller->id)
-            ->latest()
-            ->limit(20)
-            ->get();
+            ->latest();
+
+        if ($walletType === 'deposit') {
+            $transactionsQuery->where('type', 'credit');
+        } elseif ($walletType === 'withdraw') {
+            $transactionsQuery->where('type', 'debit');
+        } else {
+            $walletType = 'all';
+        }
+
+        $transactions = $transactionsQuery
+            ->paginate(10)
+            ->withQueryString();
 
         $depositMethods = SellerDepositMethodConfig::query()
             ->where('is_active', true)
@@ -50,6 +61,7 @@ class WalletController extends Controller
             'depositMethods' => $depositMethods,
             'resolvedDepositAddresses' => $resolvedDepositAddresses,
             'bankDepositMethodCodes' => config('seller-wallet.bank_deposit_method_codes', ['BANK_CARD']),
+            'walletType' => $walletType,
         ]);
     }
 

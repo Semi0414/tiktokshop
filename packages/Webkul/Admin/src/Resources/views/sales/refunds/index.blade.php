@@ -50,7 +50,66 @@
     </div>
 
     <div id="seller-refund-grid">
-    <x-admin::datagrid :src="route('admin.sales.refunds.index')" />
+        @php
+            $refundRows = $refundDebugPayload['data'] ?? [];
+            $refundMeta = $refundDebugPayload['meta'] ?? [];
+        @endphp
+
+        <div class="overflow-x-auto rounded-xl border border-gray-200 bg-white p-3 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
+                <thead class="bg-gray-50 dark:bg-gray-900">
+                    <tr>
+                        <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">ID</th>
+                        <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">Order ID</th>
+                        <th class="px-3 py-2 text-right text-xs font-semibold text-gray-600 dark:text-gray-300">Refunded Amount</th>
+                        <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">Billed To</th>
+                        <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">Status</th>
+                        <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">Refund Date</th>
+                        <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                    @forelse ($refundRows as $row)
+                        <tr>
+                            <td class="px-3 py-3 text-sm text-gray-700 dark:text-gray-200">{{ $row->id ?? '—' }}</td>
+                            <td class="px-3 py-3 text-sm text-gray-700 dark:text-gray-200">{{ $row->increment_id ?? '—' }}</td>
+                            <td class="px-3 py-3 text-right text-sm font-semibold text-blue-700 dark:text-blue-400">
+                                {{ isset($row->base_grand_total) ? core()->formatBasePrice((float) $row->base_grand_total) : '—' }}
+                            </td>
+                            <td class="px-3 py-3 text-sm text-gray-700 dark:text-gray-200">{{ $row->billed_to ?? '—' }}</td>
+                            <td class="px-3 py-3 text-sm">
+                                <span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-700 dark:bg-gray-800 dark:text-gray-200">
+                                    {{ ucfirst((string) ($row->state ?? '—')) }}
+                                </span>
+                            </td>
+                            <td class="px-3 py-3 text-sm text-gray-700 dark:text-gray-200">
+                                {{ !empty($row->created_at) ? \Illuminate\Support\Carbon::parse($row->created_at)->format('Y-m-d H:i') : '—' }}
+                            </td>
+                            <td class="px-3 py-3 text-sm">
+                                <a href="{{ route('admin.sales.refunds.view', $row->id) }}" class="seller-btn-primary text-xs">
+                                    @lang('admin::app.sales.refunds.index.datagrid.view')
+                                </a>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" class="px-3 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+                                @lang('admin::app.components.datagrid.table.no-records-available')
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+
+            <div class="mt-3 flex items-center justify-between gap-3 text-xs text-gray-600 dark:text-gray-300">
+                <span>
+                    Showing {{ $refundMeta['from'] ?? 0 }} to {{ $refundMeta['to'] ?? 0 }} of {{ $refundMeta['total'] ?? 0 }}
+                </span>
+                <div>
+                    {{ ($refundPaginator ?? null)?->links() }}
+                </div>
+            </div>
+        </div>
     </div>
     </x-admin::seller.panel>
 </x-admin::layouts>

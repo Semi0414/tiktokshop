@@ -3,153 +3,103 @@
         @lang('admin::app.reporting.sales.index.title')
     </x-slot>
 
-    <!-- Page Header -->
     <div class="mb-5 flex items-center justify-between gap-4 max-sm:flex-wrap">
-        <!-- Title -->
-        <div class="flex gap-1.5">
-            <p class="pt-1.5 text-xl font-bold leading-6 text-gray-800 dark:text-white">
-                @lang('admin::app.reporting.sales.index.title')
-            </p>
-        </div>
-
-        <!-- Actions -->
-        <v-reporting-filters>
-            <!-- Shimmer -->
-            <div class="flex gap-1.5">
-                <div class="shimmer h-[39px] w-[132px] rounded-md"></div>
-                <div class="shimmer h-[39px] w-[140px] rounded-md"></div>
-                <div class="shimmer h-[39px] w-[140px] rounded-md"></div>
-            </div>
-        </v-reporting-filters>
+        <p class="pt-1.5 text-xl font-bold leading-6 text-gray-800 dark:text-white">
+            @lang('admin::app.reporting.sales.index.title')
+        </p>
     </div>
 
-    <!-- Sales Stats Vue Component -->
-    <div class="flex flex-1 flex-col gap-4 max-xl:flex-auto">
-        <!-- Sales Section -->
-        @include('admin::reporting.sales.total-sales')
-
-        <!-- Purchase Funnel and Abandoned Carts Sections Container -->
-        <div class="flex flex-col justify-between gap-4 flex-1 [&>*]:flex-1 md:flex-row">
-            <!-- Purchase Funnel Section -->
-            @include('admin::reporting.sales.purchase-funnel')
-
-            <!-- Abandoned Carts Section -->
-            @include('admin::reporting.sales.abandoned-carts')
+    <form method="get" action="{{ route('admin.reporting.sales.index') }}" class="mb-4 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
+        <div class="grid gap-3 md:grid-cols-3">
+            <div>
+                <label class="mb-1 block text-xs font-medium text-gray-500">@lang('admin::app.reporting.sales.index.start-date')</label>
+                <input type="date" name="start" value="{{ request('start', $startDate->format('Y-m-d')) }}" class="w-full rounded-md border border-gray-200 px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white" />
+            </div>
+            <div>
+                <label class="mb-1 block text-xs font-medium text-gray-500">@lang('admin::app.reporting.sales.index.end-date')</label>
+                <input type="date" name="end" value="{{ request('end', $endDate->format('Y-m-d')) }}" class="w-full rounded-md border border-gray-200 px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white" />
+            </div>
+            <div class="flex items-end gap-2">
+                <button type="submit" class="primary-button">Apply</button>
+                <a href="{{ route('admin.reporting.sales.index') }}" class="secondary-button">Reset</a>
+            </div>
         </div>
+    </form>
 
-        <!-- Total Orders and Average Order Value Sections Container -->
-        <div class="flex flex-col justify-between gap-4 flex-1 [&>*]:flex-1 md:flex-row">
-            <!-- Total Orders Section -->
-            @include('admin::reporting.sales.total-orders')
-
-            <!-- Average Order Value Section -->
-            @include('admin::reporting.sales.average-order-value')
+    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 mb-4">
+        <div class="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
+            <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Total Sales</p>
+            <p class="mt-1 text-lg font-semibold text-gray-800 dark:text-white">{{ $staticSummary['total_sales'] ?? '—' }}</p>
         </div>
-
-        <!-- Tax Collected and Shipping Collected Sections Container -->
-        <div class="flex flex-col justify-between gap-4 flex-1 [&>*]:flex-1 md:flex-row">
-            <!-- Tax Collected Section -->
-            @include('admin::reporting.sales.tax-collected')
-
-            <!-- Shipping Collected Section -->
-            @include('admin::reporting.sales.shipping-collected')
+        <div class="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
+            <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Average Sales</p>
+            <p class="mt-1 text-lg font-semibold text-gray-800 dark:text-white">{{ $staticSummary['average_sales'] ?? '—' }}</p>
         </div>
-
-        <!-- Refunds and Top Payment Methods Sections Container -->
-        <div class="flex flex-col justify-between gap-4 flex-1 [&>*]:flex-1 md:flex-row">
-            <!-- Refunds Section -->
-            @include('admin::reporting.sales.total-refunds')
-
-            <!-- Top Payment Methods Section -->
-            @include('admin::reporting.sales.top-payment-methods')
+        <div class="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
+            <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Total Orders</p>
+            <p class="mt-1 text-lg font-semibold text-gray-800 dark:text-white">{{ $staticSummary['total_orders'] ?? '—' }}</p>
+        </div>
+        <div class="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
+            <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Refunds</p>
+            <p class="mt-1 text-lg font-semibold text-gray-800 dark:text-white">{{ $staticSummary['refunds'] ?? '—' }}</p>
+        </div>
+        <div class="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
+            <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Tax Collected</p>
+            <p class="mt-1 text-lg font-semibold text-gray-800 dark:text-white">{{ $staticSummary['tax_collected'] ?? '—' }}</p>
+        </div>
+        <div class="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
+            <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Shipping Collected</p>
+            <p class="mt-1 text-lg font-semibold text-gray-800 dark:text-white">{{ $staticSummary['shipping_collected'] ?? '—' }}</p>
         </div>
     </div>
 
-    @pushOnce('scripts')
-        <script type="module" src="{{ bagisto_asset('js/chart.js') }}"></script>
-
-        <script
-            type="text/x-template"
-            id="v-reporting-filters-template"
-        >
-            <div class="flex gap-1.5">
-                <template v-if="channels.length > 2">
-                    <x-admin::dropdown position="bottom-right">
-                        <x-slot:toggle>
-                            <button
-                                type="button"
-                                class="inline-flex w-full cursor-pointer appearance-none items-center justify-between gap-x-2 rounded-md border bg-white px-2.5 py-1.5 text-center text-sm leading-6 text-gray-600 transition-all marker:shadow hover:border-gray-400 focus:border-gray-400 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-gray-400 dark:focus:border-gray-400"
-                            >
-                                @{{ channels.find(channel => channel.code == filters.channel).name }}
-                                
-                                <span class="icon-sort-down text-2xl"></span>
-                            </button>
-                        </x-slot>
-
-                        <x-slot:menu class="!p-0 shadow-[0_5px_20px_rgba(0,0,0,0.15)] dark:border-gray-800">
-                            <x-admin::dropdown.menu.item
-                                v-for="channel in channels"
-                                ::class="{'bg-gray-100 dark:bg-gray-950': channel.code == filters.channel}"
-                                @click="filters.channel = channel.code"
-                            >
-                                @{{ channel.name }}
-                            </x-admin::dropdown.menu.item>
-                        </x-slot>
-                    </x-admin::dropdown>
-                </template>
-
-                <x-admin::flat-picker.date class="!w-[140px]" ::allow-input="false">
-                    <input
-                        class="flex min-h-[39px] w-full rounded-md border px-3 py-2 text-sm text-gray-600 transition-all hover:border-gray-400 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-gray-400"
-                        v-model="filters.start"
-                        placeholder="@lang('admin::app.reporting.sales.index.start-date')"
-                    />
-                </x-admin::flat-picker.date>
-
-                <x-admin::flat-picker.date class="!w-[140px]" ::allow-input="false">
-                    <input
-                        class="flex min-h-[39px] w-full rounded-md border px-3 py-2 text-sm text-gray-600 transition-all hover:border-gray-400 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-gray-400"
-                        v-model="filters.end"
-                        placeholder="@lang('admin::app.reporting.sales.index.end-date')"
-                    />
-                </x-admin::flat-picker.date>
+    <div class="grid gap-4 lg:grid-cols-2">
+        <div class="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
+            <p class="mb-3 text-sm font-semibold text-gray-800 dark:text-white">Total Sales Over Time</p>
+            <div class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                @foreach (($totalSalesTable['records'] ?? []) as $row)
+                    <div class="flex items-center justify-between rounded border border-gray-100 px-3 py-2 dark:border-gray-800">
+                        <span>{{ $row['label'] ?? '—' }}</span>
+                        <span>{{ $row['formatted_total'] ?? '—' }}</span>
+                    </div>
+                @endforeach
             </div>
-        </script>
+        </div>
 
-        <script type="module">
-            app.component('v-reporting-filters', {
-                template: '#v-reporting-filters-template',
+        <div class="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
+            <p class="mb-3 text-sm font-semibold text-gray-800 dark:text-white">Average Sales Over Time</p>
+            <div class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                @foreach (($averageSalesTable['records'] ?? []) as $row)
+                    <div class="flex items-center justify-between rounded border border-gray-100 px-3 py-2 dark:border-gray-800">
+                        <span>{{ $row['label'] ?? '—' }}</span>
+                        <span>{{ $row['formatted_total'] ?? '—' }}</span>
+                    </div>
+                @endforeach
+            </div>
+        </div>
 
-                data() {
-                    return {
-                        channels: [
-                            {
-                                name: "@lang('admin::app.reporting.sales.index.all-channels')",
-                                code: ''
-                            },
-                            ...@json(core()->getAllChannels()),
-                        ],
-                        
-                        filters: {
-                            channel: '',
+        <div class="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
+            <p class="mb-3 text-sm font-semibold text-gray-800 dark:text-white">Total Orders Over Time</p>
+            <div class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                @foreach (($totalOrdersTable['records'] ?? []) as $row)
+                    <div class="flex items-center justify-between rounded border border-gray-100 px-3 py-2 dark:border-gray-800">
+                        <span>{{ $row['label'] ?? '—' }}</span>
+                        <span>{{ $row['count'] ?? '—' }}</span>
+                    </div>
+                @endforeach
+            </div>
+        </div>
 
-                            start: "{{ $startDate->format('Y-m-d') }}",
-                            
-                            end: "{{ $endDate->format('Y-m-d') }}",
-                        }
-                    }
-                },
-
-                watch: {
-                    filters: {
-                        handler() {
-                            this.$emitter.emit('reporting-filter-updated', this.filters);
-                        },
-
-                        deep: true
-                    }
-                },
-            });
-        </script>
-    @endPushOnce
+        <div class="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
+            <p class="mb-3 text-sm font-semibold text-gray-800 dark:text-white">Refunds Over Time</p>
+            <div class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                @foreach (($refundsTable['records'] ?? []) as $row)
+                    <div class="flex items-center justify-between rounded border border-gray-100 px-3 py-2 dark:border-gray-800">
+                        <span>{{ $row['label'] ?? '—' }}</span>
+                        <span>{{ $row['formatted_total'] ?? '—' }}</span>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
 </x-admin::layouts>

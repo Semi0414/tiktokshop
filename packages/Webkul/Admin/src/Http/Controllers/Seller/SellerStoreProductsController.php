@@ -30,11 +30,30 @@ class SellerStoreProductsController extends Controller
         $storeProductsTotalCount = SellerStoreProduct::query()
             ->where('seller_id', (int) $seller->id)
             ->count();
+        $commissionRule = SellerCommissionPercentRules::forLevel($seller->seller_level ?? null);
+
+        $debugDataGrid = app(SellerStoreProductDataGrid::class);
+        $debugQuery = $debugDataGrid->prepareQueryBuilder();
+        $debugPaginator = $debugQuery->paginate(10)->appends(request()->query());
+        $storeProductsDebugPayload = [
+            'data' => $debugPaginator->items(),
+            'meta' => [
+                'current_page' => $debugPaginator->currentPage(),
+                'per_page' => $debugPaginator->perPage(),
+                'from' => $debugPaginator->firstItem(),
+                'to' => $debugPaginator->lastItem(),
+                'total' => $debugPaginator->total(),
+                'last_page' => $debugPaginator->lastPage(),
+            ],
+        ];
 
         return view('admin::seller.store-products.index', compact(
             'categoryFilterOptions',
             'seller',
             'storeProductsTotalCount',
+            'commissionRule',
+            'storeProductsDebugPayload',
+            'debugPaginator',
         ));
     }
 
@@ -79,12 +98,18 @@ class SellerStoreProductsController extends Controller
         $rule = SellerCommissionPercentRules::forLevel($seller->seller_level ?? null);
 
         $sellerStoreProduct->load('product');
+        $flatStatus = DB::table('product_flat')
+            ->where('product_id', (int) $sellerStoreProduct->product_id)
+            ->where('locale', app()->getLocale())
+            ->where('channel', core()->getCurrentChannelCode())
+            ->value('status');
 
         return new JsonResponse([
             'product_name' => $sellerStoreProduct->product?->name ?? '',
             'sku' => $sellerStoreProduct->product?->sku ?? '',
             'commission_percent' => (float) $sellerStoreProduct->commission_percent,
             'is_recommended' => (bool) $sellerStoreProduct->is_recommended,
+            'status' => (int) ($flatStatus ?? 1),
             'commission_rule' => $rule,
             'update_url' => route('admin.seller.store-products.update', $sellerStoreProduct),
         ]);
@@ -104,6 +129,7 @@ class SellerStoreProductsController extends Controller
         $data = $request->validate([
             'commission_percent' => 'nullable|numeric|min:0|max:100',
             'is_recommended' => 'required|boolean',
+            'status' => 'nullable|boolean',
         ]);
 
         if ($rule['readonly']) {
@@ -140,6 +166,14 @@ class SellerStoreProductsController extends Controller
         $sellerStoreProduct->is_recommended = (bool) $data['is_recommended'];
         $sellerStoreProduct->save();
 
+        if (array_key_exists('status', $data)) {
+            $status = (int) $data['status'];
+
+            DB::table('product_flat')
+                ->where('product_id', (int) $sellerStoreProduct->product_id)
+                ->update(['status' => $status]);
+        }
+
         return new JsonResponse([
             'message' => trans('admin::app.seller-panel.store-products.store-product-saved'),
         ]);
@@ -159,6 +193,7 @@ class SellerStoreProductsController extends Controller
             'indices.*' => 'integer',
             'commission_percent' => 'nullable|numeric|min:0|max:100',
             'is_recommended' => 'required|boolean',
+            'status' => 'nullable|boolean',
         ]);
 
         $ids = array_map('intval', $data['indices']);
@@ -207,6 +242,15 @@ class SellerStoreProductsController extends Controller
             $ssp->commission_percent = $pct;
             $ssp->is_recommended = (bool) $data['is_recommended'];
             $ssp->save();
+        }
+
+        if (array_key_exists('status', $data)) {
+            $status = (int) $data['status'];
+            $productIds = $models->pluck('product_id')->map(fn ($id) => (int) $id)->all();
+
+            DB::table('product_flat')
+                ->whereIn('product_id', $productIds)
+                ->update(['status' => $status]);
         }
 
         return new JsonResponse([

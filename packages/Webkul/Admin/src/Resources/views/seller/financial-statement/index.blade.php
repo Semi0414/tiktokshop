@@ -41,24 +41,35 @@
         {{-- Daily table --}}
         <div class="seller-filter-card overflow-hidden p-0">
             <div class="overflow-x-auto">
-                <table class="seller-data-table !border-0">
+                <table class="seller-data-table !border-0 table-fixed">
+                    <colgroup>
+                        <col class="w-1/5">
+                        <col class="w-1/5">
+                        <col class="w-1/5">
+                        <col class="w-1/5">
+                        <col class="w-1/5">
+                    </colgroup>
                     <thead>
                         <tr>
-                            <th>@lang('admin::app.seller-panel.table.date')</th>
-                            <th>@lang('admin::app.seller-panel.table.total-orders')</th>
-                            <th>@lang('admin::app.seller-panel.table.profit')</th>
+                            <th class="text-left">@lang('admin::app.seller-panel.table.date')</th>
+                            <th class="text-center">@lang('admin::app.seller-panel.table.total-orders')</th>
+                            <th class="text-right">@lang('admin::app.seller-panel.financial.total-sales')</th>
+                            <th class="text-right">@lang('admin::app.seller-panel.financial.pending-amount')</th>
+                            <th class="text-right">@lang('admin::app.seller-panel.table.profit')</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($dailyRows as $row)
                             <tr>
-                                <td class="whitespace-nowrap">{{ $row->date }}</td>
-                                <td>{{ $row->orders_count }}</td>
-                                <td>{{ core()->formatPrice($row->profit) }}</td>
+                                <td class="whitespace-nowrap text-left">{{ $row->date }}</td>
+                                <td class="text-center">{{ $row->orders_count }}</td>
+                                <td class="text-right">{{ core()->formatPrice($row->sales) }}</td>
+                                <td class="text-right">{{ core()->formatPrice($row->pending_amount) }}</td>
+                                <td class="text-right">{{ core()->formatPrice($row->profit) }}</td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="3" class="py-8 text-center text-gray-500">
+                                <td colspan="5" class="py-8 text-center text-gray-500">
                                     @lang('admin::app.seller-panel.empty')
                                 </td>
                             </tr>

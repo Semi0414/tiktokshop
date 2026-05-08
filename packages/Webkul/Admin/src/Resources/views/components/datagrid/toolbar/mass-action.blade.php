@@ -226,7 +226,7 @@
     </script>
 
     <script type="module">
-        app.component('v-datagrid-mass-action', {
+        (window.app || globalThis.app)?.component?.('v-datagrid-mass-action', {
             template: '#v-datagrid-mass-action-template',
 
             props: ['available', 'applied'],

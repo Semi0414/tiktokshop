@@ -5,6 +5,7 @@ namespace Webkul\Admin\Http\Controllers\Customers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use Webkul\Admin\DataGrids\Customers\ReviewDataGrid;
 use Webkul\Admin\Http\Controllers\Controller;
@@ -32,7 +33,39 @@ class ReviewController extends Controller
             return datagrid(ReviewDataGrid::class)->process();
         }
 
-        return view('admin::customers.reviews.index');
+        $query = DB::table('product_reviews')
+            ->leftJoin('product_flat', 'product_reviews.product_id', '=', 'product_flat.product_id')
+            ->select(
+                'product_reviews.id',
+                'product_reviews.name as customer_name',
+                'product_reviews.title',
+                'product_reviews.comment',
+                'product_reviews.status',
+                'product_reviews.rating',
+                'product_reviews.created_at',
+                'product_flat.name as product_name'
+            )
+            ->where('product_flat.channel', core()->getCurrentChannelCode())
+            ->where('product_flat.locale', app()->getLocale());
+
+        $nickname = request()->input('seller_review_nickname');
+        if ($nickname !== null && $nickname !== '') {
+            $query->where('product_reviews.name', 'like', '%'.addcslashes((string) $nickname, '%_\\').'%');
+        }
+
+        $status = request()->input('seller_review_status');
+        if ($status !== null && $status !== '' && $status !== 'all') {
+            $query->where('product_reviews.status', $status);
+        }
+
+        $reviewsPaginator = $query
+            ->orderByDesc('product_reviews.id')
+            ->paginate(10)
+            ->appends(request()->query());
+
+        return view('admin::customers.reviews.index', [
+            'reviewsPaginator' => $reviewsPaginator,
+        ]);
     }
 
     /**

@@ -47,7 +47,26 @@ class RefundController extends Controller
             ->values()
             ->all();
 
-        return view('admin::sales.refunds.index', compact('refundStateOptions'));
+        $refundDataGrid = app(OrderRefundDataGrid::class);
+        $refundQuery = $refundDataGrid->prepareQueryBuilder();
+        $refundPaginator = $refundQuery->paginate(10)->appends(request()->query());
+        $refundDebugPayload = [
+            'data' => $refundPaginator->items(),
+            'meta' => [
+                'current_page' => $refundPaginator->currentPage(),
+                'per_page' => $refundPaginator->perPage(),
+                'from' => $refundPaginator->firstItem(),
+                'to' => $refundPaginator->lastItem(),
+                'total' => $refundPaginator->total(),
+                'last_page' => $refundPaginator->lastPage(),
+            ],
+        ];
+
+        return view('admin::sales.refunds.index', compact(
+            'refundStateOptions',
+            'refundPaginator',
+            'refundDebugPayload'
+        ));
     }
 
     /**

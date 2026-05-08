@@ -69,7 +69,7 @@
     </script>
 
     <script type="module">
-        app.component('v-datagrid-export', {
+        (window.app || globalThis.app)?.component?.('v-datagrid-export', {
             template: '#v-datagrid-export-template',
 
             props: ['src'],

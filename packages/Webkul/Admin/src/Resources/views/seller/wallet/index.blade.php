@@ -51,13 +51,13 @@
         </div>
 
         {{-- Deposit modal --}}
-        <div id="modal-deposit" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" style="
+        <div id="modal-deposit" class="fixed inset-0 z-[100] hidden items-center justify-center bg-gradient-to-br from-blue-900/60 to-cyan-900/60 p-4 backdrop-blur-[1px]" role="dialog" aria-modal="true" style="
     width: 50%;
     justify-self: anchor-center;
 ">
-            <div class="max-h-[90vh] w-full max-w-[500px] overflow-y-auto rounded-lg bg-white p-5 shadow-xl dark:bg-gray-900">
-                <div class="mb-4 flex items-center justify-between">
-                    <p class="text-lg font-semibold text-gray-900 dark:text-white">@lang('admin::app.seller.wallet.deposit')</p>
+            <div class="max-h-[90vh] w-full max-w-[500px] overflow-y-auto rounded-xl border border-blue-100 bg-white p-5 shadow-2xl dark:border-blue-900/50 dark:bg-gray-900">
+                <div class="mb-4 flex items-center justify-between rounded-lg bg-gradient-to-r from-blue-600 to-cyan-600 px-3 py-2">
+                    <p class="text-lg font-semibold text-white">@lang('admin::app.seller.wallet.deposit')</p>
                     <button type="button" class="text-2xl leading-none text-gray-500 hover:text-gray-800" onclick="closeDepositModal()" aria-label="Close">&times;</button>
                 </div>
 
@@ -67,7 +67,7 @@
                         @foreach ($depositMethods as $m)
                             <button
                                 type="button"
-                                class="rounded-md border border-gray-200 px-3 py-2 text-left text-sm hover:border-blue-400 dark:border-gray-700 dark:hover:border-blue-500"
+                                class="rounded-md border border-blue-100 bg-blue-50/60 px-3 py-2 text-left text-sm font-medium text-blue-700 hover:border-blue-400 hover:bg-blue-100 dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-300 dark:hover:border-blue-600"
                                 data-code="{{ $m->code }}"
                                 data-name="{{ $m->name }}"
                                 data-address="{{ e($resolvedDepositAddresses[$m->code] ?? ($m->address_text ?? '')) }}"
@@ -82,7 +82,7 @@
                 </div>
 
                 <div id="deposit-step-form" class="hidden">
-                    <button type="button" class="mb-3 text-sm text-blue-600 hover:underline" onclick="depositBackToMethods()">@lang('admin::app.seller.wallet.back')</button>
+                    <button type="button" class="mb-3 text-sm font-medium text-blue-600 hover:underline" onclick="depositBackToMethods()">@lang('admin::app.seller.wallet.back')</button>
 
                     <div id="deposit-method-heading">
                         <p class="mb-1 text-sm font-medium text-gray-900 dark:text-white" id="deposit-method-title"></p>
@@ -94,7 +94,7 @@
                     </div>
 
                     <div id="deposit-method-address-wrap" class="mb-4">
-                        <div class="rounded-md bg-gray-50 p-3 text-xs break-all text-gray-800 dark:bg-gray-800 dark:text-gray-100" id="deposit-method-address"></div>
+                        <div class="rounded-md border border-blue-100 bg-blue-50 p-3 text-xs break-all text-blue-800 dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-200" id="deposit-method-address"></div>
                     </div>
 
                     <div id="deposit-crypto-fields" class="grid gap-3">
@@ -103,7 +103,7 @@
                             <input type="hidden" name="payment_method" id="deposit-payment-method" value="{{ old('payment_method') }}" />
                             <div>
                                 <label class="mb-1 block text-xs text-gray-500">@lang('admin::app.seller.wallet.amount') (USDT)</label>
-                                <input type="number" step="0.01" min="0" name="amount" required value="{{ old('payment_method') && old('amount') ? old('amount') : '' }}" class="w-full rounded-md border border-gray-200 px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white" />
+                                <input type="number" step="0.01" min="0" name="amount" required value="{{ old('payment_method') && old('amount') ? old('amount') : '' }}" class="w-full rounded-md border border-blue-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none dark:border-blue-900/40 dark:bg-gray-900 dark:text-white" />
                                 @error('amount')<div class="mt-1 text-xs text-red-600">{{ $message }}</div>@enderror
                             </div>
                             <div>
@@ -111,7 +111,13 @@
                                 <input type="file" name="receipt" class="w-full text-sm" required />
                                 @error('receipt')<div class="mt-1 text-xs text-red-600">{{ $message }}</div>@enderror
                             </div>
-                            <button type="submit" class="seller-btn-primary">@lang('admin::app.seller.wallet.submit-deposit')</button>
+                            <button
+                                type="submit"
+                                class="seller-btn-primary text-white"
+                                style="background: linear-gradient(90deg, #2563eb 0%, #0891b2 100%) !important;"
+                            >
+                                @lang('admin::app.seller.wallet.submit-deposit')
+                            </button>
                         </form>
                     </div>
                 </div>
@@ -119,23 +125,23 @@
         </div>
 
         {{-- Withdraw modal --}}
-        <div id="modal-withdraw" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" style="
+        <div id="modal-withdraw" class="fixed inset-0 z-[100] hidden items-center justify-center bg-gradient-to-br from-emerald-900/60 to-teal-900/60 p-4 backdrop-blur-[1px]" role="dialog" aria-modal="true" style="
     width: 50%;
     place-self: center;
 ">
-            <div class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-lg bg-white p-5 shadow-xl dark:bg-gray-900">
-                <div class="mb-4 flex items-center justify-between">
-                    <p class="text-lg font-semibold text-gray-900 dark:text-white">@lang('admin::app.seller.wallet.withdraw')</p>
+            <div class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-emerald-100 bg-white p-5 shadow-2xl dark:border-emerald-900/40 dark:bg-gray-900">
+                <div class="mb-4 flex items-center justify-between rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 px-3 py-2">
+                    <p class="text-lg font-semibold text-white">@lang('admin::app.seller.wallet.withdraw')</p>
                     <button type="button" class="text-2xl leading-none text-gray-500 hover:text-gray-800" onclick="closeWithdrawModal()" aria-label="Close">&times;</button>
                 </div>
 
-                <div id="withdraw-step-methods">
+                <div id="withdraw-step-methods" class="rounded-lg border border-emerald-100 bg-emerald-50/40 p-3 dark:border-emerald-900/40 dark:bg-emerald-950/20">
                     <p class="mb-3 text-sm text-gray-600 dark:text-gray-300">@lang('admin::app.seller.wallet.choose-withdraw-method')</p>
                     <div class="grid gap-2 sm:grid-cols-2">
                         @foreach ($depositMethods as $m)
                             <button
                                 type="button"
-                                class="rounded-md border border-gray-200 px-3 py-2 text-left text-sm hover:border-blue-400 dark:border-gray-700 dark:hover:border-blue-500"
+                                class="rounded-md border border-emerald-100 bg-emerald-50/60 px-3 py-2 text-left text-sm font-medium text-emerald-700 hover:border-emerald-400 hover:bg-emerald-100 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-300 dark:hover:border-emerald-600"
                                 data-code="{{ $m->code }}"
                                 data-name="{{ $m->name }}"
                                 onclick="selectWithdrawMethod(this)"
@@ -146,9 +152,9 @@
                     </div>
                 </div>
 
-                <div id="withdraw-step-form" class="hidden">
-                    <button type="button" class="mb-3 text-sm text-blue-600 hover:underline" onclick="withdrawBackToMethods()">@lang('admin::app.seller.wallet.back')</button>
-                    <p class="mb-4 text-sm font-medium text-gray-900 dark:text-white" id="withdraw-method-title"></p>
+                <div id="withdraw-step-form" class="hidden rounded-lg border border-emerald-100 bg-emerald-50/40 p-3 dark:border-emerald-900/40 dark:bg-emerald-950/20">
+                    <button type="button" class="mb-3 text-sm font-medium text-emerald-600 hover:underline" onclick="withdrawBackToMethods()">@lang('admin::app.seller.wallet.back')</button>
+                    <p class="mb-4 text-sm font-semibold text-emerald-700 dark:text-emerald-300" id="withdraw-method-title"></p>
 
                     <form method="post" action="{{ route('admin.wallet.withdraw-request') }}" class="grid gap-3">
                         @csrf
@@ -157,42 +163,64 @@
                         <div id="withdraw-fields-crypto" class="hidden grid gap-3">
                             <div>
                                 <label class="mb-1 block text-xs text-gray-500">@lang('admin::app.seller.wallet.destination-address')</label>
-                                <input type="text" name="destination_address" value="{{ old('destination_address') }}" class="w-full rounded-md border border-gray-200 px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white" />
+                                <input type="text" name="destination_address" value="{{ old('destination_address') }}" class="w-full rounded-md border border-emerald-200 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none dark:border-emerald-900/40 dark:bg-gray-900 dark:text-white" />
                                 @error('destination_address')<div class="mt-1 text-xs text-red-600">{{ $message }}</div>@enderror
                             </div>
                             <div>
                                 <label class="mb-1 block text-xs text-gray-500">@lang('admin::app.seller.wallet.address-label')</label>
-                                <input type="text" name="address_label" value="{{ old('address_label') }}" placeholder="e.g. TRC20" class="w-full rounded-md border border-gray-200 px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white" />
+                                <input type="text" name="address_label" value="{{ old('address_label') }}" placeholder="e.g. TRC20" class="w-full rounded-md border border-emerald-200 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none dark:border-emerald-900/40 dark:bg-gray-900 dark:text-white" />
                             </div>
                         </div>
 
                         <div id="withdraw-fields-bank" class="hidden grid gap-3">
                             <div>
                                 <label class="mb-1 block text-xs text-gray-500">@lang('admin::app.seller.wallet.bank-name')</label>
-                                <input type="text" name="bank_name" value="{{ old('bank_name') }}" class="w-full rounded-md border border-gray-200 px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white" />
+                                <input type="text" name="bank_name" value="{{ old('bank_name') }}" class="w-full rounded-md border border-emerald-200 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none dark:border-emerald-900/40 dark:bg-gray-900 dark:text-white" />
                                 @error('bank_name')<div class="mt-1 text-xs text-red-600">{{ $message }}</div>@enderror
                             </div>
                             <div>
                                 <label class="mb-1 block text-xs text-gray-500">@lang('admin::app.seller.wallet.account-number')</label>
-                                <input type="text" name="account_number" value="{{ old('account_number') }}" class="w-full rounded-md border border-gray-200 px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white" />
+                                <input type="text" name="account_number" value="{{ old('account_number') }}" class="w-full rounded-md border border-emerald-200 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none dark:border-emerald-900/40 dark:bg-gray-900 dark:text-white" />
                                 @error('account_number')<div class="mt-1 text-xs text-red-600">{{ $message }}</div>@enderror
                             </div>
                         </div>
 
                         <div>
                             <label class="mb-1 block text-xs text-gray-500">@lang('admin::app.seller.wallet.amount-usdt')</label>
-                            <input type="number" step="0.01" min="0" name="amount" required value="{{ old('amount') }}" class="w-full rounded-md border border-gray-200 px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white" />
+                            <input type="number" step="0.01" min="0" name="amount" required value="{{ old('amount') }}" class="w-full rounded-md border border-emerald-200 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none dark:border-emerald-900/40 dark:bg-gray-900 dark:text-white" />
                             @error('amount')<div class="mt-1 text-xs text-red-600">{{ $message }}</div>@enderror
                         </div>
-                        <button type="submit" class="seller-btn-secondary">@lang('admin::app.seller.wallet.submit-withdraw')</button>
+                        <button
+                            type="submit"
+                            class="w-full rounded-md px-4 py-2 text-sm font-semibold text-white shadow-md transition"
+                            style="background: linear-gradient(90deg, #059669 0%, #0d9488 100%) !important;"
+                        >
+                            @lang('admin::app.seller.wallet.submit-withdraw')
+                        </button>
                     </form>
                 </div>
             </div>
         </div>
 
         <div class="mb-3 flex gap-2">
-            <span class="seller-pill seller-pill--blue">@lang('admin::app.seller.wallet.deposit')</span>
-            <span class="rounded-full border border-gray-200 px-3 py-1 text-xs text-gray-600">@lang('admin::app.seller.wallet.withdraw')</span>
+            <a
+                href="{{ route('admin.wallet.index', ['wallet_type' => 'deposit']) }}"
+                class="{{ ($walletType ?? 'all') === 'deposit' ? 'seller-pill seller-pill--blue' : 'rounded-full border border-gray-200 px-3 py-1 text-xs text-gray-600 dark:border-gray-700 dark:text-gray-300' }}"
+            >
+                @lang('admin::app.seller.wallet.deposit')
+            </a>
+            <a
+                href="{{ route('admin.wallet.index', ['wallet_type' => 'withdraw']) }}"
+                class="{{ ($walletType ?? 'all') === 'withdraw' ? 'seller-pill seller-pill--blue' : 'rounded-full border border-gray-200 px-3 py-1 text-xs text-gray-600 dark:border-gray-700 dark:text-gray-300' }}"
+            >
+                @lang('admin::app.seller.wallet.withdraw')
+            </a>
+            <a
+                href="{{ route('admin.wallet.index', ['wallet_type' => 'all']) }}"
+                class="{{ ($walletType ?? 'all') === 'all' ? 'seller-pill seller-pill--green' : 'rounded-full border border-gray-200 px-3 py-1 text-xs text-gray-600 dark:border-gray-700 dark:text-gray-300' }}"
+            >
+                @lang('admin::app.seller-panel.filters.all')
+            </a>
         </div>
 
         <div class="seller-filter-card overflow-hidden p-0">
@@ -244,6 +272,10 @@
                         @endforelse
                     </tbody>
                 </table>
+            </div>
+
+            <div class="border-t border-gray-100 px-4 py-3 dark:border-gray-800">
+                {{ $transactions->links() }}
             </div>
         </div>
     </x-admin::seller.panel>

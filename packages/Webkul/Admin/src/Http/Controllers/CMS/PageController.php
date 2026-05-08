@@ -5,6 +5,7 @@ namespace Webkul\Admin\Http\Controllers\CMS;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use Webkul\Admin\DataGrids\CMS\CMSPageDataGrid;
 use Webkul\Admin\Http\Controllers\Controller;
@@ -32,7 +33,28 @@ class PageController extends Controller
             return datagrid(CMSPageDataGrid::class)->process();
         }
 
-        return view('admin::cms.index');
+        $currentLocale = app()->getLocale();
+
+        $pagesPaginator = DB::table('cms_pages')
+            ->select(
+                'cms_pages.id',
+                'cms_page_translations.page_title',
+                'cms_page_translations.url_key'
+            )
+            ->addSelect(DB::raw('GROUP_CONCAT(DISTINCT channels.code) as channel_codes'))
+            ->join('cms_page_translations', function ($join) use ($currentLocale) {
+                $join->on('cms_pages.id', '=', 'cms_page_translations.cms_page_id')
+                    ->where('cms_page_translations.locale', '=', $currentLocale);
+            })
+            ->leftJoin('cms_page_channels', 'cms_pages.id', '=', 'cms_page_channels.cms_page_id')
+            ->leftJoin('channels', 'cms_page_channels.channel_id', '=', 'channels.id')
+            ->groupBy('cms_pages.id', 'cms_page_translations.page_title', 'cms_page_translations.url_key')
+            ->orderByDesc('cms_pages.id')
+            ->paginate(10);
+
+        return view('admin::cms.index', [
+            'pagesPaginator' => $pagesPaginator,
+        ]);
     }
 
     /**

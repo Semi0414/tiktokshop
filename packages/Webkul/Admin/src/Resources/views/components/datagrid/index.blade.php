@@ -60,7 +60,7 @@
     </script>
 
     <script type="module">
-        app.component('v-datagrid', {
+        (window.app || globalThis.app)?.component?.('v-datagrid', {
             template: '#v-datagrid-template',
 
             props: ['src'],
@@ -241,6 +241,16 @@
                             params: { ...params, ...extraParams }
                         })
                         .then((response) => {
+                            const payload = response?.data;
+
+                            if (
+                                ! payload
+                                || typeof payload !== 'object'
+                                || Array.isArray(payload)
+                            ) {
+                                throw new Error('Invalid datagrid response payload');
+                            }
+
                             /**
                              * Precisely taking all the keys to the data prop to avoid adding any extra keys from the response.
                              */
@@ -251,21 +261,38 @@
                                 mass_actions,
                                 records,
                                 meta
-                            } = response.data;
+                            } = payload;
 
-                            this.available.id = id;
+                            this.available.id = id ?? null;
 
-                            this.available.columns = columns;
+                            this.available.columns = Array.isArray(columns) ? columns : [];
 
-                            this.available.actions = actions;
+                            this.available.actions = Array.isArray(actions) ? actions : [];
 
-                            this.available.massActions = mass_actions;
+                            this.available.massActions = Array.isArray(mass_actions) ? mass_actions : [];
 
-                            this.available.records = records;
+                            this.available.records = Array.isArray(records) ? records : [];
 
-                            this.available.meta = meta;
+                            this.available.meta = meta && typeof meta === 'object' ? meta : {};
 
                             this.isLoading = false;
+                        })
+                        .catch((error) => {
+                            this.available.id = null;
+                            this.available.columns = [];
+                            this.available.actions = [];
+                            this.available.massActions = [];
+                            this.available.records = [];
+                            this.available.meta = {};
+                            this.isLoading = false;
+
+                            const message = error?.response?.data?.message
+                                || error?.message
+                                || @json(__('admin::app.response.something-went-wrong'));
+
+                            if (this?.$emitter?.emit) {
+                                this.$emitter.emit('add-flash', { type: 'error', message });
+                            }
                         });
                 },
 
