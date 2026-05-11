@@ -40,7 +40,7 @@
                         <video
                             controls
                             width="100%"
-                            :alt="media.video_url"
+                            :aria-label='{{ json_encode($product->name) }}'
                             :key="media.video_url"
                         >
                             <source
@@ -54,7 +54,7 @@
                         <img
                             class="aspect-square max-h-full w-full max-w-full select-none transition-transform duration-300 ease-in-out"
                             :src="media.large_image_url"
-                            :alt="media.large_image_url"
+                            :alt='{{ json_encode($product->name) }}'
                         />
                     </template>
                 </div>

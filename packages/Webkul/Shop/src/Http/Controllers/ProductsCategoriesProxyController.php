@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Webkul\Category\Repositories\CategoryRepository;
 use Webkul\Marketing\Repositories\URLRewriteRepository;
+use Webkul\Product\Helpers\Review as ReviewHelper;
+use Webkul\Product\Helpers\View as ProductViewHelper;
+use Webkul\Product\Contracts\Product as ProductContract;
 use Webkul\Product\Repositories\ProductRepository;
 use Webkul\Shop\Support\TikStoreProductDummyDisplay;
 use Webkul\Theme\Repositories\ThemeCustomizationRepository;
@@ -89,7 +92,7 @@ class ProductsCategoriesProxyController extends Controller
 
                 $tikStoreDisplay = app(TikStoreProductDummyDisplay::class)->fromProduct($product);
 
-                return view('shop::products.view', compact('product', 'tikStoreDisplay'));
+                return view('shop::products.view', $this->productViewPayload($product, $tikStoreDisplay));
             }
         }
 
@@ -110,7 +113,7 @@ class ProductsCategoriesProxyController extends Controller
 
             $tikStoreDisplay = app(TikStoreProductDummyDisplay::class)->fromProduct($product);
 
-            return view('shop::products.view', compact('product', 'tikStoreDisplay'));
+            return view('shop::products.view', $this->productViewPayload($product, $tikStoreDisplay));
         }
 
         /**
@@ -153,5 +156,60 @@ class ProductsCategoriesProxyController extends Controller
         }
 
         abort(404);
+    }
+
+    /**
+     * Data for storefront product PDP (helpers resolved in controller — no Blade @inject on the view).
+     *
+     * @return array<string, mixed>
+     */
+    protected function productViewPayload(ProductContract $product, object $tikStoreDisplay): array
+    {
+        $reviewHelper = app(ReviewHelper::class);
+        $productViewHelper = app(ProductViewHelper::class);
+
+        $avgRatings = $reviewHelper->getAverageRating($product);
+        $customAttributeValues = $productViewHelper->getAdditionalData($product);
+        $attributeData = collect($customAttributeValues)->filter(fn ($item) => ! empty($item['value']));
+        $reviewTotalFeedback = $reviewHelper->getTotalFeedback($product);
+        $reviewTotalReviews = $reviewHelper->getTotalReviews($product);
+
+        $productReviews = $product->approvedReviews()
+            ->with('images')
+            ->latest()
+            ->limit(50)
+            ->get();
+
+        $channelCode = core()->getCurrentChannelCode();
+        $locale = app()->getLocale();
+
+        $relatedProducts = $product->related_products()
+            ->whereHas('product_flats', function ($query) use ($channelCode, $locale) {
+                $query->where('channel', $channelCode)
+                    ->where('locale', $locale)
+                    ->where('status', 1)
+                    ->where('visible_individually', 1);
+            })
+            ->limit(12)
+            ->get();
+
+        $isCustomizable = $product->getTypeInstance()->isCustomizable();
+
+        $supportsHtmlCartForm = in_array($product->type, ['simple', 'virtual', 'configurable', 'grouped'], true)
+            && ! $isCustomizable;
+
+        return [
+            'product' => $product,
+            'tikStoreDisplay' => $tikStoreDisplay,
+            'avgRatings' => $avgRatings,
+            'customAttributeValues' => $customAttributeValues,
+            'attributeData' => $attributeData,
+            'reviewTotalFeedback' => $reviewTotalFeedback,
+            'reviewTotalReviews' => $reviewTotalReviews,
+            'productReviews' => $productReviews,
+            'relatedProducts' => $relatedProducts,
+            'isProductCustomizable' => $isCustomizable,
+            'supportsHtmlCartForm' => $supportsHtmlCartForm,
+        ];
     }
 }

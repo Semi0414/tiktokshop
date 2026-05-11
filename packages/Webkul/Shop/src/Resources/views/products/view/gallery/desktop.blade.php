@@ -23,7 +23,7 @@
                     v-if="media.type == 'videos'"
                     :class="`transparent max-h-[100px] min-w-[100px] cursor-pointer rounded-xl border ${isActiveMedia(index) ? 'pointer-events-none border-navyBlue' : 'border-white'}`"
                     @click="change(media, index)"
-                    alt="{{ $product->name }}"
+                    aria-label="{{ e($product->name) }}"
                     tabindex="0"
                 >
                     <source
@@ -48,7 +48,7 @@
         <!-- Arrow Down -->
         <span
             class="icon-arrow-down cursor-pointer text-2xl"
-            v-if= "lengthOfMedia"
+            v-if="lengthOfMedia"
             role="button"
             aria-label="@lang('shop::app.components.products.carousel.previous')"
             tabindex="0"
@@ -90,7 +90,7 @@
             <video
                 controls
                 width="475"
-                alt="{{ $product->name }}"
+                aria-label="{{ e($product->name) }}"
                 @click="isImageZooming = !isImageZooming"
                 @loadeddata="onMediaLoad()"
                 :key="baseFile.path"

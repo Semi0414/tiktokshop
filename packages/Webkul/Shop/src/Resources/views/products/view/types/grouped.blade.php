@@ -25,12 +25,18 @@
 
                             </div>
 
-                            <x-shop::quantity-changer
-                                name="qty[{{$groupedProduct->associated_product_id}}]"
-                                :value="$groupedProduct->qty"
-                                class="gap-x-4 rounded-xl px-3 py-2.5 max-sm:!py-1.5"
-                                @change="updateQty($event, {{ $groupedProduct->associated_product_id }})"
-                            />
+                            <label class="sr-only" for="grouped_qty_{{ $groupedProduct->associated_product_id }}">
+                                @lang('shop::app.products.view.type.grouped.name')
+                            </label>
+                            <input
+                                id="grouped_qty_{{ $groupedProduct->associated_product_id }}"
+                                type="number"
+                                name="qty[{{ $groupedProduct->associated_product_id }}]"
+                                value="{{ $groupedProduct->qty }}"
+                                min="0"
+                                step="1"
+                                class="w-24 rounded-xl border border-navyBlue px-3 py-2.5 text-center max-sm:!py-1.5"
+                            >
                         </div>
                     @endif
                 @endforeach

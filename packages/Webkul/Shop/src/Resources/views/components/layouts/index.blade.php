@@ -1,7 +1,9 @@
+{{-- Categories in header hidden by default; use :hide-header-categories="false" on <x-shop::layouts> to show them again --}}
 @props([
-    'hasHeader'  => true,
-    'hasFeature' => true,
-    'hasFooter'  => true,
+    'hasHeader'               => true,
+    'hasFeature'              => true,
+    'hasFooter'               => true,
+    'hideHeaderCategories'    => true,
 ])
 
 <!DOCTYPE html>
@@ -270,7 +272,7 @@
 
             <!-- Page Header Blade Component -->
             @if ($hasHeader)
-                <x-shop::layouts.header />
+                <x-shop::layouts.header :hide-header-categories="$hideHeaderCategories" />
             @endif
 
             @if(

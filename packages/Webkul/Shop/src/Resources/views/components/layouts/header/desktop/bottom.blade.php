@@ -1,3 +1,8 @@
+@props([
+    'headerCategoryTree'      => null,
+    'hideHeaderCategories'    => true,
+])
+
 {!! view_render_event('bagisto.shop.components.layouts.header.desktop.bottom.before') !!}
 
 <div class="flex min-h-[78px] w-full justify-between border border-b border-l-0 border-r-0 border-t-0 px-[60px] max-1180:px-8">
@@ -30,9 +35,17 @@
 
         {!! view_render_event('bagisto.shop.components.layouts.header.desktop.bottom.logo.after') !!}
 
-        <div class="max-[1300px]:hidden">
-            <v-desktop-category></v-desktop-category>
-        </div>
+        @if (! $hideHeaderCategories)
+            <div
+                class="flex max-[1300px]:hidden items-center gap-x-6 overflow-x-auto whitespace-nowrap"
+                data-category-scroller
+            >
+                @include('shop::components.layouts.header.partials.desktop-categories-html', [
+                    'categories' => $headerCategoryTree ?? app(\Webkul\Category\Repositories\CategoryRepository::class)
+                        ->getVisibleCategoryTree(core()->getCurrentChannel()->root_category_id),
+                ])
+            </div>
+        @endif
     </div>
 
     <!-- Right Nagivation Section -->
@@ -69,654 +82,134 @@
 
             {!! view_render_event('bagisto.shop.components.layouts.header.desktop.bottom.profile.before') !!}
 
-            <!-- user profile -->
-            <x-shop::dropdown position="bottom-{{ core()->getCurrentLocale()->direction === 'ltr' ? 'right' : 'left' }}">
-                <x-slot:toggle>
+            @php
+                $_profileFlyoutAlign = core()->getCurrentLocale()->direction === 'ltr'
+                    ? 'right-0 left-auto'
+                    : 'left-0 right-auto';
+            @endphp
+
+            <!-- user profile — native <details> (Vue v-dropdown was not reliable after layout changes) -->
+            <details class="relative mt-1.5">
+                <summary
+                    class="block cursor-pointer list-none [&::-webkit-details-marker]:hidden"
+                    aria-label="@lang('shop::app.components.layouts.header.desktop.bottom.profile')"
+                >
                     <span
-                        class="inline-block text-2xl cursor-pointer icon-users"
-                        role="button"
-                        aria-label="@lang('shop::app.components.layouts.header.desktop.bottom.profile')"
-                        tabindex="0"
+                        class="icon-users inline-block cursor-pointer text-2xl"
+                        role="presentation"
                     ></span>
-                </x-slot>
+                </summary>
 
-                <!-- Guest Dropdown -->
-                @guest('customer')
-                    <x-slot:content>
-                        <div class="grid gap-2.5">
-                            <p class="text-xl font-dmserif">
-                                @lang('shop::app.components.layouts.header.desktop.bottom.welcome-guest')
-                            </p>
+                <div
+                    role="dialog"
+                    aria-label="@lang('shop::app.components.layouts.header.desktop.bottom.profile')"
+                    class="absolute {{ $_profileFlyoutAlign }} top-full z-[100] mt-1.5 w-max min-w-[260px] rounded-[20px] bg-white shadow-[0px_10px_84px_rgba(0,0,0,0.1)]"
+                >
+                    @guest('customer')
+                        <div class="p-5">
+                            <div class="grid gap-2.5">
+                                <p class="font-dmserif text-xl">
+                                    @lang('shop::app.components.layouts.header.desktop.bottom.welcome-guest')
+                                </p>
 
-                            <p class="text-sm">
-                                @lang('shop::app.components.layouts.header.desktop.bottom.dropdown-text')
-                            </p>
-                        </div>
+                                <p class="text-sm">
+                                    @lang('shop::app.components.layouts.header.desktop.bottom.dropdown-text')
+                                </p>
+                            </div>
 
-                        <p class="w-full mt-3 border border-zinc-200"></p>
+                            <p class="mt-3 w-full border border-zinc-200"></p>
 
-                        {!! view_render_event('bagisto.shop.components.layouts.header.desktop.bottom.customers_action.before') !!}
+                            {!! view_render_event('bagisto.shop.components.layouts.header.desktop.bottom.customers_action.before') !!}
 
-                        <div class="flex gap-4 mt-6">
-                            {!! view_render_event('bagisto.shop.components.layouts.header.desktop.bottom.sign_in_button.before') !!}
+                            <div class="mt-6 flex gap-4">
+                                {!! view_render_event('bagisto.shop.components.layouts.header.desktop.bottom.sign_in_button.before') !!}
 
-                            <a
-                                href="{{ route('shop.customer.session.index') }}"
-                                class="block m-0 mx-auto text-base text-center primary-button w-max rounded-2xl px-7 max-md:rounded-lg ltr:ml-0 rtl:mr-0"
-                            >
-                                @lang('shop::app.components.layouts.header.desktop.bottom.sign-in')
-                            </a>
-
-                            <a
-                                href="{{ route('shop.customers.register.index') }}"
-                                class="block m-0 mx-auto text-base text-center border-2 secondary-button w-max rounded-2xl px-7 max-md:rounded-lg max-md:py-3 ltr:ml-0 rtl:mr-0"
-                            >
-                                @lang('shop::app.components.layouts.header.desktop.bottom.sign-up')
-                            </a>
-
-                            {!! view_render_event('bagisto.shop.components.layouts.header.desktop.bottom.sign_up_button.after') !!}
-                        </div>
-
-                        {!! view_render_event('bagisto.shop.components.layouts.header.desktop.bottom.customers_action.after') !!}
-                    </x-slot>
-                @endguest
-
-                <!-- Customers Dropdown -->
-                @auth('customer')
-                    <x-slot:content class="!p-0">
-                        <div class="grid gap-2.5 p-5 pb-0">
-                            <p class="text-xl font-dmserif" v-pre>
-                                @lang('shop::app.components.layouts.header.desktop.bottom.welcome')’
-                                {{ auth()->guard('customer')->user()->first_name }}
-                            </p>
-
-                            <p class="text-sm">
-                                @lang('shop::app.components.layouts.header.desktop.bottom.dropdown-text')
-                            </p>
-                        </div>
-
-                        <p class="w-full mt-3 border border-zinc-200"></p>
-
-                        <div class="mt-2.5 grid gap-1 pb-2.5">
-                            {!! view_render_event('bagisto.shop.components.layouts.header.desktop.bottom.profile_dropdown.links.before') !!}
-
-                            <a
-                                class="px-5 py-2 text-base cursor-pointer hover:bg-gray-100"
-                                href="{{ route('shop.customers.account.profile.index') }}"
-                            >
-                                @lang('shop::app.components.layouts.header.desktop.bottom.profile')
-                            </a>
-
-                            <a
-                                class="px-5 py-2 text-base cursor-pointer hover:bg-gray-100"
-                                href="{{ route('shop.customers.account.orders.index') }}"
-                            >
-                                @lang('shop::app.components.layouts.header.desktop.bottom.orders')
-                            </a>
-
-                            @if (core()->getConfigData('customer.settings.wishlist.wishlist_option'))
                                 <a
-                                    class="px-5 py-2 text-base cursor-pointer hover:bg-gray-100"
-                                    href="{{ route('shop.customers.account.wishlist.index') }}"
+                                    href="{{ route('shop.customer.session.index') }}"
+                                    class="primary-button m-0 mx-auto block w-max rounded-2xl px-7 py-3 text-center text-base ltr:ml-0 rtl:mr-0"
                                 >
-                                    @lang('shop::app.components.layouts.header.desktop.bottom.wishlist')
+                                    @lang('shop::app.components.layouts.header.desktop.bottom.sign-in')
                                 </a>
-                            @endif
 
-                            <!--Customers logout-->
-                            @auth('customer')
+                                <a
+                                    href="{{ route('shop.customers.register.index') }}"
+                                    class="secondary-button m-0 mx-auto block w-max rounded-2xl border-2 px-7 py-3 text-center text-base max-md:py-3 ltr:ml-0 rtl:mr-0"
+                                >
+                                    @lang('shop::app.components.layouts.header.desktop.bottom.sign-up')
+                                </a>
+
+                                {!! view_render_event('bagisto.shop.components.layouts.header.desktop.bottom.sign_up_button.after') !!}
+                            </div>
+
+                            {!! view_render_event('bagisto.shop.components.layouts.header.desktop.bottom.customers_action.after') !!}
+                        </div>
+                    @endguest
+
+                    @auth('customer')
+                        <div class="overflow-hidden rounded-[20px]">
+                            <div class="grid gap-2.5 p-5 pb-0">
+                                <p class="font-dmserif text-xl">
+                                    @lang('shop::app.components.layouts.header.desktop.bottom.welcome')
+                                    {{ auth()->guard('customer')->user()->first_name }}
+                                </p>
+
+                                <p class="text-sm">
+                                    @lang('shop::app.components.layouts.header.desktop.bottom.dropdown-text')
+                                </p>
+                            </div>
+
+                            <p class="mt-3 w-full border border-zinc-200"></p>
+
+                            <div class="mt-2.5 grid gap-1 pb-2.5">
+                                {!! view_render_event('bagisto.shop.components.layouts.header.desktop.bottom.profile_dropdown.links.before') !!}
+
+                                <a
+                                    class="cursor-pointer px-5 py-2 text-base hover:bg-gray-100"
+                                    href="{{ route('shop.customers.account.profile.index') }}"
+                                >
+                                    @lang('shop::app.components.layouts.header.desktop.bottom.profile')
+                                </a>
+
+                                <a
+                                    class="cursor-pointer px-5 py-2 text-base hover:bg-gray-100"
+                                    href="{{ route('shop.customers.account.orders.index') }}"
+                                >
+                                    @lang('shop::app.components.layouts.header.desktop.bottom.orders')
+                                </a>
+
+                                @if (core()->getConfigData('customer.settings.wishlist.wishlist_option'))
+                                    <a
+                                        class="cursor-pointer px-5 py-2 text-base hover:bg-gray-100"
+                                        href="{{ route('shop.customers.account.wishlist.index') }}"
+                                    >
+                                        @lang('shop::app.components.layouts.header.desktop.bottom.wishlist')
+                                    </a>
+                                @endif
+
                                 <x-shop::form
                                     method="DELETE"
                                     action="{{ route('shop.customer.session.destroy') }}"
-                                    id="customerLogout"
+                                    id="customerLogoutHeaderDesktop"
                                 />
 
                                 <a
-                                    class="px-5 py-2 text-base cursor-pointer hover:bg-gray-100"
+                                    class="cursor-pointer px-5 py-2 text-base hover:bg-gray-100"
                                     href="{{ route('shop.customer.session.destroy') }}"
-                                    onclick="event.preventDefault(); document.getElementById('customerLogout').submit();"
+                                    onclick="event.preventDefault(); document.getElementById('customerLogoutHeaderDesktop').submit();"
                                 >
                                     @lang('shop::app.components.layouts.header.desktop.bottom.logout')
                                 </a>
-                            @endauth
 
-                            {!! view_render_event('bagisto.shop.components.layouts.header.desktop.bottom.profile_dropdown.links.after') !!}
+                                {!! view_render_event('bagisto.shop.components.layouts.header.desktop.bottom.profile_dropdown.links.after') !!}
+                            </div>
                         </div>
-                    </x-slot>
-                @endauth
-            </x-shop::dropdown>
+                    @endauth
+                </div>
+            </details>
 
             {!! view_render_event('bagisto.shop.components.layouts.header.desktop.bottom.profile.after') !!}
         </div>
     </div>
 </div>
 
-@pushOnce('scripts')
-    <script
-        type="text/x-template"
-        id="v-desktop-category-template"
-    >
-        <!-- Loading State -->
-        <div
-            class="flex items-center gap-5"
-            v-if="isLoading"
-        >
-            <span
-                class="w-20 h-6 rounded shimmer"
-                role="presentation"
-            ></span>
-
-            <span
-                class="w-20 h-6 rounded shimmer"
-                role="presentation"
-            ></span>
-
-            <span
-                class="w-20 h-6 rounded shimmer"
-                role="presentation"
-            ></span>
-        </div>
-
-        <!-- Default category layout -->
-        <div
-            class="flex items-center gap-x-6 overflow-x-auto whitespace-nowrap"
-            v-else-if="'{{ core()->getConfigData('general.design.categories.category_view') }}' !== 'sidebar'"
-            ref="categoryScroller"
-            data-category-scroller
-        >
-            <div
-                class="group relative flex h-[77px] items-center border-b-4 border-transparent hover:border-b-4 hover:border-navyBlue"
-                v-for="category in categories"
-            >
-                <span>
-                    <a
-                        :href="category.url"
-                        class="inline-flex items-center gap-2 px-5 uppercase"
-                        @click.prevent="goToCaptchaGate(category.url)"
-                    >
-                        <img
-                            v-if="category.logo_url"
-                            :src="category.logo_url"
-                            alt=""
-                            class="w-6 h-6 object-cover rounded-full"
-                        >
-
-                        <span
-                            v-else
-                            class="w-6 h-6 rounded-full bg-zinc-200 flex items-center justify-center text-[10px] font-semibold text-zinc-600"
-                        >
-                            @{{ category.name ? category.name.charAt(0).toUpperCase() : '' }}
-                        </span>
-
-                        <span>@{{ category.name }}</span>
-                    </a>
-                </span>
-
-                <div
-                    class="pointer-events-none absolute top-[78px] z-[1] max-h-[580px] w-max max-w-[1260px] translate-y-1 overflow-auto overflow-x-auto border border-b-0 border-l-0 border-r-0 border-t border-[#F3F3F3] bg-white p-9 opacity-0 shadow-[0_6px_6px_1px_rgba(0,0,0,.3)] transition duration-300 ease-out group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100 group-hover:duration-200 group-hover:ease-in ltr:-left-9 rtl:-right-9"
-                    v-if="category.children && category.children.length"
-                >
-                    <div class="flex justify-between gap-x-[70px]">
-                        <div
-                            class="grid w-full min-w-max max-w-[150px] flex-auto grid-cols-[1fr] content-start gap-5"
-                            v-for="pairCategoryChildren in pairCategoryChildren(category)"
-                        >
-                            <template v-for="secondLevelCategory in pairCategoryChildren">
-                                <p class="font-medium text-navyBlue">
-                                    <a
-                                        :href="secondLevelCategory.url"
-                                        class="inline-flex items-center gap-2"
-                                        @click.prevent="goToCaptchaGate(secondLevelCategory.url)"
-                                    >
-                                        <img
-                                            v-if="secondLevelCategory.logo_url"
-                                            :src="secondLevelCategory.logo_url"
-                                            alt=""
-                                            class="w-5 h-5 object-cover rounded-full"
-                                        >
-
-                                        <span
-                                            v-else
-                                            class="w-5 h-5 rounded-full bg-zinc-200 flex items-center justify-center text-[10px] font-semibold text-zinc-600"
-                                        >
-                                            @{{ secondLevelCategory.name ? secondLevelCategory.name.charAt(0).toUpperCase() : '' }}
-                                        </span>
-
-                                        <span>@{{ secondLevelCategory.name }}</span>
-                                    </a>
-                                </p>
-
-                                <ul
-                                    class="grid grid-cols-[1fr] gap-3"
-                                    v-if="secondLevelCategory.children && secondLevelCategory.children.length"
-                                >
-                                    <li
-                                        class="text-sm font-medium text-zinc-500"
-                                        v-for="thirdLevelCategory in secondLevelCategory.children"
-                                    >
-                                        <a
-                                            :href="thirdLevelCategory.url"
-                                            class="inline-flex items-center gap-2"
-                                            @click.prevent="goToCaptchaGate(thirdLevelCategory.url)"
-                                        >
-                                            <img
-                                                v-if="thirdLevelCategory.logo_url"
-                                                :src="thirdLevelCategory.logo_url"
-                                                alt=""
-                                                class="w-5 h-5 object-cover rounded-full"
-                                            >
-
-                                            <span
-                                                v-else
-                                                class="w-5 h-5 rounded-full bg-zinc-200 flex items-center justify-center text-[10px] font-semibold text-zinc-600"
-                                            >
-                                                @{{ thirdLevelCategory.name ? thirdLevelCategory.name.charAt(0).toUpperCase() : '' }}
-                                            </span>
-
-                                            <span>@{{ thirdLevelCategory.name }}</span>
-                                        </a>
-                                    </li>
-                                </ul>
-                            </template>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Sidebar category layout -->
-        <div v-else>
-            <!-- Categories Navigation -->
-            <div class="flex items-center">
-                <!-- "All" button for opening the category drawer -->
-                <div
-                    class="flex h-[77px] cursor-pointer items-center border-b-4 border-transparent hover:border-b-4 hover:border-navyBlue"
-                    @click="toggleCategoryDrawer"
-                >
-                    <span class="flex items-center gap-1 px-5 uppercase">
-                        <span class="text-xl icon-hamburger"></span>
-
-                        @lang('shop::app.components.layouts.header.desktop.bottom.all')
-                    </span>
-                </div>
-
-                <!-- Show only first 4 categories in main navigation -->
-                <div
-                    class="group relative flex h-[77px] items-center border-b-4 border-transparent hover:border-b-4 hover:border-navyBlue"
-                    v-for="category in categories.slice(0, 4)"
-                >
-                    <span>
-                        <a
-                            :href="category.url"
-                            class="inline-flex items-center gap-2 px-5 uppercase"
-                            @click.prevent="goToCaptchaGate(category.url)"
-                        >
-                            <img
-                                v-if="category.logo_url"
-                                :src="category.logo_url"
-                                alt=""
-                                class="w-6 h-6 object-cover rounded-full"
-                            >
-
-                            <span
-                                v-else
-                                class="w-6 h-6 rounded-full bg-zinc-200 flex items-center justify-center text-[10px] font-semibold text-zinc-600"
-                            >
-                                @{{ category.name ? category.name.charAt(0).toUpperCase() : '' }}
-                            </span>
-
-                            <span>@{{ category.name }}</span>
-                        </a>
-                    </span>
-
-                    <!-- Dropdown for each category -->
-                    <div
-                        class="pointer-events-none absolute top-[78px] z-[1] max-h-[580px] w-max max-w-[1260px] translate-y-1 overflow-auto overflow-x-auto border border-b-0 border-l-0 border-r-0 border-t border-[#F3F3F3] bg-white p-9 opacity-0 shadow-[0_6px_6px_1px_rgba(0,0,0,.3)] transition duration-300 ease-out group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100 group-hover:duration-200 group-hover:ease-in ltr:-left-9 rtl:-right-9"
-                        v-if="category.children && category.children.length"
-                    >
-                        <div class="flex justify-between gap-x-[70px]">
-                            <div
-                                class="grid w-full min-w-max max-w-[150px] flex-auto grid-cols-[1fr] content-start gap-5"
-                                v-for="pairCategoryChildren in pairCategoryChildren(category)"
-                            >
-                                <template v-for="secondLevelCategory in pairCategoryChildren">
-                                    <p class="font-medium text-navyBlue">
-                                        <a
-                                            :href="secondLevelCategory.url"
-                                            class="inline-flex items-center gap-2"
-                                            @click.prevent="goToCaptchaGate(secondLevelCategory.url)"
-                                        >
-                                            <img
-                                                v-if="secondLevelCategory.logo_url"
-                                                :src="secondLevelCategory.logo_url"
-                                                alt=""
-                                                class="w-5 h-5 object-cover rounded-full"
-                                            >
-
-                                            <span
-                                                v-else
-                                                class="w-5 h-5 rounded-full bg-zinc-200 flex items-center justify-center text-[10px] font-semibold text-zinc-600"
-                                            >
-                                                @{{ secondLevelCategory.name ? secondLevelCategory.name.charAt(0).toUpperCase() : '' }}
-                                            </span>
-
-                                            <span>@{{ secondLevelCategory.name }}</span>
-                                        </a>
-                                    </p>
-
-                                    <ul
-                                        class="grid grid-cols-[1fr] gap-3"
-                                        v-if="secondLevelCategory.children && secondLevelCategory.children.length"
-                                    >
-                                        <li
-                                            class="text-sm font-medium text-zinc-500"
-                                            v-for="thirdLevelCategory in secondLevelCategory.children"
-                                        >
-                                            <a
-                                                :href="thirdLevelCategory.url"
-                                                class="inline-flex items-center gap-2"
-                                                @click.prevent="goToCaptchaGate(thirdLevelCategory.url)"
-                                            >
-                                                <img
-                                                    v-if="thirdLevelCategory.logo_url"
-                                                    :src="thirdLevelCategory.logo_url"
-                                                    alt=""
-                                                    class="w-5 h-5 object-cover rounded-full"
-                                                >
-
-                                                <span
-                                                    v-else
-                                                    class="w-5 h-5 rounded-full bg-zinc-200 flex items-center justify-center text-[10px] font-semibold text-zinc-600"
-                                                >
-                                                    @{{ thirdLevelCategory.name ? thirdLevelCategory.name.charAt(0).toUpperCase() : '' }}
-                                                </span>
-
-                                                <span>@{{ thirdLevelCategory.name }}</span>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </template>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Bagisto Drawer Integration -->
-            <x-shop::drawer
-                position="left"
-                width="400px"
-                ::is-active="isDrawerActive"
-                @toggle="onDrawerToggle"
-                @close="onDrawerClose"
-            >
-                <x-slot:toggle></x-slot>
-
-                <x-slot:header class="border-b border-gray-200">
-                    <div class="flex items-center justify-between w-full">
-                        <p class="text-xl font-medium">
-                            @lang('shop::app.components.layouts.header.desktop.bottom.categories')
-                        </p>
-                    </div>
-                </x-slot>
-
-                <x-slot:content class="!px-0">
-                    <!-- Wrapper with transition effects -->
-                    <div class="relative h-full overflow-hidden">
-                        <!-- Sliding container -->
-                        <div
-                            class="flex h-full transition-transform duration-300"
-                            :class="{
-                                'ltr:translate-x-0 rtl:translate-x-0': currentViewLevel !== 'third',
-                                'ltr:-translate-x-full rtl:translate-x-full': currentViewLevel === 'third'
-                            }"
-                        >
-                            <!-- First level view -->
-                            <div class="h-[calc(100vh-74px)] w-full flex-shrink-0 overflow-auto">
-                                <div class="py-4">
-                                    <div
-                                        v-for="category in categories"
-                                        :key="category.id"
-                                        :class="{'mb-2': category.children && category.children.length}"
-                                    >
-                                        <div class="flex items-center justify-between px-6 py-2 transition-colors duration-200 cursor-pointer hover:bg-gray-100">
-                                            <a
-                                                :href="category.url"
-                                                class="inline-flex items-center gap-2 text-base font-medium text-black"
-                                                @click.prevent="goToCaptchaGate(category.url)"
-                                            >
-                                                <img
-                                                    v-if="category.logo_url"
-                                                    :src="category.logo_url"
-                                                    alt=""
-                                                    class="w-6 h-6 object-cover rounded-full"
-                                                >
-
-                                                <span
-                                                    v-else
-                                                    class="w-6 h-6 rounded-full bg-zinc-200 flex items-center justify-center text-[10px] font-semibold text-zinc-600"
-                                                >
-                                                    @{{ category.name ? category.name.charAt(0).toUpperCase() : '' }}
-                                                </span>
-
-                                                <span>@{{ category.name }}</span>
-                                            </a>
-                                        </div>
-
-                                        <!-- Second Level Categories -->
-                                        <div v-if="category.children && category.children.length" >
-                                            <div
-                                                v-for="secondLevelCategory in category.children"
-                                                :key="secondLevelCategory.id"
-                                            >
-                                                <div
-                                                    class="flex items-center justify-between px-6 py-2 transition-colors duration-200 cursor-pointer hover:bg-gray-100"
-                                                    @click="showThirdLevel(secondLevelCategory, category, $event)"
-                                                >
-                                                    <a
-                                                        :href="secondLevelCategory.url"
-                                                        class="inline-flex items-center gap-2 text-sm font-normal"
-                                                        @click.prevent="goToCaptchaGate(secondLevelCategory.url)"
-                                                    >
-                                                        <img
-                                                            v-if="secondLevelCategory.logo_url"
-                                                            :src="secondLevelCategory.logo_url"
-                                                            alt=""
-                                                            class="w-5 h-5 object-cover rounded-full"
-                                                        >
-
-                                                        <span
-                                                            v-else
-                                                            class="w-5 h-5 rounded-full bg-zinc-200 flex items-center justify-center text-[10px] font-semibold text-zinc-600"
-                                                        >
-                                                            @{{ secondLevelCategory.name ? secondLevelCategory.name.charAt(0).toUpperCase() : '' }}
-                                                        </span>
-
-                                                        <span>@{{ secondLevelCategory.name }}</span>
-                                                    </a>
-
-                                                    <span
-                                                        v-if="secondLevelCategory.children && secondLevelCategory.children.length"
-                                                        class="icon-arrow-right rtl:icon-arrow-left"
-                                                    ></span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Third level view -->
-                            <div
-                                class="flex-shrink-0 w-full h-full"
-                                v-if="currentViewLevel === 'third'"
-                            >
-                                <div class="px-6 py-4 border-b border-gray-200">
-                                    <button
-                                        @click="goBackToMainView"
-                                        class="flex items-center justify-center gap-2 focus:outline-none"
-                                        aria-label="Go back"
-                                    >
-                                        <span class="text-lg icon-arrow-left rtl:icon-arrow-right"></span>
-
-                                        <p class="text-base font-medium text-black">
-                                            @lang('shop::app.components.layouts.header.desktop.bottom.back-button')
-                                        </p>
-                                    </button>
-                                </div>
-
-                                <!-- Third Level Content -->
-                                <div class="py-4">
-                                    <div
-                                        v-for="thirdLevelCategory in currentSecondLevelCategory?.children"
-                                        :key="thirdLevelCategory.id"
-                                        class="mb-2"
-                                    >
-                                        <a
-                                            :href="thirdLevelCategory.url"
-                                            class="inline-flex items-center gap-2 block px-6 py-2 text-sm transition-colors duration-200 hover:bg-gray-100"
-                                            @click.prevent="goToCaptchaGate(thirdLevelCategory.url)"
-                                        >
-                                            <img
-                                                v-if="thirdLevelCategory.logo_url"
-                                                :src="thirdLevelCategory.logo_url"
-                                                alt=""
-                                                class="w-5 h-5 object-cover rounded-full"
-                                            >
-
-                                            <span
-                                                v-else
-                                                class="w-5 h-5 rounded-full bg-zinc-200 flex items-center justify-center text-[10px] font-semibold text-zinc-600"
-                                            >
-                                                @{{ thirdLevelCategory.name ? thirdLevelCategory.name.charAt(0).toUpperCase() : '' }}
-                                            </span>
-
-                                            <span>@{{ thirdLevelCategory.name }}</span>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </x-slot>
-            </x-shop::drawer>
-        </div>
-    </script>
-
-    <script type="module">
-        app.component('v-desktop-category', {
-            template: '#v-desktop-category-template',
-
-            data() {
-                return {
-                    isLoading: true,
-                    categories: [],
-                    isDrawerActive: false,
-                    currentViewLevel: 'main',
-                    currentSecondLevelCategory: null,
-                    currentParentCategory: null,
-                    scrollIntervalId: null,
-                }
-            },
-
-            mounted() {
-                this.initCategories();
-            },
-
-            methods: {
-                initCategories() {
-                    this.getCategories();
-                },
-
-                getCategories() {
-                    this.$axios.get("{{ route('shop.api.categories.tree') }}")
-                        .then(response => {
-                            this.isLoading = false;
-                            this.categories = response.data.data;
-                            localStorage.setItem('categories', JSON.stringify(this.categories));
-
-                            this.$nextTick(() => this.setupAutoScroll());
-                        })
-                        .catch(error => {
-                            console.log(error);
-                        });
-                },
-
-                pairCategoryChildren(category) {
-                    if (! category.children) return [];
-
-                    return category.children.reduce((result, value, index, array) => {
-                        if (index % 2 === 0) {
-                            result.push(array.slice(index, index + 2));
-                        }
-                        return result;
-                    }, []);
-                },
-
-                toggleCategoryDrawer() {
-                    this.isDrawerActive = !this.isDrawerActive;
-                    if (this.isDrawerActive) {
-                        this.currentViewLevel = 'main';
-                    }
-                },
-
-                onDrawerToggle(event) {
-                    this.isDrawerActive = event.isActive;
-                },
-
-                onDrawerClose(event) {
-                    this.isDrawerActive = false;
-                },
-
-                showThirdLevel(secondLevelCategory, parentCategory, event) {
-                    if (secondLevelCategory.children && secondLevelCategory.children.length) {
-                        this.currentSecondLevelCategory = secondLevelCategory;
-                        this.currentParentCategory = parentCategory;
-                        this.currentViewLevel = 'third';
-
-                        if (event) {
-                            event.preventDefault();
-                            event.stopPropagation();
-                        }
-                    }
-                },
-
-                goBackToMainView() {
-                    this.currentViewLevel = 'main';
-                },
-
-                goToCaptchaGate(categoryUrl) {
-                    const gateUrl = "{{ url('/captcha-gate') }}";
-                    const target = encodeURIComponent(categoryUrl);
-                    window.location.href = `${gateUrl}?redirect=${target}`;
-                },
-
-                setupAutoScroll() {
-                    // Only auto-scroll for the horizontal (non-sidebar) category view.
-                    const scroller = this.$el.querySelector('[data-category-scroller]');
-                    if (! scroller) {
-                        return;
-                    }
-
-                    if (this.scrollIntervalId) {
-                        clearInterval(this.scrollIntervalId);
-                        this.scrollIntervalId = null;
-                    }
-
-                    // If everything fits, no need to scroll.
-                    if (scroller.scrollWidth <= scroller.clientWidth + 10) {
-                        return;
-                    }
-
-                    this.scrollIntervalId = setInterval(() => {
-                        scroller.scrollLeft += 2;
-                        if (scroller.scrollLeft + scroller.clientWidth >= scroller.scrollWidth - 2) {
-                            scroller.scrollLeft = 0;
-                        }
-                    }, 20);
-                },
-            },
-        });
-    </script>
-@endPushOnce
 {!! view_render_event('bagisto.shop.components.layouts.header.desktop.bottom.after') !!}

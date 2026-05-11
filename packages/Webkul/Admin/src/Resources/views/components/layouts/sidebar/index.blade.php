@@ -1,4 +1,7 @@
-<div class="fixed top-14 z-[1000] flex h-[calc(100vh-3.5rem)] min-h-0 w-[270px] flex-col overflow-hidden bg-white pt-4 shadow-[0px_8px_10px_0px_rgba(0,_0,_0,_0.2)] transition-all duration-300 group-[.sidebar-collapsed]/container:w-[70px] dark:bg-gray-900 max-lg:hidden">
+<div
+    class="fixed top-[62px] bottom-0 z-[1000] flex min-h-0 w-[270px] flex-col overflow-hidden bg-white pt-4 shadow-[0px_8px_10px_0px_rgba(0,_0,_0,_0.2)] transition-all duration-300 group-[.sidebar-collapsed]/container:w-[70px] dark:bg-gray-900 max-lg:hidden"
+    style="position: fixed; top: 62px; bottom: 0; left: 0; height: auto; min-height: 0; z-index: 1000;"
+>
     @php
         /**
          * Seller sidebar: TikTok-style menu (reference layout).
@@ -173,7 +176,8 @@
         id="v-sidebar-collapse-template"
     >
         <div
-            class="fixed bottom-0 w-full max-w-[270px] cursor-pointer border-t border-gray-200 bg-white px-4 transition-all duration-300 hover:bg-gray-100 dark:border-gray-800 dark:bg-gray-900 dark:hover:bg-gray-950"
+            class="absolute bottom-0 left-0 right-0 w-full max-w-[270px] cursor-pointer border-t border-gray-200 bg-white px-4 transition-all duration-300 hover:bg-gray-100 dark:border-gray-800 dark:bg-gray-900 dark:hover:bg-gray-950"
+            style="position: absolute; left: 0; right: 0; bottom: 0;"
             :class="{'max-w-[70px]': isCollapsed}"
             @click="toggle"
         >

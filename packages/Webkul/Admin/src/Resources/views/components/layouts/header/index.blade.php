@@ -7,7 +7,7 @@
         <!-- Hamburger Menu -->
         <i
             class="icon-menu cursor-pointer rounded-md p-1.5 text-xl hover:bg-gray-100 dark:hover:bg-gray-950 lg:hidden sm:text-2xl"
-            @click="$refs.sidebarMenuDrawer.open()"
+            onclick="openAdminMobileSidebar()"
         >
         </i>
 
@@ -125,6 +125,36 @@
     </div>
 </header>
 
+<!-- HTML Mobile Sidebar Fallback -->
+<div
+    id="admin-mobile-sidebar-overlay"
+    onclick="closeAdminMobileSidebar()"
+    style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:10050;"
+></div>
+
+<aside
+    id="admin-mobile-sidebar-panel"
+    style="display:none; position:fixed; top:0; left:0; width:270px; max-width:85vw; height:100vh; background:#fff; z-index:10051; overflow-y:auto; box-shadow:0 10px 30px rgba(0,0,0,0.2);"
+>
+    <div style="position:sticky; top:0; background:#fff; border-bottom:1px solid #e5e7eb; padding:12px; display:flex; align-items:center; justify-content:space-between;">
+        <strong style="font-size:14px;">Menu</strong>
+        <button type="button" onclick="closeAdminMobileSidebar()" style="border:none; background:transparent; font-size:24px; line-height:1; cursor:pointer;">&times;</button>
+    </div>
+
+    <nav style="padding:10px;">
+        @foreach (menu()->getItems('admin') as $menuItem)
+            <a
+                href="{{ $menuItem->getUrl() }}"
+                style="display:flex; align-items:center; gap:8px; padding:10px; margin-bottom:6px; border-radius:8px; text-decoration:none; color:#374151; background:{{ $menuItem->isActive() ? '#eff6ff' : 'transparent' }};"
+                onclick="closeAdminMobileSidebar()"
+            >
+                <span class="{{ $menuItem->getIcon() }}" style="font-size:20px;"></span>
+                <span style="font-size:14px; font-weight:600;">{{ $menuItem->getName() }}</span>
+            </a>
+        @endforeach
+    </nav>
+</aside>
+
 <!-- Menu Sidebar Drawer -->
 <x-admin::drawer
     position="left"
@@ -189,6 +219,30 @@
 </x-admin::drawer>
 
 @pushOnce('scripts')
+    <script>
+        function openAdminMobileSidebar() {
+            var overlay = document.getElementById('admin-mobile-sidebar-overlay');
+            var panel = document.getElementById('admin-mobile-sidebar-panel');
+
+            if (overlay && panel) {
+                overlay.style.display = 'block';
+                panel.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeAdminMobileSidebar() {
+            var overlay = document.getElementById('admin-mobile-sidebar-overlay');
+            var panel = document.getElementById('admin-mobile-sidebar-panel');
+
+            if (overlay && panel) {
+                overlay.style.display = 'none';
+                panel.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        }
+    </script>
+
     <script
         type="text/x-template"
         id="v-mega-search-template"
