@@ -9,7 +9,7 @@
         </p>
 
         <div class="flex items-center gap-x-2.5">
-            <!-- Export Modal -->
+            <!-- EExport Modal -->
             <x-superadmin::datagrid.export :src="route('superadmin.catalog.products.index')" />
 
             {!! view_render_event('bagisto.admin.catalog.products.create.before') !!}
