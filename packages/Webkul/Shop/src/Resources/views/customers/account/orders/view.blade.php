@@ -61,25 +61,18 @@
                 @if ($order->canCancel())
                     <form
                         method="POST"
-                        ref="cancelOrderForm"
+                        class="inline"
                         action="{{ route('shop.customers.account.orders.cancel', $order->id) }}"
+                        onsubmit="return confirm({{ json_encode(__('shop::app.customers.account.orders.view.cancel-confirm-msg')) }});"
                     >
                         @csrf
+                        <button
+                            type="submit"
+                            class="secondary-button border-zinc-200 px-5 py-3 font-normal max-md:hidden"
+                        >
+                            @lang('shop::app.customers.account.orders.view.cancel-btn-title')
+                        </button>
                     </form>
-
-                    <a
-                        class="secondary-button border-zinc-200 px-5 py-3 font-normal max-md:hidden"
-                        href="javascript:void(0);"
-                        @click="$emitter.emit('open-confirm-modal', {
-                            message: '@lang('shop::app.customers.account.orders.view.cancel-confirm-msg')',
-
-                            agree: () => {
-                                this.$refs['cancelOrderForm'].submit()
-                            }
-                        })"
-                    >
-                        @lang('shop::app.customers.account.orders.view.cancel-btn-title')
-                    </a>
                 @endif
 
                 {!! view_render_event('bagisto.shop.customers.account.orders.cancel_button.after', ['order' => $order]) !!}
@@ -88,14 +81,17 @@
 
         {!! view_render_event('bagisto.shop.customers.account.orders.view.before', ['order' => $order]) !!}
 
-        <!-- Order view tabs -->
+        <!-- Order view (server HTML — no Vue tabs) -->
         <div class="mt-8 max-md:mt-5 max-md:grid max-md:gap-4">
-            <x-shop::tabs>
-                <x-shop::tabs.item
+            <div class="order-view-sections space-y-12">
+                <section
+                    id="order-information"
                     class="!px-0 max-md:pb-0 max-md:pt-2"
-                    :title="trans('shop::app.customers.account.orders.view.information.info')"
-                    :is-selected="true"
+                    aria-labelledby="order-information-heading"
                 >
+                    <h3 id="order-information-heading" class="mb-4 border-b border-zinc-200 pb-3 text-xl font-semibold text-zinc-900 max-md:text-lg">
+                        @lang('shop::app.customers.account.orders.view.information.info')
+                    </h3>
                     <!-- For Desktop -->
                     <div
                         class="max-md:hidden"
@@ -480,44 +476,36 @@
                                 @endif
 
                                 @if ($order->canCancel())
+                                    @if ($order->canReorder())
+                                        <!-- Seperator -->
+                                        <span class="my-auto h-5 w-0.5 bg-zinc-200 py-3"></span>
+                                    @endif
+
                                     <form
                                         method="POST"
-                                        ref="cancelOrderForm"
+                                        class="mx-auto w-full flex-1"
                                         action="{{ route('shop.customers.account.orders.cancel', $order->id) }}"
+                                        onsubmit="return confirm({{ json_encode(__('shop::app.customers.account.orders.view.cancel-confirm-msg')) }});"
                                     >
                                         @csrf
+                                        <button
+                                            type="submit"
+                                            class="mx-auto w-full py-3 text-sm font-medium hover:bg-zinc-100 max-sm:py-2"
+                                        >
+                                            @lang('shop::app.customers.account.orders.view.cancel-btn-title')
+                                        </button>
                                     </form>
-
-                                    <!-- Seperator -->
-                                    <span class="my-auto h-5 w-0.5 bg-zinc-200 py-3"></span>
-
-                                    <a
-                                        href="javascript:void(0);"
-                                        class="mx-auto w-full py-3 text-sm font-medium hover:bg-zinc-100 max-sm:py-2"
-                                        @click="$emitter.emit('open-confirm-modal', {
-                                            message: '@lang('shop::app.customers.account.orders.view.cancel-confirm-msg')',
-
-                                            agree: () => {
-                                                this.$refs['cancelOrderForm'].submit()
-                                            }
-                                        })"
-                                    >
-                                        @lang('shop::app.customers.account.orders.view.cancel-btn-title')
-                                    </a>
                                 @endif
                             </div>
                         </div>
 
                         <!-- Item Ordered -->
-                        <x-shop::accordion
-                            :is-active="true"
-                            class="overflow-hidden rounded-lg !border-none !bg-gray-100"
-                        >
-                            <x-slot:header class="bg-gray-100 !px-4 py-3 text-sm font-medium max-sm:py-2">
-                               @lang('shop::app.customers.account.orders.view.item-ordered')
-                            </x-slot>
-
-                            <x-slot:content class="grid gap-2.5 !bg-gray-100 !p-0">
+                        <details class="overflow-hidden rounded-lg border-0 bg-gray-100 open" open>
+                            <summary class="flex cursor-pointer list-none items-center justify-between bg-gray-100 px-4 py-3 text-sm font-medium marker:hidden max-sm:py-2 [&::-webkit-details-marker]:hidden">
+                                <span>@lang('shop::app.customers.account.orders.view.item-ordered')</span>
+                                <span class="icon-arrow-down text-xl text-zinc-500" aria-hidden="true"></span>
+                            </summary>
+                            <div class="grid gap-2.5 bg-gray-100 p-0">
                                 @foreach ($order->items as $item)
                                     <div class="rounded-md rounded-t-none border border-t-0 bg-white px-4 py-2">
                                         <p class="pb-2 text-sm font-medium">
@@ -673,8 +661,8 @@
                                         </div>
                                     </div>
                                 @endforeach
-                            </x-slot>
-                        </x-shop::accordion>
+                            </div>
+                        </details>
 
                         <!--Summary -->
                         <div class="w-full rounded-md bg-gray-100">
@@ -881,14 +869,18 @@
                             </div>
                         </div>
                     </div>
-                </x-shop::tabs.item>
+                </section>
 
-                <!-- Invoices tab -->
+                <!-- Invoices -->
                 @if ($order->invoices->count())
-                    <x-shop::tabs.item
+                    <section
+                        id="order-invoices"
                         class="max-md:!px-0 max-md:pb-0 max-md:pt-2"
-                        :title="trans('shop::app.customers.account.orders.view.invoices.invoices')"
+                        aria-labelledby="order-invoices-heading"
                     >
+                        <h3 id="order-invoices-heading" class="mb-4 border-b border-zinc-200 pb-3 text-xl font-semibold text-zinc-900 max-md:text-lg">
+                            @lang('shop::app.customers.account.orders.view.invoices.invoices')
+                        </h3>
                         <div
                             class="flex flex-col gap-10 max-md:gap-8"
                             v-pre
@@ -913,15 +905,12 @@
                                     </div>
 
                                     <!-- Item  Invoiced -->
-                                    <x-shop::accordion
-                                        :is-active="true"
-                                        class="overflow-hidden rounded-lg !border-none !bg-gray-100"
-                                    >
-                                        <x-slot:header class="!mb-0 rounded-t-md bg-gray-100 !px-4 py-3 text-sm font-medium max-sm:py-2">
-                                            @lang('shop::app.customers.account.orders.view.item-invoiced')
-                                        </x-slot>
-
-                                        <x-slot:content class="grid gap-2.5 !bg-gray-100 !p-0">
+                                    <details class="overflow-hidden rounded-lg border-0 bg-gray-100 open" open>
+                                        <summary class="flex cursor-pointer list-none items-center justify-between rounded-t-md bg-gray-100 px-4 py-3 text-sm font-medium marker:hidden max-sm:py-2 [&::-webkit-details-marker]:hidden">
+                                            <span>@lang('shop::app.customers.account.orders.view.item-invoiced')</span>
+                                            <span class="icon-arrow-down text-xl text-zinc-500" aria-hidden="true"></span>
+                                        </summary>
+                                        <div class="grid gap-2.5 bg-gray-100 p-0">
                                             @foreach ($invoice->items as $item)
                                                 <div class="rounded-md rounded-t-none border border-t-0 bg-white px-4 py-2">
                                                     <p class="pb-2 text-sm font-medium">
@@ -1015,13 +1004,13 @@
                                                     </div>
                                                 </div>
                                             @endforeach
-                                        </x-slot>
-                                    </x-shop::accordion>
+                                        </div>
+                                    </details>
 
                                     <!--Summary -->
                                     <div class="w-full rounded-md bg-gray-100">
                                         <div class="rounded-t-md border-none !px-4 py-3 text-sm font-medium max-sm:py-2">
-                                            @lang('Order Summary')
+                                            @lang('shop::app.customers.account.orders.view.information.order-summary')
                                         </div>
 
                                         <div class="grid gap-1.5 rounded-md rounded-t-none border border-t-0 bg-white px-4 py-3 text-xs font-medium">
@@ -1400,15 +1389,19 @@
                                 </div>
                             @endforeach
                         </div>
-                    </x-shop::tabs.item>
+                    </section>
                 @endif
 
-                <!-- Shipment tab -->
+                <!-- Shipments -->
                 @if ($order->shipments->count())
-                    <x-shop::tabs.item
+                    <section
+                        id="order-shipments"
                         class="max-md:!px-0 max-md:py-1.5"
-                        title="{{ trans('shop::app.customers.account.orders.view.shipments.shipments') }}"
+                        aria-labelledby="order-shipments-heading"
                     >
+                        <h3 id="order-shipments-heading" class="mb-4 border-b border-zinc-200 pb-3 text-xl font-semibold text-zinc-900 max-md:text-lg">
+                            @lang('shop::app.customers.account.orders.view.shipments.shipments')
+                        </h3>
                         <div
                             class="flex flex-col gap-10 max-md:gap-8"
                             v-pre
@@ -1496,15 +1489,12 @@
                                         </div>
                                     </div>
 
-                                    <x-shop::accordion
-                                        :is-active="true"
-                                        class="overflow-hidden rounded-lg !border-none !bg-gray-100"
-                                    >
-                                        <x-slot:header class="!mb-0 rounded-t-md bg-gray-100 !px-4 py-3 text-sm font-medium max-sm:py-2">
-                                            @lang('shop::app.customers.account.orders.view.item-shipped')
-                                        </x-slot>
-
-                                        <x-slot:content class="grid gap-2.5 !bg-gray-100 !p-0">
+                                    <details class="overflow-hidden rounded-lg border-0 bg-gray-100 open" open>
+                                        <summary class="flex cursor-pointer list-none items-center justify-between rounded-t-md bg-gray-100 px-4 py-3 text-sm font-medium marker:hidden max-sm:py-2 [&::-webkit-details-marker]:hidden">
+                                            <span>@lang('shop::app.customers.account.orders.view.item-shipped')</span>
+                                            <span class="icon-arrow-down text-xl text-zinc-500" aria-hidden="true"></span>
+                                        </summary>
+                                        <div class="grid gap-2.5 bg-gray-100 p-0">
                                             @foreach ($shipment->items as $item)
                                                 <div class="rounded-md rounded-t-none border border-t-0 bg-white px-4 py-2">
                                                     <p class="pb-2 text-sm font-medium">
@@ -1534,20 +1524,24 @@
                                                     </div>
                                                 </div>
                                             @endforeach
-                                        </x-slot>
-                                    </x-shop::accordion>
+                                        </div>
+                                    </details>
                                 </div>
                             @endforeach
                         </div>
-                    </x-shop::tabs.item>
+                    </section>
                 @endif
 
-                <!-- Refund Tab -->
+                <!-- Refunds -->
                 @if ($order->refunds->count())
-                    <x-shop::tabs.item
+                    <section
+                        id="order-refunds"
                         class="max-md:!px-0 max-md:py-1.5"
-                        :title="trans('shop::app.customers.account.orders.view.refunds.refunds')"
+                        aria-labelledby="order-refunds-heading"
                     >
+                        <h3 id="order-refunds-heading" class="mb-4 border-b border-zinc-200 pb-3 text-xl font-semibold text-zinc-900 max-md:text-lg">
+                            @lang('shop::app.customers.account.orders.view.refunds.refunds')
+                        </h3>
                         @foreach ($order->refunds as $refund)
                             <!-- For Desktop View -->
                             <div
@@ -1674,16 +1668,13 @@
                                     </div>
                                 </div>
 
-                                <x-shop::accordion
-                                    :is-active="true"
-                                    class="overflow-hidden rounded-lg !border-none !bg-gray-100"
-                                >
-                                    <x-slot:header class="!mb-0 rounded-t-md bg-gray-100 !px-4 py-3 text-sm font-medium max-sm:py-2">
-                                        @lang('shop::app.customers.account.orders.view.item-refunded')
-                                    </x-slot>
-
-                                    <x-slot:content class="grid gap-2.5 !bg-gray-100 !p-0">
-                                        @foreach ($invoice->items as $item)
+                                <details class="overflow-hidden rounded-lg border-0 bg-gray-100 open" open>
+                                    <summary class="flex cursor-pointer list-none items-center justify-between rounded-t-md bg-gray-100 px-4 py-3 text-sm font-medium marker:hidden max-sm:py-2 [&::-webkit-details-marker]:hidden">
+                                        <span>@lang('shop::app.customers.account.orders.view.item-refunded')</span>
+                                        <span class="icon-arrow-down text-xl text-zinc-500" aria-hidden="true"></span>
+                                    </summary>
+                                    <div class="grid gap-2.5 bg-gray-100 p-0">
+                                        @foreach ($refund->items as $item)
                                             <div class="rounded-md rounded-t-none border border-t-0 bg-white px-4 py-2">
                                                 <p class="pb-2 text-sm font-medium">
                                                     {{ $item->name }}
@@ -1768,8 +1759,8 @@
                                                 </div>
                                             </div>
                                         @endforeach
-                                    </x-slot>
-                                </x-shop::accordion>
+                                    </div>
+                                </details>
 
                                 <!-- Summary -->
                                 <div class="w-full rounded-md bg-gray-100">
@@ -2112,9 +2103,9 @@
                                 </div>
                             </div>
                         @endforeach
-                    </x-shop::tabs.item>
+                    </section>
                 @endif
-            </x-shop::tabs>
+            </div>
 
             <!-- Shipping Address and Payment methods for mobile view -->
             <div

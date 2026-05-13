@@ -21,21 +21,22 @@
     @auth('customer')
         <div class="mx-4">
             <div class="mx-auto w-[400px] rounded-lg border border-navyBlue py-2.5 text-center max-sm:w-full max-sm:py-1.5">
-                <x-shop::form
-                    method="DELETE"
-                    action="{{ route('shop.customer.session.destroy') }}"
+                <form
                     id="customerLogout"
-                />
-
-                <a
-                    class="flex items-center justify-center gap-1.5 text-base hover:bg-gray-100"
-                    href="{{ route('shop.customer.session.destroy') }}"
-                    onclick="event.preventDefault(); document.getElementById('customerLogout').submit();"
+                    method="POST"
+                    action="{{ route('shop.customer.session.destroy') }}"
                 >
-                    @lang('shop::app.components.layouts.header.desktop.bottom.logout')
-                </a>
+                    @csrf
+                    @method('DELETE')
+                    <button
+                        type="submit"
+                        class="flex w-full items-center justify-center gap-1.5 text-base hover:bg-gray-100"
+                    >
+                        @lang('shop::app.components.layouts.header.desktop.bottom.logout')
+                    </button>
+                </form>
             </div>
         </div>
     @endauth
 
-</x-shop::layouts.accounts>
+</x-shop::layouts.account>

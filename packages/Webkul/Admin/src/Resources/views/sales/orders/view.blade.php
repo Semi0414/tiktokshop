@@ -4,106 +4,40 @@
     </x-slot>
 
     <!-- Header -->
-    <div class="grid">
-        <div class="flex items-center justify-between gap-4 max-sm:flex-wrap">
+    <header class="w-full min-w-0">
+        <div class="flex flex-wrap items-center justify-between gap-4">
             {!! view_render_event('bagisto.admin.sales.order.title.before', ['order' => $order]) !!}
 
-            <div class="flex items-center gap-2.5">
-                <p class="text-xl font-bold leading-6 text-gray-800 dark:text-white">
+            <div class="flex min-w-0 flex-wrap items-center gap-2.5">
+                <h1 class="text-xl font-bold leading-6 text-gray-800 dark:text-white">
                     @lang('admin::app.sales.orders.view.title', ['order_id' => $order->increment_id])
-                </p>
+                </h1>
 
-                <!-- Order Status -->
-                <span class="label-{{ $order->status }} text-sm mx-1.5">
+                <span class="label-{{ $order->status }} shrink-0 text-sm">
                     @lang("admin::app.sales.orders.view.$order->status")
                 </span>
             </div>
 
             {!! view_render_event('bagisto.admin.sales.order.title.after', ['order' => $order]) !!}
 
-            <!-- Back Button -->
             <a
                 href="{{ route('admin.sales.orders.index') }}"
-                class="transparent-button hover:bg-gray-200 dark:text-white dark:hover:bg-gray-800"
+                class="transparent-button shrink-0 hover:bg-gray-200 dark:text-white dark:hover:bg-gray-800"
             >
                 @lang('admin::app.account.edit.back-btn')
             </a>
         </div>
-    </div>
+    </header>
 
-    <div class="mt-5 flex-wrap items-center justify-between gap-x-1 gap-y-2">
-        <div class="flex gap-1.5">
+    <div class="mt-5 flex flex-col gap-4">
+        <div class="flex flex-wrap items-center gap-1.5">
             {!! view_render_event('bagisto.admin.sales.order.page_action.before', ['order' => $order]) !!}
-
-            @if (
-                $order->canReorder()
-                && bouncer()->hasPermission('sales.orders.create')
-                && core()->getConfigData('sales.order_settings.reorder.admin')
-            )
-                <a
-                    href="{{ route('admin.sales.orders.reorder', $order->id) }}"
-                    class="transparent-button px-1 py-1.5 hover:bg-gray-200 dark:text-white dark:hover:bg-gray-800"
-                >
-                    <span class="icon-cart text-2xl"></span>
-
-                    @lang('admin::app.sales.orders.view.reorder')
-                </a>
-            @endif
-
-            @if (
-                $order->canInvoice()
-                && bouncer()->hasPermission('sales.invoices.create')
-                && $order->payment->method !== 'paypal_standard'
-            )
-                @include('admin::sales.invoices.create')
-            @endif
-
-            @if (
-                $order->canShip()
-                && bouncer()->hasPermission('sales.shipments.create')
-            )
-                @include('admin::sales.shipments.create')
-            @endif
 
             @if (
                 $order->canRefund()
                 && bouncer()->hasPermission('sales.refunds.create')
             )
                 @include('admin::sales.refunds.create')
-            @endif
-
-            @if (
-                $order->canCancel()
-                && bouncer()->hasPermission('sales.orders.cancel')
-            )
-               <form
-                    method="POST"
-                    ref="cancelOrderForm"
-                    action="{{ route('admin.sales.orders.cancel', $order->id) }}"
-                >
-                    @csrf
-                </form>
-
-                <div
-                    class="transparent-button px-1 py-1.5 hover:bg-gray-200 dark:text-white dark:hover:bg-gray-800"
-                    @click="$emitter.emit('open-confirm-modal', {
-                        message: '@lang('admin::app.sales.orders.view.cancel-msg')',
-                        agree: () => {
-                            this.$refs['cancelOrderForm'].submit()
-                        }
-                    })"
-                >
-                    <span
-                        class="icon-cancel text-2xl"
-                        role="presentation"
-                        tabindex="0"
-                    >
-                    </span>
-
-                    <a href="javascript:void(0);">
-                        @lang('admin::app.sales.orders.view.cancel')
-                    </a>
-                </div>
             @endif
 
             @if ($order->status === 'pending')
@@ -115,45 +49,44 @@
                     @csrf
                 </form>
 
-                <div
-                    class="transparent-button px-1 py-1.5 hover:bg-gray-200 dark:text-white dark:hover:bg-gray-800"
+                <button
+                    type="button"
+                    class="transparent-button inline-flex items-center gap-1 px-1 py-1.5 hover:bg-gray-200 dark:text-white dark:hover:bg-gray-800"
                     @click="$emitter.emit('open-confirm-modal', {
-                        message: 'Approve this order?',
+                        message: '@lang('admin::app.sales.orders.view.approve-order-msg')',
                         agree: () => {
                             this.$refs['approveOrderForm'].submit()
                         }
                     })"
                 >
-                    <span class="icon-check text-2xl" role="presentation" tabindex="0"></span>
+                    <span class="icon-check text-2xl" aria-hidden="true"></span>
 
-                    <a href="javascript:void(0);">
-                        Approve Order
-                    </a>
-                </div>
+                    <span>@lang('admin::app.sales.orders.view.approve-order')</span>
+                </button>
             @endif
 
             {!! view_render_event('bagisto.admin.sales.order.page_action.after', ['order' => $order]) !!}
         </div>
 
         <!-- Order details -->
-        <div class="mt-3.5 flex gap-2.5 max-xl:flex-wrap">
+        <div class="mt-0 flex min-w-0 gap-2.5 max-xl:flex-wrap sm:mt-2">
             <!-- Left Component -->
             <div class="flex flex-1 flex-col gap-2 max-xl:flex-auto">
                 {!! view_render_event('bagisto.admin.sales.order.left_component.before', ['order' => $order]) !!}
 
-                <div class="box-shadow rounded bg-white dark:bg-gray-900">
-                    <div class="flex justify-between p-4">
-                        <p class="mb-4 text-base font-semibold text-gray-800 dark:text-white">
-                            @lang('Order Items') ({{ count($order->items) }})
-                        </p>
+                <div class="box-shadow overflow-hidden rounded bg-white dark:bg-gray-900">
+                    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 px-4 py-3 dark:border-gray-800">
+                        <h2 class="m-0 text-base font-semibold text-gray-800 dark:text-white">
+                            @lang('admin::app.sales.orders.view.items-with-count', ['count' => count($order->items)])
+                        </h2>
 
-                        <p class="text-base font-semibold text-gray-800 dark:text-white">
+                        <p class="m-0 text-end text-base font-semibold text-gray-800 dark:text-white">
                             @lang('admin::app.sales.orders.view.grand-total', ['grand_total' => core()->formatBasePrice($order->base_grand_total)])
                         </p>
                     </div>
 
                     <!-- Order items -->
-                    <div class="grid">
+                    <div class="grid w-full min-w-0">
                         @foreach ($order->items as $item)
                             {!! view_render_event('bagisto.admin.sales.order.list.before', ['order' => $order]) !!}
 
@@ -169,10 +102,14 @@
                                         <img
                                             class="relative h-[60px] max-h-[60px] w-full max-w-[60px] rounded"
                                             src="{{ $itemImageUrl }}"
+                                            alt=""
                                         >
                                     @else
                                         <div class="relative h-[60px] max-h-[60px] w-full max-w-[60px] rounded border border-dashed border-gray-300 dark:border-gray-800 dark:mix-blend-exclusion dark:invert">
-                                            <img src="{{ bagisto_asset('images/product-placeholders/front.svg') }}">
+                                            <img
+                                                src="{{ bagisto_asset('images/product-placeholders/front.svg') }}"
+                                                alt=""
+                                            >
 
                                             <p class="absolute bottom-1.5 w-full text-center text-[6px] font-semibold text-gray-400">
                                                 @lang('admin::app.sales.invoices.view.product-image')
@@ -360,7 +297,7 @@
 
                             <!-- Shipping And Handling -->
                             @if ($haveStockableItems = $order->haveStockableItems())
-                                @if (core()->getConfigData('sales.taxes.sales.display_subtotal') == 'including_tax')
+                                @if (core()->getConfigData('sales.taxes.sales.display_shipping_amount') == 'including_tax')
                                     <div class="flex w-full justify-between gap-x-5">
                                         <p class="!leading-5 text-gray-600 dark:text-gray-300">
                                             @lang('admin::app.sales.orders.view.shipping-and-handling-incl-tax')
@@ -602,39 +539,28 @@
             <div class="flex w-[360px] max-w-full flex-col gap-2 max-sm:w-full">
                 {!! view_render_event('bagisto.admin.sales.order.right_component.before', ['order' => $order]) !!}
 
-                <!-- Customer and address information -->
-                <x-admin::accordion>
-                    <x-slot:header>
-                        <p class="p-2.5 text-base font-semibold text-gray-600 dark:text-gray-300">
-                            @lang('admin::app.sales.orders.view.customer')
-                        </p>
-                    </x-slot>
+                <!-- Customer and address information (plain HTML — avoids v-accordion shimmer stuck state) -->
+                <section class="box-shadow overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+                    <h2 class="m-0 border-b border-gray-200 px-4 py-3 text-base font-semibold text-gray-800 dark:border-gray-800 dark:text-white">
+                        @lang('admin::app.sales.orders.view.customer')
+                    </h2>
 
-                    <x-slot:content v-pre>
+                    <div class="px-4 pb-4 pt-3" v-pre>
                         <div class="{{ $order->billing_address ? 'pb-4' : '' }}">
                             <div class="flex flex-col gap-1.5">
-                                <p 
-                                    class="font-semibold text-gray-800 dark:text-white"
-                                    v-pre
-                                >
+                                <p class="font-semibold text-gray-800 dark:text-white">
                                     {{ $order->customer_full_name }}
                                 </p>
 
                                 {!! view_render_event('bagisto.admin.sales.order.customer_full_name.after', ['order' => $order]) !!}
 
-                                <p
-                                    class="text-gray-600 dark:text-gray-300"
-                                    v-pre
-                                >
+                                <p class="text-gray-600 dark:text-gray-300">
                                     {{ $order->customer_email }}
                                 </p>
 
                                 {!! view_render_event('bagisto.admin.sales.order.customer_email.after', ['order' => $order]) !!}
 
-                                <p 
-                                    class="text-gray-600 dark:text-gray-300"
-                                    v-pre
-                                >
+                                <p class="text-gray-600 dark:text-gray-300">
                                     @lang('admin::app.sales.orders.view.customer-group') : {{ $order->is_guest ? core()->getGuestCustomerGroup()?->name : ($order->customer->group->name ?? '') }}
                                 </p>
 
@@ -674,18 +600,16 @@
 
                             {!! view_render_event('bagisto.admin.sales.order.shipping_address.after', ['order' => $order]) !!}
                         @endif
-                    </x-slot>
-                </x-admin::accordion>
+                    </div>
+                </section>
 
                 <!-- Order Information -->
-                <x-admin::accordion>
-                    <x-slot:header>
-                        <p class="p-2.5 text-base font-semibold text-gray-600 dark:text-gray-300">
-                            @lang('admin::app.sales.orders.view.order-information')
-                        </p>
-                    </x-slot>
+                <section class="box-shadow overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+                    <h2 class="m-0 border-b border-gray-200 px-4 py-3 text-base font-semibold text-gray-800 dark:border-gray-800 dark:text-white">
+                        @lang('admin::app.sales.orders.view.order-information')
+                    </h2>
 
-                    <x-slot:content>
+                    <div class="px-4 pb-4 pt-3">
                         <div class="flex w-full justify-start gap-5">
                             <div class="flex flex-col gap-y-1.5">
                                 <p class="text-gray-600 dark:text-gray-300">
@@ -706,75 +630,62 @@
 
                                 <!-- Order Date -->
                                 <p class="text-gray-600 dark:text-gray-300">
-                                    {{core()->formatDate($order->created_at) }}
+                                    {{ core()->formatDate($order->created_at) }}
                                 </p>
 
                                 {!! view_render_event('bagisto.admin.sales.order.created_at.after', ['order' => $order]) !!}
 
                                 <!-- Order Status -->
                                 <p class="text-gray-600 dark:text-gray-300">
-                                    {{$order->status_label}}
+                                    {{ $order->status_label }}
                                 </p>
 
                                 {!! view_render_event('bagisto.admin.sales.order.status_label.after', ['order' => $order]) !!}
 
                                 <!-- Order Channel -->
                                 <p class="text-gray-600 dark:text-gray-300">
-                                    {{$order->channel_name}}
+                                    {{ $order->channel_name }}
                                 </p>
 
                                 {!! view_render_event('bagisto.admin.sales.order.channel_name.after', ['order' => $order]) !!}
                             </div>
                         </div>
-                    </x-slot>
-                </x-admin::accordion>
+                    </div>
+                </section>
 
                 <!-- Payment and Shipping Information-->
-                <x-admin::accordion>
-                    <x-slot:header>
-                        <p class="p-2.5 text-base font-semibold text-gray-600 dark:text-gray-300">
-                            @lang('admin::app.sales.orders.view.payment-and-shipping')
-                        </p>
-                    </x-slot>
+                <section class="box-shadow overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+                    <h2 class="m-0 border-b border-gray-200 px-4 py-3 text-base font-semibold text-gray-800 dark:border-gray-800 dark:text-white">
+                        @lang('admin::app.sales.orders.view.payment-and-shipping')
+                    </h2>
 
-                    <x-slot:content>
+                    <div class="px-4 pb-4 pt-3">
                         <div>
-                            <!-- Payment method -->
-                            <p class="font-semibold text-gray-800 dark:text-white">
-                                {{ core()->getConfigData('sales.payment_methods.' . $order->payment->method . '.title') }}
-                            </p>
-
                             <p class="text-gray-600 dark:text-gray-300">
                                 @lang('admin::app.sales.orders.view.payment-method')
                             </p>
 
-                            <!-- Currency -->
-                            <p 
-                                class="pt-4 font-semibold text-gray-800 dark:text-white"
-                                v-pre
-                            >
-                                {{ $order->order_currency_code }}
+                            <p class="font-semibold text-gray-800 dark:text-white">
+                                {{ core()->getConfigData('sales.payment_methods.' . $order->payment->method . '.title') }}
                             </p>
 
-                            <p class="text-gray-600 dark:text-gray-300">
+                            <p class="pt-4 text-gray-600 dark:text-gray-300">
                                 @lang('admin::app.sales.orders.view.currency')
+                            </p>
+
+                            <p class="font-semibold text-gray-800 dark:text-white" v-pre>
+                                {{ $order->order_currency_code }}
                             </p>
 
                             @php $additionalDetails = \Webkul\Payment\Payment::getAdditionalDetails($order->payment->method); @endphp
 
                             <!-- Additional details -->
                             @if (! empty($additionalDetails))
-                                <p 
-                                    class="pt-4 font-semibold text-gray-800 dark:text-white"
-                                    v-pre
-                                >
+                                <p class="pt-4 text-gray-600 dark:text-gray-300" v-pre>
                                     {{ $additionalDetails['title'] }}
                                 </p>
 
-                                <p 
-                                    class="text-gray-600 dark:text-gray-300"
-                                    v-pre
-                                >
+                                <p class="font-semibold text-gray-800 dark:text-white" v-pre>
                                     {{ $additionalDetails['value'] }}
                                 </p>
                             @endif
@@ -787,40 +698,35 @@
                             <span class="mt-4 block w-full border-b dark:border-gray-800"></span>
 
                             <div class="pt-4">
-                                <p 
-                                    class="font-semibold text-gray-800 dark:text-white"
-                                    v-pre
-                                >
-                                    {{ $order->shipping_title }}
-                                </p>
-
                                 <p class="text-gray-600 dark:text-gray-300">
                                     @lang('admin::app.sales.orders.view.shipping-method')
                                 </p>
 
-                                <p class="pt-4 font-semibold text-gray-800 dark:text-white">
-                                    {{ core()->formatBasePrice($order->base_shipping_amount) }}
+                                <p class="font-semibold text-gray-800 dark:text-white" v-pre>
+                                    {{ $order->shipping_title }}
                                 </p>
 
-                                <p class="text-gray-600 dark:text-gray-300">
+                                <p class="pt-4 text-gray-600 dark:text-gray-300">
                                     @lang('admin::app.sales.orders.view.shipping-price')
+                                </p>
+
+                                <p class="font-semibold text-gray-800 dark:text-white">
+                                    {{ core()->formatBasePrice($order->base_shipping_amount) }}
                                 </p>
                             </div>
 
                             {!! view_render_event('bagisto.admin.sales.order.shipping-method.after', ['order' => $order]) !!}
                         @endif
-                    </x-slot>
-                </x-admin::accordion>
+                    </div>
+                </section>
 
                 <!-- Invoice Information-->
-                <x-admin::accordion>
-                    <x-slot:header>
-                        <p class="p-2.5 text-base font-semibold text-gray-600 dark:text-gray-300">
-                            @lang('admin::app.sales.orders.view.invoices') ({{ count($order->invoices) }})
-                        </p>
-                    </x-slot>
+                <section class="box-shadow overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+                    <h2 class="m-0 border-b border-gray-200 px-4 py-3 text-base font-semibold text-gray-800 dark:border-gray-800 dark:text-white">
+                        @lang('admin::app.sales.orders.view.invoices') ({{ count($order->invoices) }})
+                    </h2>
 
-                    <x-slot:content>
+                    <div class="px-4 pb-4 pt-3">
                         @forelse ($order->invoices as $index => $invoice)
                             <div class="grid gap-y-2.5">
                                 <div>
@@ -858,18 +764,16 @@
                                 @lang('admin::app.sales.orders.view.no-invoice-found')
                             </p>
                         @endforelse
-                    </x-slot>
-                </x-admin::accordion>
+                    </div>
+                </section>
 
                 <!-- Shipment Information-->
-                <x-admin::accordion>
-                    <x-slot:header>
-                        <p class="p-2.5 text-base font-semibold text-gray-600 dark:text-gray-300">
-                            @lang('admin::app.sales.orders.view.shipments') ({{ count($order->shipments) }})
-                        </p>
-                    </x-slot>
+                <section class="box-shadow overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+                    <h2 class="m-0 border-b border-gray-200 px-4 py-3 text-base font-semibold text-gray-800 dark:border-gray-800 dark:text-white">
+                        @lang('admin::app.sales.orders.view.shipments') ({{ count($order->shipments) }})
+                    </h2>
 
-                    <x-slot:content>
+                    <div class="px-4 pb-4 pt-3">
                         @forelse ($order->shipments as $shipment)
                             <div class="grid gap-y-2.5">
                                 <div>
@@ -898,18 +802,16 @@
                                 @lang('admin::app.sales.orders.view.no-shipment-found')
                             </p>
                         @endforelse
-                    </x-slot>
-                </x-admin::accordion>
+                    </div>
+                </section>
 
                 <!-- Refund Information -->
-                <x-admin::accordion>
-                    <x-slot:header>
-                        <p class="p-2.5 text-base font-semibold text-gray-600 dark:text-gray-300">
-                            @lang('admin::app.sales.orders.view.refund')
-                        </p>
-                    </x-slot>
+                <section class="box-shadow overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+                    <h2 class="m-0 border-b border-gray-200 px-4 py-3 text-base font-semibold text-gray-800 dark:border-gray-800 dark:text-white">
+                        @lang('admin::app.sales.orders.view.refund')
+                    </h2>
 
-                    <x-slot:content>
+                    <div class="px-4 pb-4 pt-3">
                         @forelse ($order->refunds as $refund)
                             <div class="grid gap-y-2.5">
                                 <div>
@@ -925,10 +827,7 @@
                                         @lang('admin::app.sales.orders.view.name')
                                     </p>
 
-                                    <p 
-                                        class="text-gray-600 dark:text-gray-300"
-                                        v-pre
-                                    >
+                                    <p class="text-gray-600 dark:text-gray-300" v-pre>
                                         {{ $refund->order->customer_full_name }}
                                     </p>
 
@@ -959,8 +858,8 @@
                                 @lang('admin::app.sales.orders.view.no-refund-found')
                             </p>
                         @endforelse
-                    </x-slot>
-                </x-admin::accordion>
+                    </div>
+                </section>
 
                 {!! view_render_event('bagisto.admin.sales.order.right_component.after', ['order' => $order]) !!}
             </div>

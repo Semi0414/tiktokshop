@@ -81,8 +81,12 @@ class NotificationController extends Controller
             'read' => 0,
         ]);
 
+        $results = isset($searchResults['notifications'])
+            ? $searchResults['notifications']
+            : $searchResults;
+
         return [
-            'search_results' => $searchResults,
+            'search_results' => $results,
             'total_unread' => $this->notificationRepository->where('read', 0)->count(),
             'success_message' => trans('superadmin::app.notifications.marked-success'),
         ];

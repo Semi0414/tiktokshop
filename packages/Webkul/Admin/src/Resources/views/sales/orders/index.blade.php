@@ -5,27 +5,6 @@
     </x-slot>
 
     <x-admin::seller.panel active="shop_order" :breadcrumb="[__('admin::app.seller-panel.tabs.shop-order')]">
-        <div class="seller-filter-card mb-4">
-            <div class="flex items-center justify-between gap-3">
-                <p class="text-sm font-semibold text-gray-800 dark:text-white">
-                    Orders API Debug Response
-                </p>
-
-                <button
-                    type="button"
-                    class="seller-btn-secondary text-xs"
-                    onclick="window.reloadSellerOrdersDebugResponse && window.reloadSellerOrdersDebugResponse()"
-                >
-                    Refresh Response
-                </button>
-            </div>
-
-            <pre
-                id="seller-orders-debug-response"
-                class="mt-3 max-h-72 overflow-auto rounded-md border border-gray-200 bg-gray-50 p-3 text-xs text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200"
-            >Loading...</pre>
-        </div>
-
         @php
             $scope = request('seller_order_scope', 'all');
             $preserve = request()->only(['seller_increment_id', 'seller_payment_method', 'seller_date_from', 'seller_date_to', 'seller_logistics_status']);
@@ -88,9 +67,9 @@
                 </div>
                 <div>
                     <label class="mb-1 block text-xs font-medium text-gray-500">@lang('admin::app.seller-panel.filters.order-time')</label>
-                    <div class="flex gap-2">
-                        <input type="date" name="seller_date_from" value="{{ request('seller_date_from') }}" class="w-full rounded-md border border-gray-200 px-2 py-2 text-xs dark:border-gray-700 dark:bg-gray-900 dark:text-white" />
-                        <input type="date" name="seller_date_to" value="{{ request('seller_date_to') }}" class="w-full rounded-md border border-gray-200 px-2 py-2 text-xs dark:border-gray-700 dark:bg-gray-900 dark:text-white" />
+                    <div class="flex min-w-0 flex-col gap-2 sm:flex-row">
+                        <input type="date" name="seller_date_from" value="{{ request('seller_date_from') }}" class="min-w-0 w-full rounded-md border border-gray-200 px-2 py-2 text-xs dark:border-gray-700 dark:bg-gray-900 dark:text-white" />
+                        <input type="date" name="seller_date_to" value="{{ request('seller_date_to') }}" class="min-w-0 w-full rounded-md border border-gray-200 px-2 py-2 text-xs dark:border-gray-700 dark:bg-gray-900 dark:text-white" />
                     </div>
                 </div>
             </div>
@@ -99,25 +78,24 @@
                 <a href="{{ route('admin.sales.orders.index') }}" class="seller-btn-secondary">@lang('admin::app.seller-panel.filters.reset')</a>
             </div>
         </form>
-
-        <div class="mb-3 flex justify-end">
+        <!-- <div class="mb-3 flex justify-end max-sm:justify-stretch">
             <button
                 type="button"
-                class="seller-btn-primary text-xs"
+                class="seller-btn-primary w-full text-xs max-sm:justify-center sm:w-auto"
                 onclick="window.sellerBulkPurchaseFromHeader && window.sellerBulkPurchaseFromHeader()"
             >
                 @lang('admin::app.seller-panel.orders.bulk-purchase')
             </button>
-        </div>
+        </div>  -->
 
-        <div class="flex items-center justify-between gap-4 max-sm:flex-wrap">
-            <p class="py-3 text-xl font-bold text-gray-800 dark:text-white">
+        <div class="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p class="min-w-0 py-1 text-lg font-bold text-gray-800 dark:text-white sm:py-3 sm:text-xl">
                 @lang('admin::app.sales.orders.index.title')
             </p>
 
-            <div class="flex items-center gap-x-2.5">
+            <!-- <div class="flex shrink-0 items-center gap-x-2.5">
                 <x-admin::datagrid.export src="{{ route('admin.sales.orders.index') }}" />
-            </div>
+            </div> -->
         </div>
 
         <div id="seller-orders-summary-cards" class="mb-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -139,10 +117,10 @@
             </div>
         </div>
 
-        <div id="seller-shop-order-grid" class="seller-filter-card p-0 overflow-hidden">
+        <div id="seller-shop-order-grid" class="seller-filter-card max-w-full overflow-hidden p-0">
             <div
                 id="seller-orders-bulk-toolbar"
-                class="hidden items-center justify-between gap-3 border-b border-gray-200 bg-gray-50 px-3 py-2 dark:border-gray-800 dark:bg-gray-900"
+                class="hidden flex-col gap-3 border-b border-gray-200 bg-gray-50 px-3 py-2 sm:flex-row sm:items-center sm:justify-between dark:border-gray-800 dark:bg-gray-900"
             >
                 <div class="text-xs text-gray-600 dark:text-gray-300">
                     <span id="seller-orders-selected-count">0</span> selected
@@ -163,10 +141,10 @@
                     </span>
                 </div>
 
-                <div class="flex items-center gap-2">
+                <div class="flex min-w-0 flex-wrap items-center gap-2">
                     <select
                         id="seller-orders-bulk-action"
-                        class="rounded-md border border-gray-300 bg-white px-2 py-1.5 text-xs text-gray-700 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-200"
+                        class="min-w-0 max-w-full flex-1 rounded-md border border-gray-300 bg-white px-2 py-1.5 text-xs text-gray-700 sm:max-w-xs sm:flex-none dark:border-gray-700 dark:bg-gray-950 dark:text-gray-200"
                     >
                         <option value="">Select bulk action</option>
                         <option value="bulk_make_order">Bulk Make Order</option>
@@ -182,8 +160,8 @@
                 </div>
             </div>
 
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
+            <div class="-mx-px overflow-x-auto overscroll-x-contain sm:mx-0">
+                <table class="min-w-[720px] w-full divide-y divide-gray-200 dark:divide-gray-800">
                     <thead class="bg-gray-50 dark:bg-gray-900">
                         <tr>
                             <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">
@@ -191,6 +169,7 @@
                             </th>
                             <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">Order ID</th>
                             <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">Date</th>
+                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">@lang('admin::app.seller.shop-order.col-age-hours')</th>
                             <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">Status</th>
                             <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">Grand Total</th>
                             <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">Pay Via</th>
@@ -209,7 +188,7 @@
                         class="divide-y divide-gray-100 dark:divide-gray-800"
                     >
                         <tr>
-                            <td colspan="13" class="px-3 py-4 text-sm text-gray-500 dark:text-gray-400">Loading...</td>
+                            <td colspan="14" class="px-3 py-4 text-sm text-gray-500 dark:text-gray-400">Loading...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -219,51 +198,288 @@
         </div>
     </x-admin::seller.panel>
 
+    {{-- Dedicated password modal for shop orders only (does not depend on global script stack / shared gate) --}}
+    <div
+        id="seller-shop-order-pw-root"
+        class="fixed inset-0 z-[99990] hidden items-center justify-center bg-black/60 p-4"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="seller-shop-order-pw-title"
+    >
+        <div class="w-full max-w-md rounded-xl border border-gray-200 bg-white p-6 shadow-2xl dark:border-gray-700 dark:bg-gray-900">
+            <h2 id="seller-shop-order-pw-title" class="text-lg font-semibold text-gray-900 dark:text-white">
+                @lang('admin::app.account.verify-password.title')
+            </h2>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                @lang('admin::app.account.verify-password.description')
+            </p>
+            <label for="seller-shop-order-pw-input" class="mt-4 block text-xs font-medium text-gray-700 dark:text-gray-300">
+                @lang('admin::app.account.verify-password.placeholder')
+            </label>
+            <input
+                type="password"
+                id="seller-shop-order-pw-input"
+                autocomplete="current-password"
+                class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 dark:border-gray-600 dark:bg-gray-950 dark:text-white"
+            />
+            <p id="seller-shop-order-pw-err" class="mt-2 hidden text-sm text-red-600 dark:text-red-400"></p>
+            <div class="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                <button
+                    type="button"
+                    id="seller-shop-order-pw-btn-cancel"
+                    class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-800"
+                >
+                    @lang('admin::app.account.verify-password.cancel')
+                </button>
+                <button
+                    type="button"
+                    id="seller-shop-order-pw-btn-ok"
+                    class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                    @lang('admin::app.account.verify-password.submit-password')
+                </button>
+            </div>
+        </div>
+    </div>
+
     @pushOnce('scripts')
         <script>
-            (function attachSellerOrdersDebugResponse() {
-                const output = document.getElementById('seller-orders-debug-response');
+            (function registerSellerShopOrderPasswordForce() {
+                const sellerMakeOrderUrlTemplate = @json(route('admin.seller.shop-order.make-order', ['order' => 0]));
+                const sellerBulkMakeOrderUrl = @json(route('admin.seller.shop-order.bulk-make-order'));
 
-                if (! output) {
-                    return;
+                function getCsrfToken() {
+                    return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
                 }
 
-                async function loadDebugResponse() {
-                    output.textContent = 'Loading...';
+                const state = {
+                    kind: 'single',
+                    orderId: null,
+                    bulkIndices: null,
+                    busy: false,
+                };
 
-                    try {
-                        const params = new URLSearchParams(window.location.search);
+                function el(id) {
+                    return document.getElementById(id);
+                }
 
-                        if (!params.has('pagination[page]')) {
-                            params.set('pagination[page]', '1');
-                        }
-
-                        if (!params.has('pagination[per_page]')) {
-                            params.set('pagination[per_page]', '10');
-                        }
-
-                        const url = `${window.location.pathname}?${params.toString()}`;
-
-                        const response = await fetch(url, {
-                            method: 'GET',
-                            headers: {
-                                'X-Requested-With': 'XMLHttpRequest',
-                                'Accept': 'application/json',
-                            },
-                            credentials: 'same-origin',
-                        });
-
-                        const payload = await response.json();
-
-                        output.textContent = JSON.stringify(payload, null, 2);
-                    } catch (error) {
-                        output.textContent = `Failed to load response: ${error?.message || 'Unknown error'}`;
+                async function sellerFlash(type, message) {
+                    if (typeof window.emitter !== 'undefined' && window.emitter.emit) {
+                        window.emitter.emit('add-flash', { type: type, message: message });
+                    } else {
+                        alert(message);
                     }
                 }
 
-                window.reloadSellerOrdersDebugResponse = loadDebugResponse;
+                function buildSellerMakeOrderUrl(orderId) {
+                    const id = String(parseInt(orderId, 10) || 0);
+                    const tpl = sellerMakeOrderUrlTemplate;
+                    const m = tpl.match(/^(.*\/shop-order\/)(\d+)(\/make-order.*)$/i);
+                    if (m) {
+                        return m[1] + id + m[3];
+                    }
+                    return tpl.replace(/\/([0-9]+)\/make-order(\?|#|$)/, '/' + id + '/make-order$2');
+                }
 
-                loadDebugResponse();
+                function showPwError(text) {
+                    const err = el('seller-shop-order-pw-err');
+                    if (!err) {
+                        return;
+                    }
+                    err.textContent = text || '';
+                    if (text) {
+                        err.classList.remove('hidden');
+                    } else {
+                        err.classList.add('hidden');
+                    }
+                }
+
+                function openPwModal(kind, orderId, bulkIndices) {
+                    const root = el('seller-shop-order-pw-root');
+                    const input = el('seller-shop-order-pw-input');
+                    if (!root || !input) {
+                        sellerFlash('error', 'Password dialog failed to load. Hard-refresh the page (Ctrl+F5).');
+                        return;
+                    }
+                    state.kind = kind;
+                    state.orderId = orderId;
+                    state.bulkIndices = bulkIndices;
+                    showPwError('');
+                    input.value = '';
+                    root.classList.remove('hidden');
+                    root.classList.add('flex');
+                    setTimeout(function () {
+                        input.focus();
+                    }, 40);
+                }
+
+                function closePwModal() {
+                    const root = el('seller-shop-order-pw-root');
+                    const input = el('seller-shop-order-pw-input');
+                    const okBtn = el('seller-shop-order-pw-btn-ok');
+                    if (root) {
+                        root.classList.add('hidden');
+                        root.classList.remove('flex');
+                    }
+                    if (input) {
+                        input.value = '';
+                    }
+                    if (okBtn) {
+                        okBtn.disabled = false;
+                    }
+                    showPwError('');
+                    state.kind = 'single';
+                    state.orderId = null;
+                    state.bulkIndices = null;
+                    state.busy = false;
+                }
+
+                async function postMakeOrderWithPassword(orderId, password) {
+                    const url = buildSellerMakeOrderUrl(orderId);
+                    const token = getCsrfToken();
+                    const body = JSON.stringify({
+                        password: password,
+                        _token: token,
+                    });
+                    const res = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': token,
+                            Accept: 'application/json, text/plain, */*',
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                        credentials: 'same-origin',
+                        body: body,
+                    });
+                    const data = await res.json().catch(function () {
+                        return {};
+                    });
+                    const msg = data.message || (res.ok ? 'OK' : 'HTTP ' + res.status);
+                    sellerFlash(res.ok ? 'success' : 'error', msg);
+                    if (res.ok) {
+                        window.location.reload();
+                    }
+                }
+
+                async function postBulkWithPassword(indices, password) {
+                    const token = getCsrfToken();
+                    const body = JSON.stringify({
+                        password: password,
+                        indices: indices,
+                        _token: token,
+                    });
+                    const res = await fetch(sellerBulkMakeOrderUrl, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': token,
+                            Accept: 'application/json, text/plain, */*',
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                        credentials: 'same-origin',
+                        body: body,
+                    });
+                    const data = await res.json().catch(function () {
+                        return {};
+                    });
+                    const msg = data.message || (res.ok ? 'OK' : 'HTTP ' + res.status);
+                    sellerFlash(res.ok ? 'success' : 'error', msg);
+                    if (res.ok) {
+                        window.location.reload();
+                    }
+                }
+
+                async function onPwConfirm() {
+                    if (state.busy) {
+                        return;
+                    }
+                    const input = el('seller-shop-order-pw-input');
+                    const okBtn = el('seller-shop-order-pw-btn-ok');
+                    const pwd = (input && input.value ? input.value : '').trim();
+                    if (!pwd) {
+                        showPwError(@json(__('admin::app.account.verify-password.required')));
+                        return;
+                    }
+                    state.busy = true;
+                    if (okBtn) {
+                        okBtn.disabled = true;
+                    }
+                    showPwError('');
+                    try {
+                        if (state.kind === 'bulk' && Array.isArray(state.bulkIndices) && state.bulkIndices.length) {
+                            await postBulkWithPassword(state.bulkIndices, pwd);
+                        } else if (state.orderId != null && !Number.isNaN(Number(state.orderId))) {
+                            await postMakeOrderWithPassword(state.orderId, pwd);
+                        } else {
+                            sellerFlash('error', 'Missing order. Close this dialog and click Make Order again.');
+                        }
+                    } catch (e) {
+                        sellerFlash('error', (e && e.message) ? e.message : 'Request failed.');
+                    } finally {
+                        state.busy = false;
+                        if (okBtn) {
+                            okBtn.disabled = false;
+                        }
+                    }
+                }
+
+                function wireShopOrderPwModal() {
+                    const root = el('seller-shop-order-pw-root');
+                    const ok = el('seller-shop-order-pw-btn-ok');
+                    const cancel = el('seller-shop-order-pw-btn-cancel');
+                    const input = el('seller-shop-order-pw-input');
+                    if (!root || !ok || !cancel || !input) {
+                        return;
+                    }
+                    if (ok.dataset.sellerShopOrderPwWired === '1') {
+                        return;
+                    }
+                    ok.dataset.sellerShopOrderPwWired = '1';
+                    ok.addEventListener('click', function () {
+                        onPwConfirm();
+                    });
+                    cancel.addEventListener('click', function () {
+                        closePwModal();
+                    });
+                    root.addEventListener('click', function (e) {
+                        if (e.target === root) {
+                            closePwModal();
+                        }
+                    });
+                    input.addEventListener('keydown', function (e) {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            onPwConfirm();
+                        }
+                        if (e.key === 'Escape') {
+                            closePwModal();
+                        }
+                    });
+                }
+
+                wireShopOrderPwModal();
+
+                window.sellerSubmitMakeOrder = function (orderId) {
+                    wireShopOrderPwModal();
+                    openPwModal('single', orderId, null);
+                };
+
+                window.sellerBulkPurchaseFromHeader = function () {
+                    wireShopOrderPwModal();
+                    const grid = document.getElementById('seller-shop-order-grid');
+                    if (grid) {
+                        grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                    const indices = typeof window.getSellerSelectedOrderIds === 'function'
+                        ? window.getSellerSelectedOrderIds()
+                        : [];
+                    if (!indices.length) {
+                        sellerFlash('warning', @json(__('admin::app.seller-panel.orders.bulk-purchase-no-selection')));
+                        return;
+                    }
+                    openPwModal('bulk', null, indices.slice());
+                };
             })();
 
             (function attachSellerOrdersTable() {
@@ -346,7 +562,7 @@
                 async function loadTableData() {
                     tableBody.innerHTML = `
                         <tr>
-                            <td colspan="13" class="px-3 py-4 text-sm text-gray-500 dark:text-gray-400">Loading...</td>
+                            <td colspan="14" class="px-3 py-4 text-sm text-gray-500 dark:text-gray-400">Loading...</td>
                         </tr>
                     `;
 
@@ -378,7 +594,7 @@
                         if (! records.length) {
                             tableBody.innerHTML = `
                                 <tr>
-                                    <td colspan="13" class="px-3 py-4 text-sm text-gray-500 dark:text-gray-400">No records available.</td>
+                                    <td colspan="14" class="px-3 py-4 text-sm text-gray-500 dark:text-gray-400">No records available.</td>
                                 </tr>
                             `;
                             tableMeta.textContent = '';
@@ -398,29 +614,31 @@
                         summaryCommissionEl.textContent = formatMoney(totalCommission);
                         summaryPayableEl.textContent = formatMoney(totalPayable);
 
+                        const actionLabels = {
+                            view: @json(__('admin::app.acl.view')),
+                            make: @json(__('admin::app.seller.shop-order.make-order')),
+                            makeDisabled: @json(__('admin::app.seller.shop-order.make-order-disabled-hint')),
+                        };
+
                         tableBody.innerHTML = records.map((record) => {
                             const actionUrl = record?.actions?.[0]?.url || '#';
                             const orderId = Number(record.id);
                             const statusRaw = String(record.order_status_raw || '').toLowerCase();
                             const isSelectable = ! ['completed', 'processing'].includes(statusRaw);
                             const canMakeOrder = !record.seller_make_order_at && ['pending', 'pending_payment', 'processing'].includes(statusRaw);
-                            let makeOrderBtn = `<span class="text-xs text-gray-500 dark:text-gray-400">@lang('admin::app.seller.shop-order.order-in-progress')</span>`;
 
-                            if (canMakeOrder) {
-                                makeOrderBtn = `<button
+                            const makeBtn = canMakeOrder
+                                ? `<button
                                     type="button"
                                     class="seller-btn-primary text-xs"
-                                    onclick="window.sellerSubmitMakeOrder && window.sellerSubmitMakeOrder(${orderId})"
-                                >@lang('admin::app.seller.shop-order.make-order')</button>`;
-                            } else if (statusRaw === 'completed') {
-                                makeOrderBtn = `<span class="text-xs font-semibold text-emerald-700 dark:text-emerald-400">@lang('admin::app.sales.orders.index.datagrid.completed')</span>`;
-                            } else if (statusRaw === 'closed') {
-                                makeOrderBtn = `<span class="text-xs font-semibold text-gray-600 dark:text-gray-400">@lang('admin::app.sales.orders.index.datagrid.closed')</span>`;
-                            } else if (statusRaw === 'canceled') {
-                                makeOrderBtn = `<span class="text-xs font-semibold text-red-700 dark:text-red-400">@lang('admin::app.sales.orders.index.datagrid.canceled')</span>`;
-                            } else if (statusRaw === 'processing') {
-                                makeOrderBtn = `<span class="text-xs font-semibold text-blue-700 dark:text-blue-400">@lang('admin::app.sales.orders.index.datagrid.processing')</span>`;
-                            }
+                                    onclick="window.sellerSubmitMakeOrder(${orderId})"
+                                >${escapeHtml(actionLabels.make)}</button>`
+                                : `<button
+                                    type="button"
+                                    class="seller-btn-primary cursor-not-allowed text-xs opacity-50"
+                                    disabled
+                                    title="${escapeHtml(actionLabels.makeDisabled)}"
+                                >${escapeHtml(actionLabels.make)}</button>`;
 
                             return `
                                 <tr class="align-top">
@@ -435,6 +653,7 @@
                                     </td>
                                     <td class="px-3 py-3 text-sm text-gray-700 dark:text-gray-200">${escapeHtml(record.increment_id)}</td>
                                     <td class="px-3 py-3 text-sm text-gray-700 dark:text-gray-200">${escapeHtml(record.created_at)}</td>
+                                    <td class="px-3 py-3 text-sm font-medium tabular-nums text-indigo-700 dark:text-indigo-300">${escapeHtml(record.order_age_hours ?? '—')}</td>
                                     <td class="px-3 py-3 text-sm text-gray-700 dark:text-gray-200">${record.status || ''}</td>
                                     <td class="px-3 py-3 text-sm font-semibold text-blue-700 dark:text-blue-400">${formatMoney(record.base_grand_total)}</td>
                                     <td class="px-3 py-3 text-sm text-gray-700 dark:text-gray-200">${escapeHtml(record.method)}</td>
@@ -445,9 +664,9 @@
                                     <td class="px-3 py-3 text-sm font-semibold text-orange-700 dark:text-orange-400">${formatMoney(record.seller_commission_expected)}</td>
                                     <td class="px-3 py-3 text-sm text-gray-700 dark:text-gray-200">${record.items || ''}</td>
                                     <td class="px-3 py-3 text-sm text-gray-700 dark:text-gray-200">
-                                        <div class="flex flex-col items-start gap-2">
-                                            ${makeOrderBtn}
-                                            <a href="${escapeHtml(actionUrl)}" class="text-blue-600 hover:underline">View</a>
+                                        <div class="flex flex-wrap items-center gap-2">
+                                            <a href="${escapeHtml(actionUrl)}" class="seller-btn-secondary inline-flex items-center justify-center px-3 py-1.5 text-xs font-medium no-underline">${escapeHtml(actionLabels.view)}</a>
+                                            ${makeBtn}
                                         </div>
                                     </td>
                                 </tr>
@@ -461,7 +680,7 @@
                     } catch (error) {
                         tableBody.innerHTML = `
                             <tr>
-                                <td colspan="13" class="px-3 py-4 text-sm text-red-600 dark:text-red-400">
+                                    <td colspan="14" class="px-3 py-4 text-sm text-red-600 dark:text-red-400">
                                     Failed to load orders: ${escapeHtml(error?.message || 'Unknown error')}
                                 </td>
                             </tr>
@@ -562,77 +781,6 @@
                 });
 
                 loadTableData();
-            })();
-
-            (function attachSellerSubmitMakeOrder() {
-                if (typeof window.app === 'undefined' || !window.app.config) {
-                    setTimeout(attachSellerSubmitMakeOrder, 10);
-                    return;
-                }
-                function sellerFlash(type, message) {
-                    if (typeof window.emitter !== 'undefined' && window.emitter.emit) {
-                        window.emitter.emit('add-flash', { type: type, message: message });
-                    } else {
-                        alert(message);
-                    }
-                }
-
-                if (!window.app.config.globalProperties.sellerSubmitMakeOrder) {
-                    window.app.config.globalProperties.sellerSubmitMakeOrder = async function (orderId) {
-                        const template = @json(route('admin.seller.shop-order.make-order', ['order' => 0]));
-                        const url = template.replace(/\/\d+\/make-order/, '/' + String(orderId) + '/make-order');
-                        const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-                        const res = await fetch(url, {
-                            method: 'POST',
-                            headers: {
-                                'X-CSRF-TOKEN': token || '',
-                                'Accept': 'application/json',
-                                'X-Requested-With': 'XMLHttpRequest',
-                            },
-                            credentials: 'same-origin',
-                        });
-                        const data = await res.json().catch(function () { return {}; });
-                        const msg = data.message || (res.ok ? 'OK' : 'Request failed');
-                        sellerFlash(res.ok ? 'success' : 'error', msg);
-                        if (res.ok) {
-                            window.location.reload();
-                        }
-                    };
-                }
-
-                if (!window.sellerBulkPurchaseFromHeader) {
-                    window.sellerBulkPurchaseFromHeader = async function () {
-                    const grid = document.getElementById('seller-shop-order-grid');
-                    if (grid) {
-                        grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }
-                    const indices = typeof window.getSellerSelectedOrderIds === 'function'
-                        ? window.getSellerSelectedOrderIds()
-                        : [];
-                    if (!indices.length) {
-                        sellerFlash('warning', @json(__('admin::app.seller-panel.orders.bulk-purchase-no-selection')));
-                        return;
-                    }
-                    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-                    const res = await fetch(@json(route('admin.seller.shop-order.bulk-make-order')), {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': token || '',
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest',
-                        },
-                        credentials: 'same-origin',
-                        body: JSON.stringify({ indices: indices }),
-                    });
-                    const data = await res.json().catch(function () { return {}; });
-                    const msg = data.message || (res.ok ? 'OK' : 'Request failed');
-                    sellerFlash(res.ok ? 'success' : 'error', msg);
-                    if (res.ok) {
-                        window.location.reload();
-                    }
-                };
-                }
             })();
         </script>
     @endPushOnce

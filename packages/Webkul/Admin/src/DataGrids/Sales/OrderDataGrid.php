@@ -2,6 +2,7 @@
 
 namespace Webkul\Admin\DataGrids\Sales;
 
+use Carbon\Carbon;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Webkul\DataGrid\DataGrid;
@@ -298,6 +299,27 @@ class OrderDataGrid extends DataGrid
             'filterable' => true,
             'filterable_type' => 'date_range',
             'sortable' => true,
+        ]);
+
+        $this->addColumn([
+            'index' => 'order_age_hours',
+            'label' => trans('admin::app.seller.shop-order.col-age-hours'),
+            'type' => 'integer',
+            'sortable' => false,
+            'filterable' => false,
+            'closure' => function ($row) {
+                if (empty($row->created_at)) {
+                    return '—';
+                }
+
+                try {
+                    $hours = (int) floor(Carbon::parse($row->created_at)->diffInHours(Carbon::now()));
+
+                    return (string) max(0, $hours);
+                } catch (\Throwable $e) {
+                    return '—';
+                }
+            },
         ]);
     }
 

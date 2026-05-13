@@ -56,6 +56,10 @@ Route::controller(AccountController::class)->prefix('account')->group(function (
     Route::get('', 'edit')->name('admin.account.edit');
 
     Route::put('', 'update')->name('admin.account.update');
+
+    Route::post('verify-password', 'verifyPassword')
+        ->middleware('throttle:30,1')
+        ->name('admin.account.verify-password');
 });
 
 Route::delete('logout', [SessionController::class, 'destroy'])->name('admin.session.destroy');

@@ -44,6 +44,20 @@ return [
         'read-all' => 'Mark as Read',
         'title' => 'Notifications',
         'view-all' => 'View All',
+        'filter-tabs' => 'Filter notifications by status',
+        'pagination-nav' => 'Pagination',
+        'pagination-previous' => 'Previous page',
+        'pagination-next' => 'Next page',
+        'item-without-order-link' => 'Notification without linked order',
+
+        'seller-events' => [
+            'deposit-request-summary' => 'Deposit request submitted and is pending review.',
+            'withdraw-request-summary' => 'Withdrawal request submitted and is pending review.',
+            'deposit-approved-summary' => 'Your deposit of :amount was approved and credited.',
+            'withdraw-approved-summary' => 'Your withdrawal of :amount was approved.',
+            'deposit-rejected-summary' => 'Your deposit request was rejected.',
+            'withdraw-rejected-summary' => 'Your withdrawal request was rejected. Any withheld funds were returned to your wallet where applicable.',
+        ],
 
         'order-status-messages' => [
             'all' => 'All',
@@ -57,6 +71,17 @@ return [
     ],
 
     'account' => [
+        'verify-password' => [
+            'title' => 'Confirm with password',
+            'description' => 'Enter your account password to continue.',
+            'placeholder' => 'Password',
+            'submit' => 'Confirm',
+            'submit-password' => 'Submit password',
+            'hint' => 'Type your password, then tap Submit password. Your action (for example Make order) runs only after the password is verified.',
+            'cancel' => 'Cancel',
+            'invalid' => 'Incorrect password.',
+            'required' => 'Please enter your password.',
+        ],
         'edit' => [
             'back-btn' => 'Back',
             'change-password' => 'Change Password',
@@ -358,6 +383,8 @@ return [
 
             'view' => [
                 'amount-per-unit' => ':amount Per Unit x :qty Quantity',
+                'approve-order' => 'Approve Order',
+                'approve-order-msg' => 'Approve this order?',
                 'billing-address' => 'Billing Address',
                 'cancel' => 'Cancel',
                 'cancel-msg' => 'Are your sure you want to cancel this order',
@@ -381,6 +408,7 @@ return [
                 'grand-total' => 'Grand Total - :grand_total',
                 'invoice-id' => 'Invoice #:invoice',
                 'invoices' => 'Invoices',
+                'items-with-count' => 'Order Items (:count)',
                 'item-canceled' => 'Canceled (:qty_canceled)',
                 'item-invoice' => 'Invoiced (:qty_invoiced)',
                 'item-ordered' => 'Ordered (:qty_ordered)',
@@ -4660,6 +4688,7 @@ return [
                 'my-account' => 'My Account',
                 'notifications' => 'Notifications',
                 'visit-shop' => 'Visit Shop',
+                'toggle-theme' => 'Toggle light / dark mode',
 
                 'mega-search' => [
                     'categories' => 'Categories',
@@ -5110,6 +5139,7 @@ return [
         'shop-order' => [
             'col-commission' => 'Commission %',
             'make-order' => 'Make Order',
+            'make-order-disabled-hint' => 'Make Order is not available for this order.',
             'order-in-progress' => 'Processing',
             'already-made' => 'You have already submitted Make Order for this order.',
             'account-not-approved' => 'Your seller account must be approved before you can place this order.',
@@ -5126,6 +5156,7 @@ return [
             'bulk-principal' => 'Product principal (orders total)',
             'bulk-profit' => 'Profit (expected commission)',
             'bulk-total' => 'Total (principal + commission)',
+            'col-age-hours' => 'Hours since order',
         ],
     ],
 
@@ -5255,6 +5286,12 @@ return [
             'recommended-off' => 'Off',
             'status-active' => 'Active',
             'status-inactive' => 'Inactive',
+            'remove-not-allowed-title' => 'Removal not available',
+            'remove-not-allowed-description' => 'You cannot remove any product from your store until your seller account is at least :required days old. Your account is currently :current full days old.',
+            'remove-account-age-server' => 'Removal is not allowed until your seller account is at least :days days old.',
+            'remove-account-age-unknown' => 'Your account record is missing a creation date; removal is temporarily unavailable.',
+            'remove-not-allowed-dismiss' => 'Got it',
+            'remove-confirm-single' => 'Remove this product from your store?',
         ],
         'product-warehouse' => [
             'add-to-store' => 'Add to store',

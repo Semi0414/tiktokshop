@@ -1,12 +1,13 @@
 <!-- Shipment Vue Components -->
 <v-create-shipment>
-    <div
-        class="transparent-button px-1 py-1.5 hover:bg-gray-200 dark:text-white dark:hover:bg-gray-800"
+    <button
+        type="button"
+        class="transparent-button inline-flex items-center gap-1 px-1 py-1.5 hover:bg-gray-200 dark:text-white dark:hover:bg-gray-800"
     >
-        <span class="icon-ship text-2xl"></span>
+        <span class="icon-ship text-2xl" aria-hidden="true"></span>
 
         @lang('admin::app.sales.orders.view.ship')
-    </div>
+    </button>
 </v-create-shipment>
 
 @pushOnce('scripts')
@@ -15,19 +16,15 @@
         id="v-create-shipment-template"
     >
         <div>
-            <div
-                class="transparent-button px-1 py-1.5 hover:bg-gray-200 dark:text-white dark:hover:bg-gray-800"
+            <button
+                type="button"
+                class="transparent-button inline-flex items-center gap-1 px-1 py-1.5 hover:bg-gray-200 dark:text-white dark:hover:bg-gray-800"
                 @click="$refs.shipment.open()"
             >
-                <span
-                    class="icon-ship text-2xl"
-                    role="button"
-                    tabindex="0"
-                >
-                </span>
+                <span class="icon-ship text-2xl" aria-hidden="true"></span>
 
                 @lang('admin::app.sales.orders.view.ship')
-            </div>
+            </button>
 
             <!-- Shipment Create Drawer -->
             <x-admin::form
@@ -136,10 +133,14 @@
                                                     <img
                                                         class="relative h-[60px] max-h-[60px] w-full max-w-[60px] rounded"
                                                         src="{{ $item->product?->base_image_url }}"
+                                                        alt=""
                                                     >
                                                 @else
                                                     <div class="relative h-[60px] max-h-[60px] w-full max-w-[60px] rounded border border-dashed border-gray-300 dark:border-gray-800 dark:mix-blend-exclusion dark:invert">
-                                                        <img src="{{ bagisto_asset('images/product-placeholders/front.svg') }}">
+                                                        <img
+                                                            src="{{ bagisto_asset('images/product-placeholders/front.svg') }}"
+                                                            alt=""
+                                                        >
 
                                                         <p class="absolute bottom-1.5 w-full text-center text-[6px] font-semibold text-gray-400">
                                                             @lang('admin::app.sales.invoices.view.product-image')

@@ -359,19 +359,21 @@
                                             </a>
                                         @endif
 
-                                        <x-shop::form
-                                            method="DELETE"
-                                            action="{{ route('shop.customer.session.destroy') }}"
+                                        <form
                                             id="customerLogoutHeaderMobile"
-                                        />
-
-                                        <a
-                                            class="cursor-pointer px-5 py-2 text-base hover:bg-gray-100"
-                                            href="{{ route('shop.customer.session.destroy') }}"
-                                            onclick="event.preventDefault(); document.getElementById('customerLogoutHeaderMobile').submit();"
+                                            method="POST"
+                                            action="{{ route('shop.customer.session.destroy') }}"
+                                            class="contents"
                                         >
-                                            @lang('shop::app.components.layouts.header.mobile.logout')
-                                        </a>
+                                            @csrf
+                                            @method('DELETE')
+                                            <button
+                                                type="submit"
+                                                class="w-full cursor-pointer px-5 py-2 text-start text-base hover:bg-gray-100"
+                                            >
+                                                @lang('shop::app.components.layouts.header.mobile.logout')
+                                            </button>
+                                        </form>
 
                                         {!! view_render_event('bagisto.shop.components.layouts.header.mobile.index.profile_dropdown.links.after') !!}
                                     </div>

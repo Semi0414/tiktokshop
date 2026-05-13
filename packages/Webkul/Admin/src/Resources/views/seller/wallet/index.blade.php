@@ -44,18 +44,15 @@
             <div class="flex flex-col justify-center gap-2 lg:min-w-[200px]">
                 <a href="{{ route('admin.seller-level.index') }}" class="seller-btn-secondary text-center text-xs">@lang('admin::app.components.layouts.sidebar.seller-level')</a>
                 <div class="flex gap-2">
-                    <button type="button" onclick="openDepositModal()" class="seller-btn-primary flex-1 text-xs">@lang('admin::app.seller.wallet.deposit')</button>
-                    <button type="button" onclick="openWithdrawModal()" class="seller-btn-secondary flex-1 text-xs">@lang('admin::app.seller.wallet.withdraw')</button>
+                    <button type="button" onclick="window.sellerWalletOpenDeposit && window.sellerWalletOpenDeposit()" class="seller-btn-primary flex-1 text-xs">@lang('admin::app.seller.wallet.deposit')</button>
+                    <button type="button" onclick="window.sellerWalletOpenWithdraw && window.sellerWalletOpenWithdraw()" class="seller-btn-secondary flex-1 text-xs">@lang('admin::app.seller.wallet.withdraw')</button>
                 </div>
             </div>
         </div>
 
         {{-- Deposit modal --}}
-        <div id="modal-deposit" class="fixed inset-0 z-[100] hidden items-center justify-center bg-gradient-to-br from-blue-900/60 to-cyan-900/60 p-4 backdrop-blur-[1px]" role="dialog" aria-modal="true" style="
-    width: 50%;
-    justify-self: anchor-center;
-">
-            <div class="max-h-[90vh] w-full max-w-[500px] overflow-y-auto rounded-xl border border-blue-100 bg-white p-5 shadow-2xl dark:border-blue-900/50 dark:bg-gray-900">
+        <div id="modal-deposit" class="fixed inset-0 z-[100] hidden items-center justify-center bg-gradient-to-br from-blue-900/60 to-cyan-900/60 p-4 backdrop-blur-[1px]" role="dialog" aria-modal="true">
+            <div class="max-h-[90vh] w-1/2 min-w-0 max-w-full overflow-y-auto rounded-xl border border-blue-100 bg-white p-5 shadow-2xl max-sm:w-full dark:border-blue-900/50 dark:bg-gray-900">
                 <div class="mb-4 flex items-center justify-between rounded-lg bg-gradient-to-r from-blue-600 to-cyan-600 px-3 py-2">
                     <p class="text-lg font-semibold text-white">@lang('admin::app.seller.wallet.deposit')</p>
                     <button type="button" class="text-2xl leading-none text-gray-500 hover:text-gray-800" onclick="closeDepositModal()" aria-label="Close">&times;</button>
@@ -125,11 +122,8 @@
         </div>
 
         {{-- Withdraw modal --}}
-        <div id="modal-withdraw" class="fixed inset-0 z-[100] hidden items-center justify-center bg-gradient-to-br from-emerald-900/60 to-teal-900/60 p-4 backdrop-blur-[1px]" role="dialog" aria-modal="true" style="
-    width: 50%;
-    place-self: center;
-">
-            <div class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-emerald-100 bg-white p-5 shadow-2xl dark:border-emerald-900/40 dark:bg-gray-900">
+        <div id="modal-withdraw" class="fixed inset-0 z-[100] hidden items-center justify-center bg-gradient-to-br from-emerald-900/60 to-teal-900/60 p-4 backdrop-blur-[1px]" role="dialog" aria-modal="true">
+            <div class="max-h-[90vh] w-1/2 min-w-0 max-w-full overflow-y-auto rounded-xl border border-emerald-100 bg-white p-5 shadow-2xl max-sm:w-full dark:border-emerald-900/40 dark:bg-gray-900">
                 <div class="mb-4 flex items-center justify-between rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 px-3 py-2">
                     <p class="text-lg font-semibold text-white">@lang('admin::app.seller.wallet.withdraw')</p>
                     <button type="button" class="text-2xl leading-none text-gray-500 hover:text-gray-800" onclick="closeWithdrawModal()" aria-label="Close">&times;</button>
@@ -280,12 +274,34 @@
         </div>
     </x-admin::seller.panel>
 
+    @include('admin::components.seller.verify-password-modal')
+
     @push('scripts')
         <script>
             function openDepositModal() {
                 document.getElementById('modal-deposit').classList.remove('hidden');
                 document.getElementById('modal-deposit').classList.add('flex');
             }
+
+            window.sellerWalletOpenDeposit = function () {
+                if (typeof window.sellerVerifyPasswordThen === 'function') {
+                    window.sellerVerifyPasswordThen(function () {
+                        openDepositModal();
+                    });
+                } else {
+                    openDepositModal();
+                }
+            };
+
+            window.sellerWalletOpenWithdraw = function () {
+                if (typeof window.sellerVerifyPasswordThen === 'function') {
+                    window.sellerVerifyPasswordThen(function () {
+                        openWithdrawModal();
+                    });
+                } else {
+                    openWithdrawModal();
+                }
+            };
             function closeDepositModal() {
                 document.getElementById('modal-deposit').classList.add('hidden');
                 document.getElementById('modal-deposit').classList.remove('flex');

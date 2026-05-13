@@ -81,52 +81,6 @@ return [
     ],
 
     /**
-     * Others (seller).
-     */
-    [
-        'key' => 'others',
-        'name' => 'admin::app.components.layouts.sidebar.others',
-        'route' => 'admin.cms.index',
-        'sort' => 8,
-        'icon' => 'icon-cms',
-    ], [
-        'key' => 'others.cms',
-        'name' => 'admin::app.components.layouts.sidebar.cms',
-        'route' => 'admin.cms.index',
-        'sort' => 1,
-        'icon' => '',
-    ], [
-        'key' => 'others.reporting',
-        'name' => 'admin::app.components.layouts.sidebar.reporting',
-        'route' => 'admin.reporting.sales.index',
-        'sort' => 2,
-        'icon' => '',
-    ],
-
-    /**
-     * Marketing Tools (Seller Panel).
-     */
-    [
-        'key' => 'marketing-tools',
-        'name' => 'admin::app.components.layouts.sidebar.marketing-tools',
-        'route' => 'admin.store-upgrade.index',
-        'sort' => 9,
-        'icon' => 'icon-promotion',
-    ], [
-        'key' => 'marketing-tools.store-upgrade',
-        'name' => 'admin::app.components.layouts.sidebar.store-upgrade',
-        'route' => 'admin.store-upgrade.index',
-        'sort' => 1,
-        'icon' => '',
-    ], [
-        'key' => 'marketing-tools.seller-level',
-        'name' => 'admin::app.components.layouts.sidebar.seller-level',
-        'route' => 'admin.seller-level.index',
-        'sort' => 2,
-        'icon' => '',
-    ],
-
-    /**
      * Purchase history (seller).
      */
     [

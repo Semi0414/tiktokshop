@@ -10,7 +10,24 @@ use Webkul\User\Models\Admin;
 class NotificationRepository extends Repository
 {
     /**
-     * Limit notifications to orders belonging to the current seller (admin guard), unless the role has full access.
+     * Platform operators (explicit role IDs in seller-panel config) may see every seller's notifications.
+     * Everyone else — including sellers whose Bagisto role uses permission_type "all" — is limited to their own rows.
+     */
+    protected function seesAllSellersNotifications(?Admin $user): bool
+    {
+        if (! $user instanceof Admin || ! $user->role) {
+            return false;
+        }
+
+        $platformRoleIds = config('seller-panel.platform_admin_role_ids', []);
+
+        return $user->role->permission_type === 'all'
+            && $platformRoleIds !== []
+            && in_array((int) $user->role_id, $platformRoleIds, true);
+    }
+
+    /**
+     * Limit notifications to the current seller admin, unless platform admin.
      */
     protected function scopeForCurrentAdmin(Builder $query): Builder
     {
@@ -20,12 +37,21 @@ class NotificationRepository extends Repository
             return $query;
         }
 
-        if ($user->role->permission_type === 'all') {
+        if ($this->seesAllSellersNotifications($user)) {
             return $query;
         }
 
-        return $query->whereHas('order', function ($q) use ($user) {
-            $q->where('seller_id', $user->id);
+        $table = $this->model->getTable();
+
+        return $query->where(function (Builder $q) use ($user, $table) {
+            $q->where($table.'.seller_id', $user->id)
+                ->orWhere(function (Builder $q2) use ($user, $table) {
+                    $q2->whereNotNull($table.'.order_id')
+                        ->whereHas('order', function ($oq) use ($user) {
+                            $oq->where('seller_id', $user->id)
+                                ->where('seller_approval_status', 'approved');
+                        });
+                });
         });
     }
 
@@ -41,11 +67,12 @@ class NotificationRepository extends Repository
             return $query;
         }
 
-        if ($user->role->permission_type === 'all') {
+        if ($this->seesAllSellersNotifications($user)) {
             return $query;
         }
 
-        return $query->where('orders.seller_id', $user->id);
+        return $query->where('orders.seller_id', $user->id)
+            ->where('orders.seller_approval_status', 'approved');
     }
 
     /**
@@ -57,6 +84,36 @@ class NotificationRepository extends Repository
     }
 
     /**
+     * Non-order notifications (wallet, etc.) visible to current admin.
+     */
+    public function nonOrderCountForCurrentAdmin(): int
+    {
+        return $this->scopeForCurrentAdmin($this->model->newQuery())
+            ->whereNull('order_id')
+            ->count();
+    }
+
+    /**
+     * Create a notification row for a seller admin (order_id may be null).
+     */
+    public function createForSellerAdmin(array $attributes): mixed
+    {
+        return $this->create(array_merge([
+            'read' => 0,
+        ], $attributes));
+    }
+
+    /**
+     * Single notification by primary key, respecting seller scope.
+     */
+    public function findForOpenScoped(int $id)
+    {
+        return $this->scopeForCurrentAdmin($this->model->newQuery())
+            ->whereKey($id)
+            ->first();
+    }
+
+    /**
      * Return Filtered Notification resources.
      */
     public function getParamsData(array $params): array
@@ -65,7 +122,7 @@ class NotificationRepository extends Repository
             $this->model->with('order')
         );
 
-        if (isset($params['status']) && $params['status'] != 'All') {
+        if (isset($params['status']) && strcasecmp((string) $params['status'], 'all') !== 0) {
             $query->whereHas('order', function ($q) use ($params) {
                 $q->where(['status' => $params['status']]);
             });
@@ -88,7 +145,11 @@ class NotificationRepository extends Repository
             ->groupBy('orders.status')
             ->get();
 
-        return ['notifications' => $notifications, 'status_counts' => $statusCounts];
+        return [
+            'notifications'   => $notifications,
+            'status_counts'   => $statusCounts,
+            'non_order_count' => $this->nonOrderCountForCurrentAdmin(),
+        ];
     }
 
     /**
@@ -113,7 +174,11 @@ class NotificationRepository extends Repository
             ->groupBy('orders.status')
             ->get();
 
-        return ['notifications' => $notifications, 'status_counts' => $statusCounts];
+        return [
+            'notifications'   => $notifications,
+            'status_counts'   => $statusCounts,
+            'non_order_count' => $this->nonOrderCountForCurrentAdmin(),
+        ];
     }
 
     /**

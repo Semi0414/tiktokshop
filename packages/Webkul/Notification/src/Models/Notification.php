@@ -12,6 +12,15 @@ class Notification extends Model implements NotificationContract
         'type',
         'read',
         'order_id',
+        'seller_id',
+        'summary',
+        'action_route',
+        'action_params',
+    ];
+
+    protected $casts = [
+        'read' => 'boolean',
+        'action_params' => 'array',
     ];
 
     /**

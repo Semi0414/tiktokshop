@@ -10,9 +10,12 @@ use Illuminate\View\View;
 use Webkul\SuperAdmin\Http\Controllers\Controller;
 use Webkul\User\Models\Admin;
 use Webkul\User\Models\SellerWalletTransaction;
+use Webkul\Notification\Repositories\NotificationRepository;
 
 class SellerWalletRequestController extends Controller
 {
+    public function __construct(protected NotificationRepository $notificationRepository) {}
+
     /**
      * Seller deposit / withdraw requests (pending, approved, rejected).
      */
@@ -130,6 +133,12 @@ class SellerWalletRequestController extends Controller
                 ->withErrors($e->errors());
         }
 
+        $transaction->refresh();
+
+        if ($transaction->status === SellerWalletTransaction::STATUS_REJECTED) {
+            $this->notifySellerWalletDecision($transaction, 'rejected');
+        }
+
         return redirect()
             ->route('superadmin.sales.wallet-requests.index')
             ->with('success', trans('superadmin::app.sales.wallet-requests.rejected-success'));
@@ -230,8 +239,50 @@ class SellerWalletRequestController extends Controller
                 ->withErrors($e->errors());
         }
 
+        $transaction->refresh();
+
+        if ($transaction->status === SellerWalletTransaction::STATUS_COMPLETED) {
+            $this->notifySellerWalletDecision($transaction, 'approved', $amount);
+        }
+
         return redirect()
             ->route('superadmin.sales.wallet-requests.index')
             ->with('success', trans('superadmin::app.sales.wallet-requests.approved-success'));
+    }
+
+    /**
+     * In-app notification for the seller admin when a wallet request is approved or rejected.
+     */
+    protected function notifySellerWalletDecision(SellerWalletTransaction $tx, string $decision, ?float $approvedAmount = null): void
+    {
+        if (! $tx->seller_id) {
+            return;
+        }
+
+        $isDeposit = $tx->kind === SellerWalletTransaction::KIND_DEPOSIT_REQUEST;
+        $walletTab = $isDeposit ? 'deposit' : 'withdraw';
+
+        if ($decision === 'approved') {
+            $amt = $approvedAmount ?? (float) $tx->amount;
+            $type = $isDeposit ? 'wallet_deposit_approved' : 'wallet_withdraw_approved';
+            $key = $isDeposit
+                ? 'admin::app.notifications.seller-events.deposit-approved-summary'
+                : 'admin::app.notifications.seller-events.withdraw-approved-summary';
+            $summary = __($key, ['amount' => number_format($amt, 2)]);
+        } else {
+            $type = $isDeposit ? 'wallet_deposit_rejected' : 'wallet_withdraw_rejected';
+            $key = $isDeposit
+                ? 'admin::app.notifications.seller-events.deposit-rejected-summary'
+                : 'admin::app.notifications.seller-events.withdraw-rejected-summary';
+            $summary = __($key);
+        }
+
+        $this->notificationRepository->createForSellerAdmin([
+            'type' => $type,
+            'seller_id' => (int) $tx->seller_id,
+            'summary' => $summary,
+            'action_route' => 'admin.wallet.index',
+            'action_params' => ['wallet_type' => $walletTab],
+        ]);
     }
 }

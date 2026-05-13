@@ -2,27 +2,43 @@
 
 namespace Webkul\Shop\Http\Controllers;
 
+use Illuminate\Support\Collection;
 use Illuminate\View\View;
 use Webkul\Attribute\Repositories\AttributeFamilyRepository;
+use Webkul\Customer\Repositories\CompareItemRepository;
+use Webkul\Product\Repositories\ProductRepository;
 
 class CompareController extends Controller
 {
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
-    public function __construct(protected AttributeFamilyRepository $attributeFamilyRepository) {}
+    public function __construct(
+        protected AttributeFamilyRepository $attributeFamilyRepository,
+        protected CompareItemRepository $compareItemRepository,
+        protected ProductRepository $productRepository
+    ) {}
 
     /**
-     * Address route index page.
-     *
-     * @return View
+     * Compare page (server-rendered products for logged-in customers; guests use localStorage + fetch).
      */
-    public function index()
+    public function index(): View
     {
         $comparableAttributes = $this->attributeFamilyRepository->getComparableAttributesBelongsToFamily();
 
-        return view('shop::compare.index', compact('comparableAttributes'));
+        $compareProducts = new Collection;
+
+        if ($customer = auth()->guard('customer')->user()) {
+            $productIds = $this->compareItemRepository
+                ->findByField('customer_id', $customer->id)
+                ->pluck('product_id')
+                ->filter()
+                ->unique()
+                ->values()
+                ->all();
+
+            if (count($productIds)) {
+                $compareProducts = $this->productRepository->whereIn('id', $productIds)->get();
+            }
+        }
+
+        return view('shop::compare.index', compact('comparableAttributes', 'compareProducts'));
     }
 }

@@ -9,6 +9,34 @@
         @include('shop::products.view.gallery-html')
 
         <div class="relative max-w-[590px] max-1180:w-full max-1180:max-w-full max-1180:px-5 max-sm:px-4">
+            @if (session()->has('success'))
+                <div role="status" class="mb-6 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            @if (session()->has('warning'))
+                <div role="alert" class="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                    {{ session('warning') }}
+                </div>
+            @endif
+
+            @if (session()->has('error'))
+                <div role="alert" class="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">
+                    {{ session('error') }}
+                </div>
+            @endif
+
+            @if ($errors->any())
+                <div role="alert" class="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">
+                    <ul class="list-disc space-y-1 pl-4">
+                        @foreach ($errors->all() as $message)
+                            <li>{{ $message }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             {!! view_render_event('bagisto.shop.products.name.before', ['product' => $product]) !!}
 
             <header class="flex justify-between gap-4">

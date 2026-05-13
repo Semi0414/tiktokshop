@@ -1,10 +1,13 @@
 <!-- Refund Vue Component -->
 <v-create-refund>
-    <div class="transparent-button px-1 py-1.5 hover:bg-gray-200 dark:text-white dark:hover:bg-gray-800">
-        <span class="icon-cancel text-2xl"></span>
+    <button
+        type="button"
+        class="transparent-button inline-flex items-center gap-1 px-1 py-1.5 hover:bg-gray-200 dark:text-white dark:hover:bg-gray-800"
+    >
+        <span class="icon-cancel text-2xl" aria-hidden="true"></span>
 
         @lang('admin::app.sales.orders.view.refund')
-    </div>
+    </button>
 </v-create-refund>
 
 @pushOnce('scripts')
@@ -13,19 +16,15 @@
         id="v-create-refund-template"
     >
         <div>
-            <div
-                class="transparent-button px-1 py-1.5 hover:bg-gray-200 dark:text-white dark:hover:bg-gray-800"
+            <button
+                type="button"
+                class="transparent-button inline-flex items-center gap-1 px-1 py-1.5 hover:bg-gray-200 dark:text-white dark:hover:bg-gray-800"
                 @click="$refs.refund.open()"
             >
-                <span
-                    class="icon-cancel text-2xl"
-                    role="presentation"
-                    tabindex="0"
-                >
-                </span>
+                <span class="icon-cancel text-2xl" aria-hidden="true"></span>
 
                 @lang('admin::app.sales.orders.view.refund')
-            </div>
+            </button>
 
             <!-- refund Create Drawer -->
             <x-admin::form
@@ -46,12 +45,13 @@
                                     <!-- Update Quantity Button -->
 
                                     @if (bouncer()->hasPermission('sales.refunds.create'))
-                                        <div
-                                            class="transparent-button hover:bg-gray-200 dark:hover:bg-gray-800"
+                                        <button
+                                            type="button"
+                                            class="transparent-button hover:bg-gray-200 dark:text-white dark:hover:bg-gray-800"
                                             @click="updateTotals"
                                         >
                                             @lang('admin::app.sales.refunds.create.update-totals-btn')
-                                        </div>
+                                        </button>
 
                                         <!-- Refund Submit Button -->
                                         <button
@@ -79,10 +79,14 @@
                                                     <img
                                                         class="relative h-[60px] max-h-[60px] w-full max-w-[60px] rounded"
                                                         src="{{ $item->product->base_image_url }}"
+                                                        alt=""
                                                     >
                                                 @else
                                                     <div class="relative h-[60px] max-h-[60px] w-full max-w-[60px] rounded border border-dashed border-gray-300 dark:border-gray-800 dark:mix-blend-exclusion dark:invert">
-                                                        <img src="{{ bagisto_asset('images/product-placeholders/front.svg') }}">
+                                                        <img
+                                                            src="{{ bagisto_asset('images/product-placeholders/front.svg') }}"
+                                                            alt=""
+                                                        >
 
                                                         <p class="absolute bottom-1.5 w-full text-center text-[6px] font-semibold text-gray-400">
                                                             @lang('admin::app.sales.invoices.view.product-image')
@@ -156,7 +160,7 @@
                                             </div>
                                         </div>
 
-                                        <div class="justify-between gap-2.5 border-b border-slate-300 pb-4 dark:border-gray-800">
+                                        <div class="flex flex-col justify-between gap-2.5 border-b border-slate-300 pb-4 dark:border-gray-800 sm:flex-row sm:items-start">
                                             <!-- Information -->
                                             <div class="flex justify-between">
                                                 <!-- Quantity to Refund -->

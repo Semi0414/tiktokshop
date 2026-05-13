@@ -108,6 +108,15 @@
             z-index: 1;
         }
 
+        /* Tawk.to: same widget as storefront; keep above admin header / drawers / modals. */
+        iframe[src*="tawk.to"],
+        iframe[src*="tawk"],
+        #tawkchat-minified-container,
+        #tawkchat-container,
+        .tawk-min-container {
+            z-index: 200000 !important;
+        }
+
         /**
          * Seller “Add to store” bulk modal: must sit above header (z-10001) and ignore #app overflow.
          * Uses !important so no parent flex/clip wins.
@@ -215,6 +224,8 @@
     {!! view_render_event('bagisto.admin.layout.vue-app-mount.before') !!}
 
     {!! view_render_event('bagisto.admin.layout.vue-app-mount.after') !!}
+
+    @include('admin::components.layouts.embed-tawk')
 </body>
 
 </html>

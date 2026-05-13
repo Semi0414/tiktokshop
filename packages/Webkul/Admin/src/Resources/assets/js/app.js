@@ -168,12 +168,28 @@ function mountBagistoVue() {
         return;
     }
 
+    /**
+     * Blade @stack('scripts') modules may run after this bundle is parsed but before mount.
+     * Let them register route-local components (e.g. v-notification-list) synchronously here.
+     */
+    window.dispatchEvent(
+        new CustomEvent("bagisto-admin-before-mount", { bubbles: false })
+    );
+
     window.app.mount("#app");
     window.__bagistoVueMounted = true;
 }
 
-setTimeout(() => {
-    mountBagistoVue();
-}, 0);
+function scheduleMountBagistoVue() {
+    requestAnimationFrame(function () {
+        setTimeout(mountBagistoVue, 0);
+    });
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', scheduleMountBagistoVue);
+} else {
+    scheduleMountBagistoVue();
+}
 
 export default app;

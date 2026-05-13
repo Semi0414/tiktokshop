@@ -6,28 +6,7 @@
         /**
          * Seller sidebar: TikTok-style menu (reference layout).
          */
-        $allowedMenuKeys = [
-            'dashboard',
-            'sales',
-            'financial_statement',
-            'wallet',
-            'fund_record',
-            'product_management',
-            'product_management.store_products',
-            'product_management.refunds',
-            'product_management.reviews',
-            'product_management.warehouse',
-            'product_management.catalog_products',
-            'others',
-            'others.cms',
-            'others.reporting',
-            'marketing-tools',
-            'marketing-tools.store-upgrade',
-            'marketing-tools.seller-level',
-            'seller_purchase_history',
-            'seller_store_upgrade',
-            'seller_level',
-        ];
+        $allowedMenuKeys = config('seller-panel.sidebar_allowed_menu_keys', []);
 
         $sellerUser = auth()->guard('admin')->user();
         $shopOrderBadgeCount = 0;

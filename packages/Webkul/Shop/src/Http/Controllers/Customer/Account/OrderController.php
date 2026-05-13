@@ -6,6 +6,7 @@ use Illuminate\Http\Response;
 use Illuminate\View\View;
 use Webkul\Checkout\Facades\Cart;
 use Webkul\Core\Traits\PDFHandler;
+use Webkul\Sales\Models\Order;
 use Webkul\Sales\Repositories\InvoiceRepository;
 use Webkul\Sales\Repositories\OrderRepository;
 use Webkul\Shop\DataGrids\OrderDataGrid;
@@ -36,7 +37,16 @@ class OrderController extends Controller
             return datagrid(OrderDataGrid::class)->process();
         }
 
-        return view('shop::customers.account.orders.index');
+        $perPage = max(5, min(100, (int) request('pagination.per_page', 10)));
+
+        $orders = Order::query()
+            ->with('seller')
+            ->where('customer_id', auth()->guard('customer')->id())
+            ->orderByDesc('created_at')
+            ->paginate($perPage)
+            ->withQueryString();
+
+        return view('shop::customers.account.orders.index', compact('orders'));
     }
 
     /**
@@ -54,7 +64,13 @@ class OrderController extends Controller
 
         abort_if(! $order, 404);
 
-        $order->loadMissing('seller');
+        $order->loadMissing([
+            'seller',
+            'items',
+            'invoices.items',
+            'shipments.items',
+            'refunds.items',
+        ]);
 
         return view('shop::customers.account.orders.view', compact('order'));
     }

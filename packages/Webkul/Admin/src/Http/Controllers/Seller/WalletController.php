@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Webkul\Admin\Http\Controllers\Controller;
+use Webkul\Notification\Repositories\NotificationRepository;
 use Webkul\SuperAdmin\Models\CryptoPayoutAddress;
 use Webkul\User\Models\Admin;
 use Webkul\User\Models\SellerDepositMethodConfig;
@@ -16,6 +17,8 @@ use Webkul\User\Models\SellerWalletTransaction;
 
 class WalletController extends Controller
 {
+    public function __construct(protected NotificationRepository $notificationRepository) {}
+
     /**
      * Display wallet balance + recent transactions.
      */
@@ -152,6 +155,14 @@ class WalletController extends Controller
             'balance_after' => $balance,
         ]);
 
+        $this->notificationRepository->createForSellerAdmin([
+            'type' => 'wallet_deposit_request',
+            'seller_id' => $seller->id,
+            'summary' => __('admin::app.notifications.seller-events.deposit-request-summary'),
+            'action_route' => 'admin.wallet.index',
+            'action_params' => ['wallet_type' => 'deposit'],
+        ]);
+
         return back()->with('success', __('admin::app.seller.wallet.deposit-request-success'));
     }
 
@@ -242,6 +253,14 @@ class WalletController extends Controller
         } catch (ValidationException $e) {
             return back()->withErrors($e->errors());
         }
+
+        $this->notificationRepository->createForSellerAdmin([
+            'type' => 'wallet_withdraw_request',
+            'seller_id' => $seller->id,
+            'summary' => __('admin::app.notifications.seller-events.withdraw-request-summary'),
+            'action_route' => 'admin.wallet.index',
+            'action_params' => ['wallet_type' => 'withdraw'],
+        ]);
 
         return back()->with('success', __('admin::app.seller.wallet.withdraw-request-success'));
     }

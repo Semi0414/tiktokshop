@@ -5,25 +5,29 @@
 <header class="sticky top-0 z-[10001] flex items-center justify-between border-b bg-white px-2 py-2 dark:border-gray-800 dark:bg-gray-900 sm:px-4 sm:py-2.5">
     <div class="flex items-center gap-1 sm:gap-1.5">
         <!-- Hamburger Menu -->
-        <i
-            class="icon-menu cursor-pointer rounded-md p-1.5 text-xl hover:bg-gray-100 dark:hover:bg-gray-950 lg:hidden sm:text-2xl"
+        <button
+            type="button"
+            class="icon-menu inline-flex cursor-pointer items-center justify-center rounded-md p-1.5 text-xl text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-950 lg:hidden sm:text-2xl"
             onclick="openAdminMobileSidebar()"
+            aria-label="Menu"
         >
-        </i>
+        </button>
 
         <!-- Logo -->
         <a href="{{ route('admin.dashboard.index') }}" class="flex-shrink-0">
             @if ($logo = core()->getConfigData('general.design.admin_logo.logo_image'))
                 <img
-                    class="h-8 w-auto sm:h-10"
                     src="{{ Storage::url($logo) }}"
+                    id="logo-image"
                     alt="{{ config('app.name') }}"
+                    class="h-8 w-auto sm:h-10"
                 />
             @else
                 <img
                     src="{{ request()->cookie('dark_mode') ? bagisto_asset('images/dark-logo.svg') : bagisto_asset('images/logo.svg') }}"
                     class="h-8 w-auto sm:h-10"
                     id="logo-image"
+                    data-theme-swap="1"
                     alt="{{ config('app.name') }}"
                 />
             @endif
@@ -43,87 +47,161 @@
         </v-mega-search>
     </div>
 
-    <div class="flex items-center gap-1 sm:gap-2.5">
-        <!-- Dark mode Switcher -->
-        <v-dark>
-            <div class="flex">
-                <span
-                    class="{{ request()->cookie('dark_mode') ? 'icon-light' : 'icon-dark' }} cursor-pointer rounded-md p-1.5 text-xl transition-all hover:bg-gray-100 dark:hover:bg-gray-950 sm:text-2xl"
-                ></span>
-            </div>
-        </v-dark>
-
-        <!-- Visit Shop Link -->
-        <a 
-            href="{{ route('shop.tiktok-store.index') }}" 
-            target="_blank"
-            class="hidden sm:flex"
+    <div class="flex shrink-0 items-center gap-1 sm:gap-2.5">
+        {{-- Native controls (no Vue): theme, notifications, profile always visible --}}
+        <button
+            type="button"
+            id="admin-header-theme-toggle"
+            class="inline-flex cursor-pointer items-center justify-center rounded-md p-1.5 text-xl text-gray-600 transition-all hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-950 sm:text-2xl"
+            title="@lang('admin::app.components.layouts.header.toggle-theme')"
+            aria-label="@lang('admin::app.components.layouts.header.toggle-theme')"
         >
-            <span 
-                class="icon-store cursor-pointer rounded-md p-1.5 text-xl transition-all hover:bg-gray-100 dark:hover:bg-gray-950 sm:text-2xl"
-                title="@lang('admin::app.components.layouts.header.visit-shop')"
-            >
-            </span>
+            <span
+                id="admin-header-theme-toggle-icon"
+                class="{{ request()->cookie('dark_mode') ? 'icon-light' : 'icon-dark' }}"
+            ></span>
+        </button>
+
+        <!-- Visit Shop (store) — visible on all breakpoints -->
+        <a
+            href="{{ route('shop.tiktok-store.index') }}"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center justify-center rounded-md p-1.5 text-xl text-gray-600 transition-all hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-950 sm:text-2xl"
+            title="@lang('admin::app.components.layouts.header.visit-shop')"
+        >
+            <span class="icon-store" aria-hidden="true"></span>
+            <span class="sr-only">@lang('admin::app.components.layouts.header.visit-shop')</span>
         </a>
 
-       <!-- Notification Component -->
-        <v-notifications {{ $attributes }}>
-            <span class="relative flex">
-                <span 
-                    class="icon-notification cursor-pointer rounded-md p-1.5 text-xl transition-all hover:bg-gray-100 dark:hover:bg-gray-950 sm:text-2xl" 
-                    title="@lang('admin::app.components.layouts.header.notifications')"
-                >
-                </span>
-            </span>
-        </v-notifications>
+        <a
+            href="{{ route('admin.notification.index') }}"
+            class="inline-flex items-center justify-center rounded-md p-1.5 text-xl text-gray-600 transition-all hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-950 sm:text-2xl"
+            title="@lang('admin::app.components.layouts.header.notifications')"
+        >
+            <span class="icon-notification" aria-hidden="true"></span>
+            <span class="sr-only">@lang('admin::app.components.layouts.header.notifications')</span>
+        </a>
 
-        <!-- Admin profile -->
-        <x-admin::dropdown position="bottom-{{ core()->getCurrentLocale()->direction === 'ltr' ? 'right' : 'left' }}">
-            <x-slot:toggle>
+        <!-- Admin profile (native <details>, no Vue dropdown) -->
+        <details class="admin-header-profile relative z-[10002]">
+            <summary
+                class="flex cursor-pointer list-none items-center justify-center rounded-full outline-none ring-offset-2 hover:opacity-90 focus-visible:ring-2 focus-visible:ring-blue-500"
+            >
                 @if ($admin->image)
-                    <button class="flex h-8 w-8 cursor-pointer overflow-hidden rounded-full hover:opacity-80 focus:opacity-80 sm:h-9 sm:w-9">
+                    <span class="flex h-8 w-8 overflow-hidden rounded-full border border-gray-200 bg-white sm:h-9 sm:w-9 dark:border-gray-700">
                         <img
                             src="{{ $admin->image_url }}"
                             class="h-full w-full object-cover"
+                            alt=""
                         />
-                    </button>
+                    </span>
                 @else
-                    <button class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-blue-400 text-xs font-semibold leading-6 text-white transition-all hover:bg-blue-500 focus:bg-blue-500 sm:h-9 sm:w-9 sm:text-sm">
-                        {{ substr($admin->name, 0, 1) }}
-                    </button>
+                    <span class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-400 text-xs font-semibold text-white sm:h-9 sm:w-9 sm:text-sm">
+                        {{ mb_substr($admin->name, 0, 1) }}
+                    </span>
                 @endif
-            </x-slot>
+            </summary>
 
-            <!-- Admin Dropdown -->
-            <x-slot:content class="!p-0">
-                <div class="grid gap-1 pb-2.5">
-                    <a
-                        class="cursor-pointer px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-950 sm:px-5 sm:text-base"
-                        href="{{ route('admin.account.edit') }}"
-                    >
-                        @lang('admin::app.components.layouts.header.my-account')
-                    </a>
+            <div
+                class="absolute mt-2 min-w-[200px] rounded-md border border-gray-200 bg-white py-1 shadow-lg ltr:right-0 rtl:left-0 dark:border-gray-700 dark:bg-gray-900"
+                role="menu"
+            >
+                <a
+                    class="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-950 sm:px-5 sm:text-base"
+                    href="{{ route('admin.account.edit') }}"
+                >
+                    @lang('admin::app.components.layouts.header.my-account')
+                </a>
 
-                    <!--Admin logout-->
-                    <x-admin::form
-                        method="DELETE"
-                        action="{{ route('admin.session.destroy') }}"
-                        id="adminLogout"
-                    >
-                    </x-admin::form>
-
-                    <a
-                        class="cursor-pointer px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-950 sm:px-5 sm:text-base"
-                        href="{{ route('admin.session.destroy') }}"
-                        onclick="event.preventDefault(); document.getElementById('adminLogout').submit();"
+                <form
+                    method="POST"
+                    action="{{ route('admin.session.destroy') }}"
+                    class="m-0 border-t border-gray-100 dark:border-gray-800"
+                >
+                    @csrf
+                    @method('DELETE')
+                    <button
+                        type="submit"
+                        class="w-full cursor-pointer px-4 py-2 text-left text-sm text-gray-800 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-950 sm:px-5 sm:text-base"
                     >
                         @lang('admin::app.components.layouts.header.logout')
-                    </a>
-                </div>
-            </x-slot>
-        </x-admin::dropdown>
+                    </button>
+                </form>
+            </div>
+        </details>
     </div>
 </header>
+
+<style>
+    .admin-header-profile > summary::-webkit-details-marker {
+        display: none;
+    }
+    .admin-header-profile > summary::marker {
+        display: none;
+        content: '';
+    }
+</style>
+
+<script>
+    (function adminHeaderNativeTheme() {
+        function applyAdminTheme(isDark) {
+            var expiry = new Date();
+            expiry.setMonth(expiry.getMonth() + 1);
+            document.cookie = 'dark_mode=' + (isDark ? 1 : 0) + '; path=/; expires=' + expiry.toUTCString();
+            document.documentElement.classList.toggle('dark', !!isDark);
+
+            var icon = document.getElementById('admin-header-theme-toggle-icon');
+            if (icon) {
+                icon.className = isDark ? 'icon-light' : 'icon-dark';
+            }
+
+            var logo = document.getElementById('logo-image');
+            if (logo && logo.dataset.themeSwap === '1') {
+                logo.src = isDark
+                    ? @json(bagisto_asset('images/dark-logo.svg'))
+                    : @json(bagisto_asset('images/logo.svg'));
+            }
+
+            try {
+                if (window.emitter && typeof window.emitter.emit === 'function') {
+                    window.emitter.emit('change-theme', isDark ? 'dark' : 'light');
+                }
+            } catch (e) {}
+        }
+
+        var btn = document.getElementById('admin-header-theme-toggle');
+        if (!btn) {
+            return;
+        }
+
+        btn.addEventListener('click', function () {
+            var next = document.documentElement.classList.contains('dark') ? 0 : 1;
+            applyAdminTheme(next);
+        });
+
+        document.querySelectorAll('.admin-header-profile').forEach(function (el) {
+            el.addEventListener('toggle', function () {
+                if (!this.open) {
+                    return;
+                }
+                document.querySelectorAll('.admin-header-profile[open]').forEach(function (other) {
+                    if (other !== el) {
+                        other.removeAttribute('open');
+                    }
+                });
+            });
+        });
+
+        document.addEventListener('click', function (e) {
+            document.querySelectorAll('.admin-header-profile[open]').forEach(function (el) {
+                if (!el.contains(e.target)) {
+                    el.removeAttribute('open');
+                }
+            });
+        });
+    })();
+</script>
 
 <!-- HTML Mobile Sidebar Fallback -->
 <div
@@ -141,17 +219,8 @@
         <button type="button" onclick="closeAdminMobileSidebar()" style="border:none; background:transparent; font-size:24px; line-height:1; cursor:pointer;">&times;</button>
     </div>
 
-    <nav style="padding:10px;">
-        @foreach (menu()->getItems('admin') as $menuItem)
-            <a
-                href="{{ $menuItem->getUrl() }}"
-                style="display:flex; align-items:center; gap:8px; padding:10px; margin-bottom:6px; border-radius:8px; text-decoration:none; color:#374151; background:{{ $menuItem->isActive() ? '#eff6ff' : 'transparent' }};"
-                onclick="closeAdminMobileSidebar()"
-            >
-                <span class="{{ $menuItem->getIcon() }}" style="font-size:20px;"></span>
-                <span style="font-size:14px; font-weight:600;">{{ $menuItem->getName() }}</span>
-            </a>
-        @endforeach
+    <nav class="p-2.5">
+        <x-admin::layouts.mobile-nav-menu />
     </nav>
 </aside>
 
@@ -168,51 +237,24 @@
                 <img
                     src="{{ Storage::url($logo) }}"
                     class="h-8 w-auto sm:h-10"
+                    id="logo-image-drawer"
                     alt="{{ config('app.name') }}"
                 />
             @else
                 <img
                     src="{{ request()->cookie('dark_mode') ? bagisto_asset('images/dark-logo.svg') : bagisto_asset('images/logo.svg') }}"
                     class="h-8 w-auto sm:h-10"
-                    id="logo-image"
+                    id="logo-image-drawer"
                     alt="{{ config('app.name') }}"
                 />
             @endif
         </div>
     </x-slot>
 
-    <!-- Drawer Content -->
     <x-slot:content class="p-3 sm:p-4">
         <div class="journal-scroll h-[calc(100vh-100px)] overflow-auto">
             <nav class="grid w-full gap-1.5 sm:gap-2">
-                <!-- Navigation Menu -->
-                @foreach (menu()->getItems('admin') as $menuItem)
-                    <div class="group/item relative">
-                        <a
-                            href="{{ $menuItem->getUrl() }}"
-                            class="flex items-center gap-2 p-1.5 cursor-pointer hover:rounded-lg {{ $menuItem->isActive() == 'active' ? 'bg-blue-600 rounded-lg' : ' hover:bg-gray-100 hover:dark:bg-gray-950' }} peer sm:gap-2.5"
-                        >
-                            <span class="{{ $menuItem->getIcon() }} text-xl {{ $menuItem->isActive() ? 'text-white' : ''}} sm:text-2xl"></span>
-                            
-                            <p class="font-semibold text-gray-600 dark:text-gray-300 whitespace-nowrap text-sm group-[.sidebar-collapsed]/container:hidden {{ $menuItem->isActive() ? 'text-white' : ''}} sm:text-base">
-                                {{ $menuItem->getName() }}
-                            </p>
-                        </a>
-
-                        @if ($menuItem->haveChildren())
-                            <div class="{{ $menuItem->isActive() ? ' !grid bg-gray-100 dark:bg-gray-950' : '' }} hidden min-w-[180px] ltr:pl-8 rtl:pr-8 pb-2 rounded-b-lg z-[100] sm:ltr:pl-10 sm:rtl:pr-10">
-                                @foreach ($menuItem->getChildren() as $subMenuItem)
-                                    <a
-                                        href="{{ $subMenuItem->getUrl() }}"
-                                        class="text-xs text-{{ $subMenuItem->isActive() ? 'blue':'gray' }}-600 dark:text-{{ $subMenuItem->isActive() ? 'blue':'gray' }}-300 whitespace-nowrap py-1 group-[.sidebar-collapsed]/container:px-4 group-[.sidebar-collapsed]/container:py-2 group-[.inactive]/item:px-4 group-[.inactive]/item:py-2 hover:text-blue-600 dark:hover:bg-gray-950 sm:text-sm sm:group-[.sidebar-collapsed]/container:px-5 sm:group-[.sidebar-collapsed]/container:py-2.5 sm:group-[.inactive]/item:px-5 sm:group-[.inactive]/item:py-2.5"
-                                    >
-                                        {{ $subMenuItem->getName() }}
-                                    </a>
-                                @endforeach
-                            </div>
-                        @endif
-                    </div>
-                @endforeach
+                <x-admin::layouts.mobile-nav-menu />
             </nav>
         </div>
     </x-slot>
@@ -533,20 +575,25 @@
         <x-admin::dropdown position="bottom-{{ core()->getCurrentLocale()->direction === 'ltr' ? 'right' : 'left' }}">
             <!-- Notification Toggle -->
             <x-slot:toggle>
-                <span class="relative flex">
+                <button
+                    type="button"
+                    class="relative flex cursor-pointer items-center border-0 bg-transparent p-0"
+                    aria-haspopup="menu"
+                >
                     <span
-                        class="icon-notification text-red cursor-pointer rounded-md p-1.5 text-2xl transition-all hover:bg-gray-100 dark:hover:bg-gray-950" 
+                        class="icon-notification text-red cursor-pointer rounded-md p-1.5 text-2xl transition-all hover:bg-gray-100 dark:hover:bg-gray-950"
                         title="@lang('admin::app.components.layouts.header.notifications')"
+                        aria-hidden="true"
                     >
                     </span>
-                
+
                     <span
                         class="absolute -top-2 flex h-5 min-w-5 cursor-pointer items-center justify-center rounded-full bg-blue-600 p-1.5 text-[10px] font-semibold leading-[9px] text-white ltr:left-5 rtl:right-5"
                         v-if="totalUnRead"
                     >
                         @{{ totalUnRead }}
                     </span>
-                </span>
+                </button>
             </x-slot>
 
             <!-- Notification Content -->
@@ -556,38 +603,89 @@
                     @lang('admin::app.notifications.title', ['read' => 0])
                 </div>
 
-                <!-- Content -->
-                <div class="grid">
-                    <a
-                        class="flex items-start gap-1.5 border-b p-3 last:border-b-0 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-950"
-                        v-for="notification in notifications"
-                        :href="'{{ route('admin.notification.viewed_notification', ':orderId') }}'.replace(':orderId', notification.order_id)"
+                <ul
+                    class="m-0 max-h-[min(60vh,360px)] list-none overflow-y-auto p-0"
+                    role="list"
+                >
+                    <li
+                        v-for="(notification, idx) in notifications"
+                        :key="notification.id != null ? String(notification.id) : 'n-' + String(idx)"
+                        class="min-w-0 border-b border-gray-100 last:border-b-0 dark:border-gray-800"
+                        role="listitem"
                     >
-                        <!-- Notification Icon -->
-                        <span
-                            v-if="notification.order.status in notificationStatusIcon"
-                            class="h-fit"
-                            :class="notificationStatusIcon[notification.order.status]"
+                        <a
+                            v-if="notificationOpenHref(notification)"
+                            class="flex items-start gap-1.5 p-3 hover:bg-gray-50 dark:hover:bg-gray-950"
+                            :href="notificationOpenHref(notification)"
                         >
-                        </span>
+                            <span
+                                v-if="notification.summary && !notification.order_id"
+                                class="icon-information h-fit shrink-0 rounded-full bg-blue-100 text-2xl text-blue-600 dark:!text-blue-600"
+                                aria-hidden="true"
+                            >
+                            </span>
 
-                        <div class="grid">
-                            <!-- Order Id & Status -->
-                            <p class="text-gray-800 dark:text-white">
-                                #@{{ notification.order.id }}
-                                @{{ orderTypeMessages[notification.order.status] }}
-                            </p>
+                            <span
+                                v-else-if="notification.order && notification.order.status && notification.order.status in notificationStatusIcon"
+                                class="h-fit shrink-0"
+                                :class="notificationStatusIcon[notification.order.status]"
+                                aria-hidden="true"
+                            >
+                            </span>
 
-                            <!-- Created Date In humand Readable Format -->
-                            <p class="text-xs text-gray-600 dark:text-gray-300">
-                                @{{ notification.order.datetime }}
+                            <div class="grid min-w-0 flex-1">
+                                <p
+                                    v-if="notification.summary && !notification.order_id"
+                                    class="m-0 text-gray-800 dark:text-white"
+                                >
+                                    @{{ notification.summary }}
+                                </p>
+
+                                <p
+                                    v-else-if="notification.order"
+                                    class="m-0 text-gray-800 dark:text-white"
+                                >
+                                    #@{{ notification.order.id }}
+                                    @{{ orderTypeMessages[notification.order.status] ?? notification.order.status }}
+                                </p>
+
+                                <p
+                                    v-else
+                                    class="m-0 text-gray-800 dark:text-white"
+                                >
+                                    @lang('admin::app.notifications.title')
+                                </p>
+
+                                <p
+                                    v-if="notification.order && notification.order.datetime"
+                                    class="m-0 text-xs text-gray-600 dark:text-gray-300"
+                                >
+                                    @{{ notification.order.datetime }}
+                                </p>
+
+                                <p
+                                    v-else-if="notification.created_at"
+                                    class="m-0 text-xs text-gray-600 dark:text-gray-300"
+                                >
+                                    @{{ notification.created_at }}
+                                </p>
+                            </div>
+                        </a>
+
+                        <div
+                            v-else
+                            class="flex items-start gap-1.5 p-3"
+                            role="group"
+                            aria-label="@lang('admin::app.notifications.item-without-order-link')"
+                        >
+                            <p class="m-0 text-xs text-gray-600 dark:text-gray-300">
+                                @lang('admin::app.notifications.title')
                             </p>
                         </div>
-                    </a>
-                </div>
+                    </li>
+                </ul>
 
-                <!-- Footer -->
-                <div class="flex h-[47px] justify-between gap-1.5 border-t px-6 py-4 dark:border-gray-800">
+                <div class="flex h-[47px] items-center justify-between gap-1.5 border-t px-6 py-4 dark:border-gray-800">
                     <a
                         href="{{ route('admin.notification.index') }}"
                         class="cursor-pointer text-xs font-semibold text-blue-600 transition-all hover:underline"
@@ -595,20 +693,21 @@
                         @lang('admin::app.notifications.view-all')
                     </a>
 
-                    <a
-                        class="cursor-pointer text-xs font-semibold text-blue-600 transition-all hover:underline"
+                    <button
+                        type="button"
+                        class="cursor-pointer border-0 bg-transparent p-0 text-xs font-semibold text-blue-600 transition-all hover:underline disabled:cursor-not-allowed disabled:opacity-50"
                         v-if="notifications?.length"
                         @click="readAll()"
                     >
                         @lang('admin::app.notifications.read-all')
-                    </a>
+                    </button>
                 </div>
             </x-slot>
         </x-admin::dropdown>
     </script>
 
     <script type="module">
-        app.component('v-notifications', {
+        window.app.component('v-notifications', {
             template: '#v-notifications-template',
 
                 props: [
@@ -669,6 +768,7 @@
                     notificationStatusIcon() {
                         return {
                             pending: 'icon-information rounded-full bg-amber-100 text-2xl text-amber-600 dark:!text-amber-600',
+                            pending_payment: 'icon-information rounded-full bg-amber-100 text-2xl text-amber-600 dark:!text-amber-600',
                             closed: 'icon-repeat rounded-full bg-red-100 text-2xl text-red-600 dark:!text-red-600',
                             completed: 'icon-done rounded-full bg-blue-100 text-2xl text-blue-600 dark:!text-blue-600',
                             canceled: 'icon-cancel-1 rounded-full bg-red-100 text-2xl text-red-600 dark:!text-red-600',
@@ -682,6 +782,22 @@
                 },
 
                 methods: {
+                    notificationOpenHref(notification) {
+                        if (notification.open_url) {
+                            return notification.open_url;
+                        }
+
+                        if (notification.order_id) {
+                            return this.notificationHref(notification.order_id);
+                        }
+
+                        return '';
+                    },
+
+                    notificationHref(orderId) {
+                        return '{{ route('admin.notification.viewed_notification', ':orderId') }}'.replace(':orderId', String(orderId));
+                    },
+
                     getNotification() {
                         this.$axios.get('{{ route('admin.notification.get_notification') }}', {
                                 params: {
@@ -690,25 +806,28 @@
                                 }
                             })
                             .then((response) => {
-                                this.notifications = response.data.search_results.data;
-
-                                this.totalUnRead =   response.data.total_unread;
+                                const sr = response.data?.search_results;
+                                this.notifications = (sr && Array.isArray(sr.data)) ? sr.data : [];
+                                this.totalUnRead = response.data?.total_unread ?? 0;
                             })
-                            .catch(error => console.log(error))
+                            .catch(() => {
+                                this.notifications = [];
+                                this.totalUnRead = 0;
+                            });
                     },
 
                     readAll() {
                         this.$axios.post('{{ route('admin.notification.read_all') }}')
                             .then((response) => {
-                                this.notifications = response.data.search_results.data;
+                                const sr = response.data?.search_results;
+                                this.notifications = (sr && Array.isArray(sr.data)) ? sr.data : [];
+                                this.totalUnRead = response.data?.total_unread ?? 0;
 
-                                this.totalUnRead = response.data.total_unread;
-
-                            this.$emitter.emit('add-flash', { type: 'success', message: response.data.success_message });
-                        })
-                        .catch((error) => {});
+                                this.$emitter.emit('add-flash', { type: 'success', message: response.data?.success_message });
+                            })
+                            .catch(() => {});
+                    },
                 },
-            },
         });
     </script>
 
@@ -751,14 +870,20 @@
 
                     document.documentElement.classList.toggle('dark', this.isDarkMode === 1);
 
+                    const logoEl = document.getElementById('logo-image');
+
                     if (this.isDarkMode) {
                         this.$emitter.emit('change-theme', 'dark');
 
-                        document.getElementById('logo-image').src = this.dark_logo;
+                        if (logoEl && logoEl.dataset.themeSwap === '1') {
+                            logoEl.src = this.dark_logo;
+                        }
                     } else {
                         this.$emitter.emit('change-theme', 'light');
 
-                        document.getElementById('logo-image').src = this.logo;
+                        if (logoEl && logoEl.dataset.themeSwap === '1') {
+                            logoEl.src = this.logo;
+                        }
                     }
                 },
 

@@ -22,7 +22,11 @@ class Order
      */
     public function createOrder($order)
     {
-        $this->notificationRepository->create(['type' => 'order', 'order_id' => $order->id]);
+        $this->notificationRepository->create([
+            'type'      => 'order',
+            'order_id'  => $order->id,
+            'seller_id' => $order->seller_id,
+        ]);
 
         event(new CreateOrderNotification);
     }

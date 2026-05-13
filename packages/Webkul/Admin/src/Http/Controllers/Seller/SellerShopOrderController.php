@@ -5,6 +5,7 @@ namespace Webkul\Admin\Http\Controllers\Seller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Webkul\Admin\Http\Controllers\Controller;
 use Webkul\Sales\Models\Order;
 use Webkul\User\Models\Admin;
@@ -12,11 +13,15 @@ use Webkul\User\Models\SellerWalletTransaction;
 
 class SellerShopOrderController extends Controller
 {
-    public function makeOrder(Order $order): JsonResponse
+    public function makeOrder(Request $request, Order $order): JsonResponse
     {
         $seller = auth()->guard('admin')->user();
         if (! $seller instanceof Admin) {
             abort(403);
+        }
+
+        if ($err = $this->assertJsonSellerPassword($request, $seller)) {
+            return $err;
         }
 
         DB::beginTransaction();
@@ -45,9 +50,16 @@ class SellerShopOrderController extends Controller
         }
 
         $data = $request->validate([
+            'password' => 'required|string|max:255',
             'indices' => 'required|array|min:1',
             'indices.*' => 'integer|min:1',
         ]);
+
+        if (! Hash::check($data['password'], $seller->password)) {
+            return new JsonResponse([
+                'message' => trans('admin::app.account.verify-password.invalid'),
+            ], 422);
+        }
 
         $ids = array_values(array_unique(array_map('intval', $data['indices'])));
 
@@ -134,6 +146,37 @@ class SellerShopOrderController extends Controller
             $order->status = Order::STATUS_PROCESSING;
         }
         $order->save();
+
+        return null;
+    }
+
+    /**
+     * JSON make-order / bulk must send the seller account password in the body.
+     *
+     * @return JsonResponse|null Error response, or null when password is valid.
+     */
+    protected function assertJsonSellerPassword(Request $request, Admin $seller): ?JsonResponse
+    {
+        $password = $request->input('password');
+
+        if ($password === null && $request->getContent() !== '') {
+            $decoded = json_decode($request->getContent(), true);
+            if (is_array($decoded) && array_key_exists('password', $decoded)) {
+                $password = $decoded['password'];
+            }
+        }
+
+        if (! is_string($password) || $password === '') {
+            return new JsonResponse([
+                'message' => trans('admin::app.account.verify-password.required'),
+            ], 422);
+        }
+
+        if (! Hash::check($password, $seller->password)) {
+            return new JsonResponse([
+                'message' => trans('admin::app.account.verify-password.invalid'),
+            ], 422);
+        }
 
         return null;
     }

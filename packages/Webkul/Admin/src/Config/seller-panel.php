@@ -59,4 +59,24 @@ return [
         ['key' => 'product_warehouse', 'route' => 'admin.seller.product-warehouse.index', 'label' => 'admin::app.seller-panel.tabs.product-warehouse-browse'],
         ['key' => 'catalog_products', 'route' => 'admin.catalog.products.index', 'label' => 'admin::app.seller-panel.tabs.product-warehouse'],
     ],
+
+    /**
+     * Seller sidebar + mobile drawer: which admin menu keys may appear (top-level and children).
+     * Others / Marketing Tools groups are omitted from the main menu config; store upgrade & seller level stay as standalone links.
+     */
+    'sidebar_allowed_menu_keys' => [
+        'dashboard',
+        'sales',
+        'financial_statement',
+        'wallet',
+        'fund_record',
+        'product_management',
+        'product_management.store_products',
+        'product_management.refunds',
+        'product_management.reviews',
+        'product_management.warehouse',
+        'seller_purchase_history',
+        'seller_store_upgrade',
+        'seller_level',
+    ],
 ];

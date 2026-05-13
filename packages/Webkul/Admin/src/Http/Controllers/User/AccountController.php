@@ -3,10 +3,11 @@
 namespace Webkul\Admin\Http\Controllers\User;
 
 use Hash;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 use Webkul\Admin\Http\Controllers\Controller;
 
@@ -50,15 +51,13 @@ class AccountController extends Controller
 
         $this->validate(request(), [
             'name' => 'required',
-            'email' => 'email|unique:seller,email,'.$user->id,
             'password' => 'nullable|min:6|confirmed',
             'current_password' => 'required|min:6',
-            'image.*' => 'nullable|mimes:bmp,jpeg,jpg,png,webp',
+            'image' => 'nullable|mimes:bmp,jpeg,jpg,png,webp',
         ]);
 
         $data = request()->only([
             'name',
-            'email',
             'password',
             'password_confirmation',
             'current_password',
@@ -82,18 +81,15 @@ class AccountController extends Controller
         }
 
         if (request()->hasFile('image')) {
-            $data['image'] = current(request()->file('image'))->store('seller/'.$user->id);
+            $uploaded = request()->file('image');
+            $data['image'] = is_array($uploaded)
+                ? current($uploaded)->store('seller/'.$user->id)
+                : $uploaded->store('seller/'.$user->id);
         } else {
-            if (! isset($data['image'])) {
-                if (! empty($data['image'])) {
-                    Storage::delete($user->image);
-                }
-
-                $data['image'] = null;
-            } else {
-                $data['image'] = $user->image;
-            }
+            unset($data['image']);
         }
+
+        unset($data['current_password'], $data['password_confirmation']);
 
         $user->update($data);
 
@@ -104,5 +100,31 @@ class AccountController extends Controller
         session()->flash('success', trans('admin::app.account.edit.update-success'));
 
         return back();
+    }
+
+    /**
+     * JSON: verify the signed-in admin password (for sensitive seller actions).
+     */
+    public function verifyPassword(): JsonResponse
+    {
+        $validator = Validator::make(request()->all(), [
+            'password' => ['required', 'string', 'max:255'],
+        ]);
+
+        if ($validator->fails()) {
+            return new JsonResponse([
+                'message' => $validator->errors()->first('password'),
+            ], 422);
+        }
+
+        $user = auth()->guard('admin')->user();
+
+        if (! $user || ! Hash::check($validator->validated()['password'], $user->password)) {
+            return new JsonResponse([
+                'message' => trans('admin::app.account.verify-password.invalid'),
+            ], 422);
+        }
+
+        return new JsonResponse(['ok' => true]);
     }
 }

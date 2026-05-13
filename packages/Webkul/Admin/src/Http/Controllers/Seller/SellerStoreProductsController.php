@@ -17,6 +17,8 @@ use Webkul\User\Support\SellerCommissionPercentRules;
 
 class SellerStoreProductsController extends Controller
 {
+    private const MIN_ACCOUNT_AGE_DAYS_FOR_STORE_PRODUCT_REMOVAL = 90;
+
     public function index()
     {
         if (request()->ajax()) {
@@ -31,6 +33,12 @@ class SellerStoreProductsController extends Controller
             ->where('seller_id', (int) $seller->id)
             ->count();
         $commissionRule = SellerCommissionPercentRules::forLevel($seller->seller_level ?? null);
+
+        $storeProductRemovalMinAccountDays = self::MIN_ACCOUNT_AGE_DAYS_FOR_STORE_PRODUCT_REMOVAL;
+        $sellerAccountAgeDays = $seller->created_at
+            ? (int) $seller->created_at->diffInDays(now())
+            : 0;
+        $canRemoveStoreProducts = $this->sellerMayRemoveStoreProducts($seller);
 
         $debugDataGrid = app(SellerStoreProductDataGrid::class);
         $debugQuery = $debugDataGrid->prepareQueryBuilder();
@@ -54,6 +62,9 @@ class SellerStoreProductsController extends Controller
             'commissionRule',
             'storeProductsDebugPayload',
             'debugPaginator',
+            'storeProductRemovalMinAccountDays',
+            'sellerAccountAgeDays',
+            'canRemoveStoreProducts',
         ));
     }
 
@@ -306,6 +317,10 @@ class SellerStoreProductsController extends Controller
         /** @var Admin $seller */
         $seller = auth()->guard('admin')->user();
 
+        if ($msg = $this->storeProductRemovalBlockMessage($seller)) {
+            return new JsonResponse(['message' => $msg], 422);
+        }
+
         $productIds = array_map('intval', $request->input('indices', []));
 
         $deleted = SellerStoreProduct::query()
@@ -366,6 +381,19 @@ class SellerStoreProductsController extends Controller
     {
         $this->authorizeSellerStoreProduct($sellerStoreProduct);
 
+        /** @var Admin $seller */
+        $seller = auth()->guard('admin')->user();
+
+        if ($msg = $this->storeProductRemovalBlockMessage($seller)) {
+            if (request()->ajax()) {
+                return new JsonResponse(['message' => $msg], 422);
+            }
+
+            return redirect()
+                ->route('admin.seller.store-products.index')
+                ->with('error', $msg);
+        }
+
         $sellerStoreProduct->delete();
 
         if (request()->ajax()) {
@@ -384,6 +412,10 @@ class SellerStoreProductsController extends Controller
         /** @var Admin $seller */
         $seller = auth()->guard('admin')->user();
 
+        if ($msg = $this->storeProductRemovalBlockMessage($seller)) {
+            return new JsonResponse(['message' => $msg], 422);
+        }
+
         $ids = array_map('intval', $request->input('indices', []));
 
         $deleted = SellerStoreProduct::query()
@@ -401,5 +433,25 @@ class SellerStoreProductsController extends Controller
         if ((int) $sellerStoreProduct->seller_id !== (int) auth()->guard('admin')->id()) {
             abort(403);
         }
+    }
+
+    protected function sellerMayRemoveStoreProducts(Admin $seller): bool
+    {
+        return $this->storeProductRemovalBlockMessage($seller) === null;
+    }
+
+    protected function storeProductRemovalBlockMessage(Admin $seller): ?string
+    {
+        if (! $seller->created_at) {
+            return trans('admin::app.seller-panel.store-products.remove-account-age-unknown');
+        }
+
+        if ($seller->created_at->greaterThan(now()->subDays(self::MIN_ACCOUNT_AGE_DAYS_FOR_STORE_PRODUCT_REMOVAL))) {
+            return trans('admin::app.seller-panel.store-products.remove-account-age-server', [
+                'days' => self::MIN_ACCOUNT_AGE_DAYS_FOR_STORE_PRODUCT_REMOVAL,
+            ]);
+        }
+
+        return null;
     }
 }

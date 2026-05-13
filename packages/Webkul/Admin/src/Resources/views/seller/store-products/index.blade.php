@@ -123,6 +123,42 @@
             </div>
         </div>
 
+        <div
+            id="seller-store-remove-blocked-modal"
+            class="fixed inset-0 z-[10055] hidden items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="seller-store-remove-blocked-title"
+        >
+            <div class="w-1/2 min-w-0 max-w-full overflow-hidden rounded-2xl border border-amber-200/90 bg-white shadow-2xl max-sm:w-full dark:border-amber-900/50 dark:bg-slate-900">
+                <div class="border-b border-amber-100 bg-gradient-to-r from-amber-500 to-orange-600 px-5 py-4 dark:border-amber-900/40">
+                    <div class="flex items-start gap-3">
+                        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/20 text-xl text-white" aria-hidden="true">!</span>
+                        <div>
+                            <h2 id="seller-store-remove-blocked-title" class="text-lg font-semibold text-white">
+                                @lang('admin::app.seller-panel.store-products.remove-not-allowed-title')
+                            </h2>
+                            <p class="mt-1 text-sm text-amber-50">
+                                @lang('admin::app.seller-panel.store-products.remove-not-allowed-description', [
+                                    'required' => (int) ($storeProductRemovalMinAccountDays ?? 90),
+                                    'current' => (int) ($sellerAccountAgeDays ?? 0),
+                                ])
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-end border-t border-gray-100 px-5 py-4 dark:border-gray-800">
+                    <button
+                        type="button"
+                        id="seller-store-remove-blocked-close"
+                        class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
+                    >
+                        @lang('admin::app.seller-panel.store-products.remove-not-allowed-dismiss')
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <div id="seller-store-product-grid">
             @php
                 $storeRows = $storeProductsDebugPayload['data'] ?? [];
@@ -437,7 +473,7 @@
                                             Edit
                                         </button>
 
-                                        <form method="post" action="{{ route('admin.seller.store-products.destroy', ['sellerStoreProduct' => (int) ($row->ssp_id ?? 0)]) }}" onsubmit="return confirm('Remove this product from store?');">
+                                        <form method="post" action="{{ route('admin.seller.store-products.destroy', ['sellerStoreProduct' => (int) ($row->ssp_id ?? 0)]) }}" onsubmit="return window.handleStoreProductRemoveSubmit && window.handleStoreProductRemoveSubmit(event);">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="seller-btn-secondary text-xs">
@@ -475,9 +511,11 @@
         $storeProductsFrontendConfig = [
             'commission_rule' => $commissionRule ?? ['readonly' => true, 'min' => 15, 'max' => 15, 'default' => 15],
             'bulk_update_url' => route('admin.seller.store-products.bulk-update'),
+            'can_remove_products' => (bool) ($canRemoveStoreProducts ?? false),
             'messages' => [
                 'select_one' => 'Select at least one product.',
                 'remove_confirm' => 'Remove selected products from store?',
+                'remove_confirm_single' => trans('admin::app.seller-panel.store-products.remove-confirm-single'),
                 'edit_modal_error' => trans('admin::app.seller-panel.store-products.edit-modal-error'),
                 'invalid_range' => trans('admin::app.seller-panel.product-warehouse.bulk-add-invalid-range'),
             ],
@@ -496,6 +534,37 @@
                     alert(message);
                 }
             }
+
+            function closeRemovalBlockedModal() {
+                const modal = document.getElementById('seller-store-remove-blocked-modal');
+                if (!modal) {
+                    return;
+                }
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+
+            window.openStoreProductRemovalBlockedModal = function () {
+                const modal = document.getElementById('seller-store-remove-blocked-modal');
+                if (!modal) {
+                    return;
+                }
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            };
+
+            window.handleStoreProductRemoveSubmit = function (event) {
+                if (!config.can_remove_products) {
+                    event.preventDefault();
+                    window.openStoreProductRemovalBlockedModal();
+                    return false;
+                }
+                if (!confirm(config.messages?.remove_confirm_single || 'Remove this product from your store?')) {
+                    event.preventDefault();
+                    return false;
+                }
+                return true;
+            };
 
             function getEls() {
                 return {
@@ -670,6 +739,19 @@
                 const bulkRemoveForm = document.getElementById('store-products-bulk-remove-form');
                 const editButtons = Array.from(document.querySelectorAll('.store-products-edit-btn'));
                 const { close, cancel, modal, save } = getEls();
+                const removalBlockedModal = document.getElementById('seller-store-remove-blocked-modal');
+                const removalBlockedClose = document.getElementById('seller-store-remove-blocked-close');
+
+                if (removalBlockedClose) {
+                    removalBlockedClose.addEventListener('click', closeRemovalBlockedModal);
+                }
+                if (removalBlockedModal) {
+                    removalBlockedModal.addEventListener('click', function (e) {
+                        if (e.target === removalBlockedModal) {
+                            closeRemovalBlockedModal();
+                        }
+                    });
+                }
 
                 if (selectAll) {
                     selectAll.addEventListener('change', function () {
@@ -708,6 +790,12 @@
                 if (save) save.addEventListener('click', submitModal);
 
                 window.submitStoreProductsBulkRemove = function (event) {
+                    if (!config.can_remove_products) {
+                        event.preventDefault();
+                        window.openStoreProductRemovalBlockedModal && window.openStoreProductRemovalBlockedModal();
+                        return false;
+                    }
+
                     const ids = selectedIds();
 
                     if (!ids.length) {

@@ -7,31 +7,161 @@
 @php
     use Webkul\Admin\Support\SellerPanel;
     $activeKey = $active ?? SellerPanel::activeTabKey();
+    $workspaceTabsPayload = collect(SellerPanel::tabs())->map(function ($tab) {
+        $routeName = $tab['route'] ?? '';
+
+        return [
+            'key' => $tab['key'] ?? '',
+            'label' => __($tab['label'] ?? ''),
+            'href' => ($routeName && Route::has($routeName)) ? route($routeName) : '#',
+        ];
+    })->values()->all();
+    $workspaceDashboardHref = Route::has('admin.dashboard.index') ? route('admin.dashboard.index') : url('/admin');
 @endphp
 
-<div class="seller-panel-scope rounded-xl bg-[#F4F6F9] p-4 dark:bg-gray-950">
-    {{-- Workspace tabs (reference: green active pill + close icon) --}}
+<div class="seller-panel-scope max-w-full min-w-0 overflow-x-hidden rounded-xl bg-[#F4F6F9] p-3 sm:p-4 dark:bg-gray-950">
+    {{-- Recently opened workspace tabs (localStorage); × removes from list --}}
     @if ($showWorkspaceTabs)
-    <div class="mb-4 flex flex-wrap items-center gap-2 border-b border-gray-200/80 pb-3 dark:border-gray-800">
-        @foreach (SellerPanel::tabs() as $tab)
-            @php
-                $isActive = ($tab['key'] ?? '') === $activeKey;
-                $href = Route::has($tab['route'] ?? '') ? route($tab['route']) : '#';
-            @endphp
-            <a
-                href="{{ $href }}"
-                class="seller-workspace-tab inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-medium transition
-                    {{ $isActive
-                        ? 'seller-workspace-tab--active border-emerald-600 bg-emerald-500 text-white shadow-sm'
-                        : 'border-gray-200 bg-white text-gray-700 hover:border-blue-300 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200' }}"
-            >
-                <span>@lang($tab['label'] ?? '')</span>
-                @if ($isActive)
-                    <span class="text-white/90" aria-hidden="true">×</span>
-                @endif
-            </a>
-        @endforeach
-    </div>
+        <div
+            id="seller-workspace-tabs-root"
+            class="mb-4 flex flex-wrap items-center gap-2 border-b border-gray-200/80 pb-3 dark:border-gray-800"
+        ></div>
+
+        <script>
+            (function initSellerWorkspaceRecentTabs(cfg) {
+                const root = document.getElementById('seller-workspace-tabs-root');
+
+                if (!root || !cfg || !Array.isArray(cfg.tabs)) {
+                    return;
+                }
+
+                const STORAGE_KEY = 'admin_seller_workspace_recent_v1';
+                const MAX_TABS = 20;
+
+                function tabByKey(key) {
+                    return cfg.tabs.find(function (t) {
+                        return t.key === key;
+                    });
+                }
+
+                function loadKeys() {
+                    try {
+                        const raw = localStorage.getItem(STORAGE_KEY);
+                        const parsed = raw ? JSON.parse(raw) : [];
+
+                        return Array.isArray(parsed)
+                            ? parsed.filter(function (k) {
+                                  return typeof k === 'string';
+                              })
+                            : [];
+                    } catch (e) {
+                        return [];
+                    }
+                }
+
+                function saveKeys(keys) {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(keys));
+                }
+
+                function recordVisit(key) {
+                    if (!key) {
+                        return;
+                    }
+
+                    let keys = loadKeys().filter(function (k) {
+                        return k !== key;
+                    });
+
+                    keys.push(key);
+
+                    if (keys.length > MAX_TABS) {
+                        keys = keys.slice(keys.length - MAX_TABS);
+                    }
+
+                    saveKeys(keys);
+                }
+
+                function render() {
+                    root.innerHTML = '';
+                    const keys = loadKeys().filter(function (k) {
+                        return tabByKey(k);
+                    });
+
+                    keys.forEach(function (key) {
+                        const t = tabByKey(key);
+
+                        if (!t) {
+                            return;
+                        }
+
+                        const isActive = key === cfg.activeKey;
+                        const row = document.createElement('div');
+                        row.className =
+                            'seller-workspace-tab-row inline-flex max-w-full min-w-0 items-stretch overflow-hidden rounded-md border text-sm font-medium transition ' +
+                            (isActive
+                                ? 'border-emerald-600 bg-emerald-500 text-white shadow-sm'
+                                : 'border-gray-200 bg-white text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200');
+
+                        const a = document.createElement('a');
+                        a.href = t.href;
+                        a.textContent = t.label;
+                        a.className =
+                            'min-w-0 flex-1 truncate px-3 py-1.5 ' +
+                            (isActive
+                                ? 'text-white hover:text-white'
+                                : 'hover:text-blue-700 dark:hover:text-blue-300');
+
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.setAttribute('aria-label', 'Close tab');
+                        btn.textContent = '×';
+                        btn.className =
+                            'flex shrink-0 items-center justify-center px-2 py-1.5 text-base leading-none ' +
+                            (isActive
+                                ? 'text-white/90 hover:bg-emerald-600/90 hover:text-white'
+                                : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white');
+
+                        btn.addEventListener('click', function (e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+
+                            let ks = loadKeys().filter(function (k) {
+                                return k !== key;
+                            });
+
+                            saveKeys(ks);
+
+                            if (key === cfg.activeKey) {
+                                if (ks.length) {
+                                    const next = tabByKey(ks[ks.length - 1]);
+
+                                    if (next && next.href && next.href !== '#') {
+                                        window.location.assign(next.href);
+                                    } else {
+                                        window.location.assign(cfg.dashboardHref);
+                                    }
+                                } else {
+                                    window.location.assign(cfg.dashboardHref);
+                                }
+                            } else {
+                                render();
+                            }
+                        });
+
+                        row.appendChild(a);
+                        row.appendChild(btn);
+                        root.appendChild(row);
+                    });
+                }
+
+                recordVisit(cfg.activeKey);
+                render();
+            })({
+                tabs: @json($workspaceTabsPayload),
+                activeKey: @json($activeKey),
+                dashboardHref: @json($workspaceDashboardHref),
+            });
+        </script>
     @endif
 
     @if (! empty($breadcrumb) && is_array($breadcrumb))

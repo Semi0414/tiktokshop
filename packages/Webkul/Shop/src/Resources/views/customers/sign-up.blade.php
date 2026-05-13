@@ -22,14 +22,14 @@
     </x-slot>
 
     @push('styles')
-        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+        {{-- Avoid cross-origin font requests on register; use system stack + theme colors --}}
         <style>
             body:has(.bs-signup-page) main#main {
                 background: #f6f5f2 !important;
                 min-height: 100vh;
             }
             .bs-signup-page {
-                font-family: 'Outfit', sans-serif;
+                font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
                 color: #1a1a1a;
                 padding: 30px 20px;
                 display: flex;
@@ -142,7 +142,20 @@
                 border-radius: 10px !important;
                 background: #faf9f7 !important;
                 color: #1a1a1a !important;
-                font-family: 'Outfit', sans-serif !important;
+                font-family: inherit !important;
+            }
+            .bs-reg-invalid {
+                border-color: #ef4444 !important;
+                box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2) !important;
+            }
+            .bs-signup-page .bs-card input[type=checkbox].bs-reg-invalid {
+                outline: 2px solid #ef4444;
+                outline-offset: 2px;
+                box-shadow: none !important;
+            }
+            .bs-reg-highlight-target.bs-reg-invalid-wrap {
+                box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.45);
+                border-radius: 10px;
             }
             .bs-signup-page .bs-card input:focus,
             .bs-signup-page .bs-card select:focus {
@@ -178,7 +191,7 @@
                 border: none;
                 border-radius: 10px;
                 color: #fff;
-                font-family: 'Outfit', sans-serif;
+                font-family: inherit;
                 font-size: 15.5px;
                 font-weight: 600;
                 cursor: pointer;
@@ -206,7 +219,7 @@
                 align-items: center;
                 justify-content: center;
                 gap: 8px;
-                font-family: 'Outfit', sans-serif;
+                font-family: inherit;
                 font-size: 13px;
                 font-weight: 500;
                 color: #1a1a1a;
@@ -261,460 +274,11 @@
                 <p class="bs-subheading">@lang('shop::app.customers.signup-form.form-signup-text')</p>
 
                 <div class="mt-2 max-sm:mt-2">
-                <x-shop::form :action="route('shop.customers.register.store')">
-                    {!! view_render_event('bagisto.shop.customers.signup_form_controls.before') !!}
-
-                    <!-- Seller referral code -->
-                    <x-shop::form.control-group>
-                        <x-shop::form.control-group.label class="required">
-                            @lang('shop::app.customers.signup-form.referral-code')
-                        </x-shop::form.control-group.label>
-
-                        <p class="mb-2 text-sm text-zinc-500">
-                            @lang('shop::app.customers.signup-form.referral-code-hint')
-                        </p>
-
-                        <x-shop::form.control-group.control
-                            type="text"
-                            class="px-6 py-4 uppercase max-md:py-3 max-sm:py-2"
-                            name="referral_code"
-                            rules="required"
-                            :value="old('referral_code')"
-                            :label="trans('shop::app.customers.signup-form.referral-code')"
-                            :placeholder="trans('shop::app.customers.signup-form.referral-code')"
-                            :aria-label="trans('shop::app.customers.signup-form.referral-code')"
-                            aria-required="true"
-                            autocomplete="off"
-                        />
-
-                        <x-shop::form.control-group.error control-name="referral_code" />
-                    </x-shop::form.control-group>
-
-                    <!-- First Name -->
-                    <x-shop::form.control-group>
-                        <x-shop::form.control-group.label class="required">
-                            @lang('shop::app.customers.signup-form.first-name')
-                        </x-shop::form.control-group.label>
-
-                        <x-shop::form.control-group.control
-                            type="text"
-                            class="px-6 py-4 max-md:py-3 max-sm:py-2"
-                            name="first_name"
-                            rules="required"
-                            :value="old('first_name')"
-                            :label="trans('shop::app.customers.signup-form.first-name')"
-                            :placeholder="trans('shop::app.customers.signup-form.first-name')"
-                            :aria-label="trans('shop::app.customers.signup-form.first-name')"
-                            aria-required="true"
-                        />
-
-                        <x-shop::form.control-group.error control-name="first_name" />
-                    </x-shop::form.control-group>
-
-                    {!! view_render_event('bagisto.shop.customers.signup_form.first_name.after') !!}
-
-                    <!-- Last Name -->
-                    <x-shop::form.control-group>
-                        <x-shop::form.control-group.label class="required">
-                            @lang('shop::app.customers.signup-form.last-name')
-                        </x-shop::form.control-group.label>
-
-                        <x-shop::form.control-group.control
-                            type="text"
-                            class="px-6 py-4 max-md:py-3 max-sm:py-2"
-                            name="last_name"
-                            rules="required"
-                            :value="old('last_name')"
-                            :label="trans('shop::app.customers.signup-form.last-name')"
-                            :placeholder="trans('shop::app.customers.signup-form.last-name')"
-                            :aria-label="trans('shop::app.customers.signup-form.last-name')"
-                            aria-required="true"
-                        />
-
-                        <x-shop::form.control-group.error control-name="last_name" />
-                    </x-shop::form.control-group>
-
-                    {!! view_render_event('bagisto.shop.customers.signup_form.last_name.after') !!}
-
-                    <!-- Email -->
-                    <x-shop::form.control-group>
-                        <x-shop::form.control-group.label class="required">
-                            @lang('shop::app.customers.signup-form.email')
-                        </x-shop::form.control-group.label>
-
-                        <x-shop::form.control-group.control
-                            type="email"
-                            class="px-6 py-4 max-md:py-3 max-sm:py-2"
-                            name="email"
-                            rules="required|email"
-                            :value="old('email')"
-                            :label="trans('shop::app.customers.signup-form.email')"
-                            placeholder="email@example.com"
-                            :aria-label="trans('shop::app.customers.signup-form.email')"
-                            aria-required="true"
-                        />
-
-                        <x-shop::form.control-group.error control-name="email" />
-                    </x-shop::form.control-group>
-
-                    {!! view_render_event('bagisto.shop.customers.signup_form.email.after') !!}
-
-                    <!-- Phone -->
-                    <x-shop::form.control-group>
-                        <x-shop::form.control-group.label class="required">
-                            @lang('shop::app.customers.signup-form.phone')
-                        </x-shop::form.control-group.label>
-
-                        <x-shop::form.control-group.control
-                            type="text"
-                            class="px-6 py-4 max-md:py-3 max-sm:py-2"
-                            name="phone"
-                            rules="required|max:20"
-                            :value="old('phone')"
-                            :label="trans('shop::app.customers.signup-form.phone')"
-                            :placeholder="trans('shop::app.customers.signup-form.phone')"
-                            :aria-label="trans('shop::app.customers.signup-form.phone')"
-                            aria-required="true"
-                            autocomplete="tel"
-                        />
-
-                        <x-shop::form.control-group.error control-name="phone" />
-                    </x-shop::form.control-group>
-
-                    <!-- Gender -->
-                    <x-shop::form.control-group>
-                        <x-shop::form.control-group.label>
-                            Gender
-                        </x-shop::form.control-group.label>
-
-                        <x-shop::form.control-group.control
-                            type="select"
-                            class="px-6 py-4 max-md:py-3 max-sm:py-2"
-                            name="gender"
-                            :value="old('gender')"
-                            label="Gender"
-                            aria-label="Gender"
-                        >
-                            <option value="">Select</option>
-                            <option value="Male" {{ old('gender') === 'Male' ? 'selected' : '' }}>Male</option>
-                            <option value="Female" {{ old('gender') === 'Female' ? 'selected' : '' }}>Female</option>
-                            <option value="Other" {{ old('gender') === 'Other' ? 'selected' : '' }}>Other</option>
-                        </x-shop::form.control-group.control>
-
-                        <x-shop::form.control-group.error control-name="gender" />
-                    </x-shop::form.control-group>
-
-                    <!-- Date of Birth -->
-                    <x-shop::form.control-group>
-                        <x-shop::form.control-group.label>
-                            Date of Birth
-                        </x-shop::form.control-group.label>
-
-                        <x-shop::form.control-group.control
-                            type="date"
-                            class="px-6 py-4 max-md:py-3 max-sm:py-2"
-                            id="signup-dob"
-                            name="date_of_birth"
-                            :value="old('date_of_birth')"
-                            label="Date of Birth"
-                            aria-label="Date of Birth"
-                        />
-
-                        <x-shop::form.control-group.error control-name="date_of_birth" />
-                    </x-shop::form.control-group>
-
-                    <!-- Shipping address -->
-                    <div>
-                        <h2 class="bs-section-title">
-                            @lang('shop::app.customers.signup-form.shipping-section')
-                        </h2>
-
-                        <x-shop::form.control-group>
-                            <x-shop::form.control-group.label class="required">
-                                @lang('shop::app.customers.signup-form.shipping-address1')
-                            </x-shop::form.control-group.label>
-
-                            <x-shop::form.control-group.control
-                                type="text"
-                                class="px-6 py-4 max-md:py-3 max-sm:py-2"
-                                name="shipping_address1"
-                                rules="required"
-                                :value="old('shipping_address1')"
-                                :label="trans('shop::app.customers.signup-form.shipping-address1')"
-                                :placeholder="trans('shop::app.customers.signup-form.shipping-address1')"
-                                :aria-label="trans('shop::app.customers.signup-form.shipping-address1')"
-                                aria-required="true"
-                            />
-
-                            <x-shop::form.control-group.error control-name="shipping_address1" />
-                        </x-shop::form.control-group>
-
-                        <x-shop::form.control-group>
-                            <x-shop::form.control-group.label>
-                                @lang('shop::app.customers.signup-form.shipping-address2')
-                            </x-shop::form.control-group.label>
-
-                            <x-shop::form.control-group.control
-                                type="text"
-                                class="px-6 py-4 max-md:py-3 max-sm:py-2"
-                                name="shipping_address2"
-                                :value="old('shipping_address2')"
-                                :label="trans('shop::app.customers.signup-form.shipping-address2')"
-                                :placeholder="trans('shop::app.customers.signup-form.shipping-address2')"
-                                :aria-label="trans('shop::app.customers.signup-form.shipping-address2')"
-                            />
-
-                            <x-shop::form.control-group.error control-name="shipping_address2" />
-                        </x-shop::form.control-group>
-
-                        <x-shop::form.control-group>
-                            <x-shop::form.control-group.label class="required">
-                                @lang('shop::app.customers.signup-form.shipping-country')
-                            </x-shop::form.control-group.label>
-
-                            <x-shop::form.control-group.control
-                                type="select"
-                                class="px-6 py-4 max-md:py-3 max-sm:py-2"
-                                name="shipping_country"
-                                rules="required"
-                                :value="old('shipping_country')"
-                                :label="trans('shop::app.customers.signup-form.shipping-country')"
-                                :aria-label="trans('shop::app.customers.signup-form.shipping-country')"
-                                aria-required="true"
-                            >
-                                <option value="">
-                                    @lang('shop::app.customers.signup-form.select-country')
-                                </option>
-
-                                @foreach (core()->countries() as $country)
-                                    <option
-                                        value="{{ $country->code }}"
-                                        {{ old('shipping_country') === $country->code ? 'selected' : '' }}
-                                    >
-                                        {{ $country->name }}
-                                    </option>
-                                @endforeach
-                            </x-shop::form.control-group.control>
-
-                            <x-shop::form.control-group.error control-name="shipping_country" />
-                        </x-shop::form.control-group>
-
-                        <x-shop::form.control-group>
-                            <x-shop::form.control-group.label class="required">
-                                @lang('shop::app.customers.signup-form.shipping-state')
-                            </x-shop::form.control-group.label>
-
-                            <x-shop::form.control-group.control
-                                type="text"
-                                class="px-6 py-4 max-md:py-3 max-sm:py-2"
-                                name="shipping_state"
-                                rules="required"
-                                :value="old('shipping_state')"
-                                :label="trans('shop::app.customers.signup-form.shipping-state')"
-                                :placeholder="trans('shop::app.customers.signup-form.shipping-state')"
-                                :aria-label="trans('shop::app.customers.signup-form.shipping-state')"
-                                aria-required="true"
-                            />
-
-                            <x-shop::form.control-group.error control-name="shipping_state" />
-                        </x-shop::form.control-group>
-
-                        <x-shop::form.control-group>
-                            <x-shop::form.control-group.label class="required">
-                                @lang('shop::app.customers.signup-form.shipping-city')
-                            </x-shop::form.control-group.label>
-
-                            <x-shop::form.control-group.control
-                                type="text"
-                                class="px-6 py-4 max-md:py-3 max-sm:py-2"
-                                name="shipping_city"
-                                rules="required"
-                                :value="old('shipping_city')"
-                                :label="trans('shop::app.customers.signup-form.shipping-city')"
-                                :placeholder="trans('shop::app.customers.signup-form.shipping-city')"
-                                :aria-label="trans('shop::app.customers.signup-form.shipping-city')"
-                                aria-required="true"
-                            />
-
-                            <x-shop::form.control-group.error control-name="shipping_city" />
-                        </x-shop::form.control-group>
-
-                        <x-shop::form.control-group>
-                            <x-shop::form.control-group.label class="required">
-                                @lang('shop::app.customers.signup-form.shipping-postcode')
-                            </x-shop::form.control-group.label>
-
-                            <x-shop::form.control-group.control
-                                type="text"
-                                class="px-6 py-4 max-md:py-3 max-sm:py-2"
-                                name="shipping_postcode"
-                                rules="required"
-                                :value="old('shipping_postcode')"
-                                :label="trans('shop::app.customers.signup-form.shipping-postcode')"
-                                :placeholder="trans('shop::app.customers.signup-form.shipping-postcode')"
-                                :aria-label="trans('shop::app.customers.signup-form.shipping-postcode')"
-                                aria-required="true"
-                            />
-
-                            <x-shop::form.control-group.error control-name="shipping_postcode" />
-                        </x-shop::form.control-group>
-                    </div>
-
-                    <!-- Password -->
-                    <x-shop::form.control-group class="mb-6">
-                        <x-shop::form.control-group.label class="required">
-                            @lang('shop::app.customers.signup-form.password')
-                        </x-shop::form.control-group.label>
-
-                        <x-shop::form.control-group.control
-                            type="password"
-                            class="px-6 py-4 max-md:py-3 max-sm:py-2"
-                            name="password"
-                            id="signup-password-field"
-                            rules="required|min:6"
-                            :value="old('password')"
-                            :label="trans('shop::app.customers.signup-form.password')"
-                            :placeholder="trans('shop::app.customers.signup-form.password')"
-                            ref="password"
-                            :aria-label="trans('shop::app.customers.signup-form.password')"
-                            aria-required="true"
-                        />
-
-                        <x-shop::form.control-group.error control-name="password" />
-
-                        <div class="bs-pw-strength">
-                            <div class="bs-pw-bar" id="signup-bar1"></div>
-                            <div class="bs-pw-bar" id="signup-bar2"></div>
-                            <div class="bs-pw-bar" id="signup-bar3"></div>
-                            <span class="bs-pw-label" id="signup-pw-label"></span>
-                        </div>
-                    </x-shop::form.control-group>
-
-                    {!! view_render_event('bagisto.shop.customers.signup_form.password.after') !!}
-
-                    <!-- Confirm Password -->
-                    <x-shop::form.control-group>
-                        <x-shop::form.control-group.label>
-                            @lang('shop::app.customers.signup-form.confirm-pass')
-                        </x-shop::form.control-group.label>
-
-                        <x-shop::form.control-group.control
-                            type="password"
-                            class="px-6 py-4 max-md:py-3 max-sm:py-2"
-                            name="password_confirmation"
-                            rules="confirmed:@password"
-                            value=""
-                            :label="trans('shop::app.customers.signup-form.password')"
-                            :placeholder="trans('shop::app.customers.signup-form.confirm-pass')"
-                            :aria-label="trans('shop::app.customers.signup-form.confirm-pass')"
-                            aria-required="true"
-                        />
-
-                        <x-shop::form.control-group.error control-name="password_confirmation" />
-                    </x-shop::form.control-group>
-
-                    {!! view_render_event('bagisto.shop.customers.signup_form.password_confirmation.after') !!}
-
-                    <!-- Captcha -->
-                    <div class="mt-5 flex select-none items-center gap-2">
-                        <input
-                            type="checkbox"
-                            id="privacy_accepted"
-                            name="privacy_accepted"
-                            value="1"
-                            class="h-4 w-4 rounded border-zinc-300 text-navyBlue focus:ring-navyBlue"
-                        >
-
-                        <label for="privacy_accepted" class="text-sm text-zinc-600">
-                            I accept the privacy policy.
-                        </label>
-                    </div>
-
-                    <x-shop::form.control-group.error control-name="privacy_accepted" />
-
-                    @if (core()->getConfigData('customer.captcha.credentials.status'))
-                        <x-shop::form.control-group class="mt-5">
-                            {!! \Webkul\Customer\Facades\Captcha::render() !!}
-
-                            <x-shop::form.control-group.error control-name="g-recaptcha-response" />
-                        </x-shop::form.control-group>
-                    @endif
-
-                    <!-- Subscribed Button -->
-                    @if (core()->getConfigData('customer.settings.create_new_account_options.news_letter'))
-                        <div class="mb-5 flex select-none items-center gap-1.5">
-                            <input
-                                type="checkbox"
-                                name="is_subscribed"
-                                id="is-subscribed"
-                                class="peer hidden"
-                            />
-
-                            <label
-                                class="icon-uncheck peer-checked:icon-check-box cursor-pointer text-2xl text-navyBlue peer-checked:text-navyBlue"
-                                for="is-subscribed"
-                            ></label>
-
-                            <label
-                                class="cursor-pointer select-none text-base text-zinc-500 max-sm:text-sm ltr:pl-0 rtl:pr-0"
-                                for="is-subscribed"
-                            >
-                                @lang('shop::app.customers.signup-form.subscribe-to-newsletter')
-                            </label>
-                        </div>
-                    @endif
-
-                    {!! view_render_event('bagisto.shop.customers.signup_form.newsletter_subscription.after') !!}
-
-                    @if(
-                        core()->getConfigData('general.gdpr.settings.enabled')
-                        && core()->getConfigData('general.gdpr.agreement.enabled')
-                    )
-                        <div class="mb-2 flex select-none items-center gap-1.5">
-                            <x-shop::form.control-group.control
-                                type="checkbox"
-                                name="agreement"
-                                id="agreement"
-                                value="0"
-                                rules="required"
-                                for="agreement"
-                            />
-
-                            <label
-                                class="cursor-pointer select-none text-base text-zinc-500 max-sm:text-sm"
-                                for="agreement"
-                                v-pre
-                            >
-                                {{ core()->getConfigData('general.gdpr.agreement.agreement_label') }}
-                            </label>
-
-                            @if (core()->getConfigData('general.gdpr.agreement.agreement_content'))
-                                <span
-                                    class="cursor-pointer text-base text-navyBlue max-sm:text-sm"
-                                    @click="$refs.termsModal.open()"
-                                >
-                                    @lang('shop::app.customers.signup-form.click-here')
-                                </span>
-                            @endif
-                        </div>
-
-                        <x-shop::form.control-group.error control-name="agreement" />
-                    @endif
-
-                    <div class="mt-8 flex flex-col gap-4">
-                        <button
-                            class="bs-btn-submit"
-                            type="submit"
-                        >
-                            @lang('shop::app.customers.signup-form.button-title')
-                        </button>
-
-                        {!! view_render_event('bagisto.shop.customers.login_form_controls.after') !!}
-                    </div>
-
-                    {!! view_render_event('bagisto.shop.customers.signup_form_controls.after') !!}
-
-                </x-shop::form>
+                <form method="POST" action="{{ route('shop.customers.register.store') }}" id="bs-customer-register-form" novalidate>
+                    @csrf
+                    @include('shop::customers.partials.sign-up-native-form')
+                </form>
+                </div>
 
                 <div class="bs-divider">
                     <div class="bs-divider-line"></div>
@@ -778,38 +342,169 @@
                     }
                     lbl.textContent = labels[score - 1] || '';
                 }
-                function bind(scope) {
-                    if (! scope || scope.dataset.bsPwBound) {
+                function bindPwStrength(root) {
+                    var pw = root.querySelector('#reg_password');
+                    if (! pw || pw.dataset.bsPwBound) {
                         return;
                     }
-                    scope.dataset.bsPwBound = '1';
-                    scope.addEventListener('input', function (e) {
-                        var t = e.target;
-                        if (! t || (t.name !== 'password' && t.id !== 'signup-password-field')) {
-                            return;
-                        }
-                        updatePwStrength(t.value);
+                    pw.dataset.bsPwBound = '1';
+                    pw.addEventListener('input', function () {
+                        updatePwStrength(pw.value);
                     });
                 }
+                function bindPwToggles(root) {
+                    root.querySelectorAll('[data-bs-pw-toggle]').forEach(function (btn) {
+                        btn.addEventListener('click', function () {
+                            var sel = btn.getAttribute('data-bs-pw-toggle');
+                            var inp = sel ? root.querySelector(sel) : null;
+                            if (! inp) {
+                                return;
+                            }
+                            inp.type = inp.type === 'password' ? 'text' : 'password';
+                        });
+                    });
+                }
+                function clearAllRegHighlights(form) {
+                    form.querySelectorAll('.bs-reg-invalid').forEach(function (n) {
+                        n.classList.remove('bs-reg-invalid');
+                    });
+                    form.querySelectorAll('.bs-reg-invalid-wrap').forEach(function (n) {
+                        n.classList.remove('bs-reg-invalid-wrap');
+                    });
+                }
+                function markInvalidField(el) {
+                    if (! el) {
+                        return;
+                    }
+                    el.classList.add('bs-reg-invalid');
+                    var wrap = el.closest('.bs-reg-highlight-target');
+                    if (wrap) {
+                        wrap.classList.add('bs-reg-invalid-wrap');
+                    }
+                }
+                function highlightInvalid(form) {
+                    clearAllRegHighlights(form);
+                    var firstBad = null;
+                    form.querySelectorAll('input, select, textarea').forEach(function (field) {
+                        if (field.type === 'hidden' || field.type === 'submit' || field.type === 'button' || field.disabled) {
+                            return;
+                        }
+                        if (field.name === '_token' || field.name === '_method') {
+                            return;
+                        }
+                        if (! field.checkValidity()) {
+                            markInvalidField(field);
+                            if (! firstBad) {
+                                firstBad = field;
+                            }
+                        }
+                    });
+                    if (firstBad) {
+                        try {
+                            firstBad.focus({ preventScroll: true });
+                        } catch (err) {}
+                        firstBad.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                    }
+                }
+                function applyServerSignupErrors(form, keys) {
+                    if (! keys || ! keys.length) {
+                        return;
+                    }
+                    clearAllRegHighlights(form);
+                    var firstScroll = null;
+                    keys.forEach(function (name) {
+                        if (name === 'g-recaptcha-response') {
+                            var cap = document.getElementById('bs-wrap-captcha');
+                            if (cap) {
+                                cap.classList.add('bs-reg-invalid-wrap');
+                                if (! firstScroll) {
+                                    firstScroll = cap;
+                                }
+                            }
+                            return;
+                        }
+                        var el = form.querySelector('[name="' + String(name).replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"]');
+                        if (el) {
+                            markInvalidField(el);
+                            if (! firstScroll) {
+                                firstScroll = el;
+                            }
+                        }
+                    });
+                    if (firstScroll) {
+                        try {
+                            if (typeof firstScroll.focus === 'function') {
+                                firstScroll.focus({ preventScroll: true });
+                            }
+                        } catch (e2) {}
+                        firstScroll.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                    }
+                }
                 document.addEventListener('DOMContentLoaded', function () {
-                    bind(document.querySelector('.bs-signup-page'));
+                    var root = document.querySelector('.bs-signup-page');
+                    if (! root) {
+                        return;
+                    }
+                    bindPwStrength(root);
+                    bindPwToggles(root);
+                    var form = document.getElementById('bs-customer-register-form');
+                    if (form) {
+                        var serverSignupErrorKeys = @json($errors->keys());
+                        applyServerSignupErrors(form, serverSignupErrorKeys);
+
+                        form.addEventListener('input', function (e) {
+                            var t = e.target;
+                            if (t && t.matches && t.matches('input, select, textarea')) {
+                                t.classList.remove('bs-reg-invalid');
+                                var w = t.closest('.bs-reg-highlight-target');
+                                if (w) {
+                                    w.classList.remove('bs-reg-invalid-wrap');
+                                }
+                            }
+                        }, true);
+                        form.addEventListener('change', function (e) {
+                            var t = e.target;
+                            if (t && t.matches && t.matches('input, select, textarea')) {
+                                t.classList.remove('bs-reg-invalid');
+                                var w2 = t.closest('.bs-reg-highlight-target');
+                                if (w2) {
+                                    w2.classList.remove('bs-reg-invalid-wrap');
+                                }
+                            }
+                        }, true);
+
+                        form.addEventListener('submit', function (e) {
+                            clearAllRegHighlights(form);
+                            var p = form.querySelector('#reg_password');
+                            var c = form.querySelector('#reg_password_confirmation');
+                            if (p && c) {
+                                c.setCustomValidity('');
+                                if (p.value !== c.value) {
+                                    c.setCustomValidity(@json(__('Passwords do not match.')));
+                                }
+                            }
+                            if (! form.checkValidity()) {
+                                e.preventDefault();
+                                highlightInvalid(form);
+                            }
+                        });
+                    }
                 });
             })();
         </script>
     @endpush
 
-    <!-- Terms & Conditions Modal -->
-    <x-shop::modal ref="termsModal">
-        <x-slot:toggle></x-slot>
-
-        <x-slot:header class="!p-5">
-            <p>@lang('shop::app.customers.signup-form.terms-conditions')</p>
-        </x-slot>
-
-        <x-slot:content class="!p-5">
-            <div class="max-h-[500px] overflow-auto">
+    @if (core()->getConfigData('general.gdpr.settings.enabled') && core()->getConfigData('general.gdpr.agreement.enabled') && core()->getConfigData('general.gdpr.agreement.agreement_content'))
+        <dialog id="signup-terms-dlg" class="max-h-[90vh] w-full max-w-lg rounded-lg border border-zinc-200 p-0 shadow-xl backdrop:bg-black/40">
+            <div class="flex items-center justify-between border-b border-zinc-200 px-5 py-3">
+                <p class="font-semibold">@lang('shop::app.customers.signup-form.terms-conditions')</p>
+                <form method="dialog">
+                    <button type="submit" class="icon-cancel cursor-pointer border-0 bg-transparent text-2xl" aria-label="{{ __('Close') }}"></button>
+                </form>
+            </div>
+            <div class="max-h-[70vh] overflow-auto p-5 text-sm">
                 {!! core()->getConfigData('general.gdpr.agreement.agreement_content') !!}
             </div>
-        </x-slot>
-    </x-shop::modal>
+        </dialog>
+    @endif
 </x-shop::layouts>

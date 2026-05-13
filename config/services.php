@@ -88,8 +88,8 @@ return [
     ],
 
     /*
-    | Tawk.to live chat (storefront). Property + widget IDs from Tawk dashboard → Admin → Channels → Chat Widget.
-    | Override via .env. Leave empty to hide the widget.
+    | Tawk.to live chat (storefront + Webkul admin panel). Property + widget IDs from Tawk dashboard → Channels → Chat Widget.
+    | Override via .env (TAWK_PROPERTY_ID, TAWK_WIDGET_ID). Set either ID empty to hide the widget.
     */
     'tawk' => [
         'property_id' => env('TAWK_PROPERTY_ID', '69dd5769d99cf01c408cdee4'),
