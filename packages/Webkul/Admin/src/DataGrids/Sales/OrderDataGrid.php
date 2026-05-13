@@ -5,6 +5,7 @@ namespace Webkul\Admin\DataGrids\Sales;
 use Carbon\Carbon;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Webkul\DataGrid\DataGrid;
 use Webkul\Sales\Models\Order;
 use Webkul\Sales\Models\OrderAddress;
@@ -31,24 +32,31 @@ class OrderDataGrid extends DataGrid
                 $leftJoin->on('order_address_billing.order_id', '=', 'orders.id')
                     ->where('order_address_billing.address_type', OrderAddress::ADDRESS_TYPE_BILLING);
             })
-            ->leftJoin('order_payment', 'orders.id', '=', 'order_payment.order_id')
-            ->select(
-                'orders.id',
-                DB::raw('GROUP_CONCAT('.DB::getTablePrefix().'order_payment.method SEPARATOR "|") as method'),
-                'orders.increment_id',
-                'orders.base_grand_total',
-                'orders.created_at',
-                'channel_name',
-                'channel_id',
-                'status',
-                'customer_email',
-                'orders.cart_id as items',
-                'orders.seller_make_order_at',
-                DB::raw('(SELECT COALESCE(AVG(ssp.commission_percent), 0) FROM '.$prefix.'order_items oi INNER JOIN '.$prefix.'seller_store_products ssp ON oi.product_id = ssp.product_id AND ssp.seller_id = '.$prefix.'orders.seller_id WHERE oi.order_id = '.$prefix.'orders.id AND oi.parent_id IS NULL) as seller_avg_commission'),
-                DB::raw('(SELECT COALESCE(SUM(ROUND('.$prefix.'oi.base_total * ('.$prefix.'ssp.commission_percent / 100), 2)), 0) FROM '.$prefix.'order_items oi INNER JOIN '.$prefix.'seller_store_products ssp ON oi.product_id = ssp.product_id AND ssp.seller_id = '.$prefix.'orders.seller_id WHERE oi.order_id = '.$prefix.'orders.id AND oi.parent_id IS NULL) as seller_commission_expected'),
-                DB::raw('CONCAT('.DB::getTablePrefix().'orders.customer_first_name, " ", '.DB::getTablePrefix().'orders.customer_last_name) as full_name'),
-                DB::raw('CONCAT('.DB::getTablePrefix().'order_address_billing.city, ", ", '.DB::getTablePrefix().'order_address_billing.state,", ", '.DB::getTablePrefix().'order_address_billing.country) as location')
-            )
+            ->leftJoin('order_payment', 'orders.id', '=', 'order_payment.order_id');
+
+        $selectColumns = [
+            'orders.id',
+            DB::raw('GROUP_CONCAT('.DB::getTablePrefix().'order_payment.method SEPARATOR "|") as method'),
+            'orders.increment_id',
+            'orders.base_grand_total',
+            'orders.created_at',
+            'channel_name',
+            'channel_id',
+            'status',
+            'customer_email',
+            'orders.cart_id as items',
+            'orders.seller_make_order_at',
+            DB::raw('(SELECT COALESCE(AVG(ssp.commission_percent), 0) FROM '.$prefix.'order_items oi INNER JOIN '.$prefix.'seller_store_products ssp ON oi.product_id = ssp.product_id AND ssp.seller_id = '.$prefix.'orders.seller_id WHERE oi.order_id = '.$prefix.'orders.id AND oi.parent_id IS NULL) as seller_avg_commission'),
+            DB::raw('(SELECT COALESCE(SUM(ROUND('.$prefix.'oi.base_total * ('.$prefix.'ssp.commission_percent / 100), 2)), 0) FROM '.$prefix.'order_items oi INNER JOIN '.$prefix.'seller_store_products ssp ON oi.product_id = ssp.product_id AND ssp.seller_id = '.$prefix.'orders.seller_id WHERE oi.order_id = '.$prefix.'orders.id AND oi.parent_id IS NULL) as seller_commission_expected'),
+            DB::raw('CONCAT('.DB::getTablePrefix().'orders.customer_first_name, " ", '.DB::getTablePrefix().'orders.customer_last_name) as full_name'),
+            DB::raw('CONCAT('.DB::getTablePrefix().'order_address_billing.city, ", ", '.DB::getTablePrefix().'order_address_billing.state,", ", '.DB::getTablePrefix().'order_address_billing.country) as location'),
+        ];
+
+        if (Schema::hasColumn('orders', 'seller_approval_status')) {
+            $selectColumns[] = 'orders.seller_approval_status';
+        }
+
+        $queryBuilder->select($selectColumns)
             ->groupBy('orders.id');
 
         $this->addFilter('full_name', DB::raw('CONCAT('.DB::getTablePrefix().'orders.customer_first_name, " ", '.DB::getTablePrefix().'orders.customer_last_name)'));
@@ -64,8 +72,7 @@ class OrderDataGrid extends DataGrid
                 && in_array((int) $seller->role_id, $platformRoleIds, true);
 
             if (! $seeAllOrders) {
-                $queryBuilder->where('orders.seller_id', $seller->id)
-                    ->where('orders.seller_approval_status', 'approved');
+                $queryBuilder->where('orders.seller_id', $seller->id);
             }
         }
 
@@ -77,13 +84,23 @@ class OrderDataGrid extends DataGrid
             $queryBuilder->whereIn('orders.status', [
                 Order::STATUS_PENDING,
                 Order::STATUS_PENDING_PAYMENT,
-                Order::STATUS_PROCESSING,
             ]);
-        } elseif ($scope === 'purchased') {
+        } elseif ($scope === 'processing') {
+            $queryBuilder->where('orders.status', Order::STATUS_PROCESSING);
+        } elseif ($scope === 'completed') {
             $queryBuilder->whereIn('orders.status', [
                 Order::STATUS_COMPLETED,
                 Order::STATUS_CLOSED,
             ]);
+        } elseif ($scope === 'rejected') {
+            $queryBuilder->where(function ($statusQuery) {
+                $statusQuery
+                    ->where('orders.seller_approval_status', 'rejected')
+                    ->orWhereIn('orders.status', [
+                        Order::STATUS_CANCELED,
+                        Order::STATUS_FRAUD,
+                    ]);
+            });
         }
 
         $incrementId = request()->input('seller_increment_id');
@@ -125,6 +142,10 @@ class OrderDataGrid extends DataGrid
      */
     public function prepareColumns()
     {
+        $this->setSortColumn('orders.created_at');
+
+        $this->setSortOrder('desc');
+
         $this->addColumn([
             'index' => 'increment_id',
             'label' => trans('admin::app.sales.orders.index.datagrid.order-id'),
@@ -143,6 +164,32 @@ class OrderDataGrid extends DataGrid
             'sortable' => false,
             'closure' => function ($row) {
                 return $row->status;
+            },
+        ]);
+
+        $this->addColumn([
+            'index' => 'seller_can_make_order',
+            'label' => 'Seller Can Make Order',
+            'type' => 'string',
+            'visibility' => false,
+            'exportable' => false,
+            'sortable' => false,
+            'closure' => function ($row) {
+                if (! empty($row->seller_make_order_at)) {
+                    return '0';
+                }
+
+                if (isset($row->seller_approval_status) && $row->seller_approval_status === 'rejected') {
+                    return '0';
+                }
+
+                $status = (string) ($row->status ?? '');
+
+                return in_array($status, [
+                    Order::STATUS_PENDING,
+                    Order::STATUS_PENDING_PAYMENT,
+                    Order::STATUS_PROCESSING,
+                ], true) ? '1' : '0';
             },
         ]);
 
@@ -185,6 +232,10 @@ class OrderDataGrid extends DataGrid
             ],
             'sortable' => true,
             'closure' => function ($row) {
+                if (isset($row->seller_approval_status) && $row->seller_approval_status === 'rejected') {
+                    return '<p class="label-canceled">'.trans('admin::app.seller-panel.orders.status-rejected').'</p>';
+                }
+
                 switch ($row->status) {
                     case Order::STATUS_PROCESSING:
                         return '<p class="label-processing">'.trans('admin::app.sales.orders.index.datagrid.processing').'</p>';

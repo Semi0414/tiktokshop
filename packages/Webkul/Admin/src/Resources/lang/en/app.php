@@ -5214,6 +5214,7 @@ return [
             'all' => 'All Orders',
             'pending' => 'Pending',
             'purchased' => 'Purchased',
+            'status-rejected' => 'Rejected',
             'bulk-purchase' => 'Bulk Purchase',
             'bulk-purchase-no-selection' => 'Select at least one order using the checkboxes in the list, then click Bulk Purchase again.',
         ],

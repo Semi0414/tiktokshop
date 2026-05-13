@@ -1,0 +1,84 @@
+<v-flash-group ref='flashes'></v-flash-group>
+
+<?php if (! $__env->hasRenderedOnce('a2e5d59e-69cd-4daa-9e37-3bd4556f5122')): $__env->markAsRenderedOnce('a2e5d59e-69cd-4daa-9e37-3bd4556f5122');
+$__env->startPush('scripts'); ?>
+    <script
+        type="text/x-template"
+        id="v-flash-group-template"
+    >
+        <transition-group
+            tag='div'
+            name="flash-group"
+            enter-from-class="ltr:translate-x-full rtl:-translate-x-full"
+            enter-active-class="transform transition duration-200 ease-in-out"
+            enter-to-class="ltr:translate-x-0 rtl:-translate-x-0"
+            leave-from-class="ltr:translate-x-0 rtl:-translate-x-0"
+            leave-active-class="transform transition duration-200 ease-in-out"
+            leave-to-class="ltr:translate-x-full rtl:-translate-x-full"
+            class='fixed top-5 z-[10003] grid justify-items-end gap-2.5 ltr:right-5 rtl:left-5'
+        >
+            <?php if (isset($component)) { $__componentOriginal7a54256d68e11e0f8828c8cd08205374 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal7a54256d68e11e0f8828c8cd08205374 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'superadmin::components.flash-group.item','data' => []] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('superadmin::flash-group.item'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes([]); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal7a54256d68e11e0f8828c8cd08205374)): ?>
+<?php $attributes = $__attributesOriginal7a54256d68e11e0f8828c8cd08205374; ?>
+<?php unset($__attributesOriginal7a54256d68e11e0f8828c8cd08205374); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal7a54256d68e11e0f8828c8cd08205374)): ?>
+<?php $component = $__componentOriginal7a54256d68e11e0f8828c8cd08205374; ?>
+<?php unset($__componentOriginal7a54256d68e11e0f8828c8cd08205374); ?>
+<?php endif; ?>
+        </transition-group>
+    </script>
+
+    <script type="module">
+        window.app.component('v-flash-group', {
+            template: '#v-flash-group-template',
+
+            data() {
+                return {
+                    uid: 0,
+
+                    flashes: []
+                }
+            },
+
+            created() {
+                <?php $__currentLoopData = ['success', 'warning', 'error', 'info']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $key): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <?php if(session()->has($key)): ?>
+                        this.flashes.push({type: <?php echo json_encode($key, 15, 512) ?>, message: <?php echo json_encode(session($key), 15, 512) ?>, uid: this.uid++});
+                    <?php endif; ?>
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+
+                this.registerGlobalEvents();
+            },
+
+            methods: {
+                add(flash) {
+                    flash.uid = this.uid++;
+
+                    this.flashes.push(flash);
+                },
+
+                remove(flash) {
+                    let index = this.flashes.indexOf(flash);
+
+                    this.flashes.splice(index, 1);
+                },
+
+                registerGlobalEvents() {
+                    this.$emitter.on('add-flash', this.add);
+                },
+            }
+        });
+    </script>
+<?php $__env->stopPush(); endif; ?><?php /**PATH /Users/hhtraders/tiktokshop/packages/Webkul/SuperAdmin/src/Providers/../Resources/views/components/flash-group/index.blade.php ENDPATH**/ ?>

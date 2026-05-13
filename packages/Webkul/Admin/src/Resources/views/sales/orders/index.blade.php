@@ -22,10 +22,16 @@
                 @lang('admin::app.seller-panel.orders.all')
             </a>
             <a href="{{ $chipUrl('pending') }}" class="{{ $chipClass }} {{ $scope === 'pending' ? $chipActive : $chipInactive }}">
-                @lang('admin::app.seller-panel.orders.pending')
+                @lang('admin::app.sales.orders.index.datagrid.pending')
             </a>
-            <a href="{{ $chipUrl('purchased') }}" class="{{ $chipClass }} {{ $scope === 'purchased' ? $chipActive : $chipInactive }}">
-                @lang('admin::app.seller-panel.orders.purchased')
+            <a href="{{ $chipUrl('processing') }}" class="{{ $chipClass }} {{ $scope === 'processing' ? $chipActive : $chipInactive }}">
+                @lang('admin::app.sales.orders.index.datagrid.processing')
+            </a>
+            <a href="{{ $chipUrl('completed') }}" class="{{ $chipClass }} {{ $scope === 'completed' ? $chipActive : $chipInactive }}">
+                @lang('admin::app.sales.orders.index.datagrid.completed')
+            </a>
+            <a href="{{ $chipUrl('rejected') }}" class="{{ $chipClass }} {{ $scope === 'rejected' ? $chipActive : $chipInactive }}">
+                Rejected
             </a>
         </div>
 
@@ -160,24 +166,24 @@
                 </div>
             </div>
 
-            <div class="-mx-px overflow-x-auto overscroll-x-contain sm:mx-0">
+            <div id="seller-orders-table-wrap" class="-mx-px overflow-x-auto overscroll-x-contain sm:mx-0">
                 <table class="min-w-[720px] w-full divide-y divide-gray-200 dark:divide-gray-800">
                     <thead class="bg-gray-50 dark:bg-gray-900">
                         <tr>
                             <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">
                                 <input id="seller-orders-select-all" type="checkbox" class="h-4 w-4 rounded border-gray-300">
                             </th>
-                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">Order ID</th>
-                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">Date</th>
-                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">@lang('admin::app.seller.shop-order.col-age-hours')</th>
-                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">Status</th>
-                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">Grand Total</th>
-                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">Pay Via</th>
-                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">Customer</th>
-                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">Email</th>
-                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">Location</th>
-                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">Commission %</th>
-                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">Commission Amount</th>
+                            <th data-sort-column="increment_id" class="seller-sortable px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">Order ID</th>
+                            <th data-sort-column="created_at" class="seller-sortable px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">Date</th>
+                            <th data-sort-column="created_at" class="seller-sortable px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">@lang('admin::app.seller.shop-order.col-age-hours')</th>
+                            <th data-sort-column="status" class="seller-sortable px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">Status</th>
+                            <th data-sort-column="base_grand_total" class="seller-sortable px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">Grand Total</th>
+                            <th data-sort-column="method" class="seller-sortable px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">Pay Via</th>
+                            <th data-sort-column="full_name" class="seller-sortable px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">Customer</th>
+                            <th data-sort-column="customer_email" class="seller-sortable px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">Email</th>
+                            <th data-sort-column="location" class="seller-sortable px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">Location</th>
+                            <th data-sort-column="seller_commission_expected" class="seller-sortable px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">Commission %</th>
+                            <th data-sort-column="seller_commission_expected" class="seller-sortable px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">Commission Amount</th>
                             <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">Items</th>
                             <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">Action</th>
                         </tr>
@@ -193,48 +199,217 @@
                     </tbody>
                 </table>
             </div>
+            <div id="seller-orders-cards" class="grid gap-3 p-3"></div>
 
             <div id="seller-orders-table-meta" class="px-3 py-2 text-xs text-gray-500 dark:text-gray-400"></div>
+            <div
+                id="seller-orders-pagination"
+                class="flex flex-wrap items-center justify-between gap-2 border-t border-gray-200 px-3 py-2 text-xs text-gray-600 dark:border-gray-800 dark:text-gray-300"
+            ></div>
         </div>
     </x-admin::seller.panel>
 
     {{-- Dedicated password modal for shop orders only (does not depend on global script stack / shared gate) --}}
+    <style>
+        #seller-orders-table-wrap {
+            display: block;
+        }
+
+        #seller-orders-cards {
+            display: none;
+        }
+
+        @media (max-width: 767px) {
+            #seller-orders-table-wrap {
+                display: none;
+            }
+
+            #seller-orders-cards {
+                display: grid;
+            }
+        }
+
+        #seller-shop-order-pw-root {
+            position: fixed;
+            inset: 0;
+            z-index: 99990;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            background: rgba(2, 6, 23, 0.66);
+            -webkit-backdrop-filter: blur(1.5px);
+            backdrop-filter: blur(1.5px);
+        }
+
+        #seller-shop-order-pw-root:not(.hidden) {
+            display: flex;
+        }
+
+        #seller-shop-order-pw-root .ssopw-card {
+            width: min(560px, 100%);
+            border-radius: 16px;
+            border: 1px solid #d9dee8;
+            background: #ffffff;
+            box-shadow: 0 28px 55px -22px rgba(15, 23, 42, 0.5);
+            padding: 24px;
+            box-sizing: border-box;
+            font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+            color: #0f172a;
+        }
+
+        #seller-shop-order-pw-root .ssopw-title {
+            margin: 0;
+            font-size: 20px;
+            line-height: 1.35;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        #seller-shop-order-pw-root .ssopw-desc {
+            margin: 8px 0 0 0;
+            font-size: 14px;
+            line-height: 1.55;
+            color: #475569;
+        }
+
+        #seller-shop-order-pw-root .ssopw-label {
+            display: block;
+            margin-top: 18px;
+            margin-bottom: 6px;
+            font-size: 12px;
+            line-height: 1.45;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            color: #334155;
+        }
+
+        #seller-shop-order-pw-root .ssopw-input {
+            width: 100%;
+            min-height: 44px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            background: #ffffff;
+            color: #0f172a;
+            box-sizing: border-box;
+            padding: 10px 12px;
+            font-size: 14px;
+            line-height: 1.4;
+            outline: none;
+            transition: border-color 120ms ease, box-shadow 120ms ease;
+        }
+
+        #seller-shop-order-pw-root .ssopw-input:focus {
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+
+        #seller-shop-order-pw-root .ssopw-error {
+            margin-top: 8px;
+            font-size: 13px;
+            line-height: 1.45;
+            color: #dc2626;
+        }
+
+        #seller-shop-order-pw-root .ssopw-actions {
+            margin-top: 20px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        #seller-shop-order-pw-root .ssopw-btn {
+            appearance: none;
+            border: 1px solid transparent;
+            border-radius: 10px;
+            min-height: 40px;
+            padding: 9px 16px;
+            font-size: 13px;
+            line-height: 1.2;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 80ms ease, filter 120ms ease, background-color 120ms ease, border-color 120ms ease;
+        }
+
+        #seller-shop-order-pw-root .ssopw-btn:hover {
+            filter: brightness(0.98);
+        }
+
+        #seller-shop-order-pw-root .ssopw-btn:active {
+            transform: translateY(1px);
+        }
+
+        #seller-shop-order-pw-root .ssopw-btn:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        #seller-shop-order-pw-root .ssopw-btn--cancel {
+            border-color: #cbd5e1;
+            color: #334155;
+            background: #ffffff;
+        }
+
+        #seller-shop-order-pw-root .ssopw-btn--ok {
+            border-color: #4f46e5;
+            background: #4f46e5;
+            color: #ffffff;
+        }
+
+        @media (max-width: 640px) {
+            #seller-shop-order-pw-root .ssopw-card {
+                padding: 18px;
+                border-radius: 14px;
+            }
+
+            #seller-shop-order-pw-root .ssopw-actions {
+                flex-direction: column-reverse;
+            }
+
+            #seller-shop-order-pw-root .ssopw-btn {
+                width: 100%;
+            }
+        }
+    </style>
+
     <div
         id="seller-shop-order-pw-root"
-        class="fixed inset-0 z-[99990] hidden items-center justify-center bg-black/60 p-4"
+        class="hidden"
         role="dialog"
         aria-modal="true"
         aria-labelledby="seller-shop-order-pw-title"
     >
-        <div class="w-full max-w-md rounded-xl border border-gray-200 bg-white p-6 shadow-2xl dark:border-gray-700 dark:bg-gray-900">
-            <h2 id="seller-shop-order-pw-title" class="text-lg font-semibold text-gray-900 dark:text-white">
+        <div class="ssopw-card">
+            <h2 id="seller-shop-order-pw-title" class="ssopw-title">
                 @lang('admin::app.account.verify-password.title')
             </h2>
-            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+            <p class="ssopw-desc">
                 @lang('admin::app.account.verify-password.description')
             </p>
-            <label for="seller-shop-order-pw-input" class="mt-4 block text-xs font-medium text-gray-700 dark:text-gray-300">
+            <label for="seller-shop-order-pw-input" class="ssopw-label">
                 @lang('admin::app.account.verify-password.placeholder')
             </label>
             <input
                 type="password"
                 id="seller-shop-order-pw-input"
                 autocomplete="current-password"
-                class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 dark:border-gray-600 dark:bg-gray-950 dark:text-white"
+                class="ssopw-input"
             />
-            <p id="seller-shop-order-pw-err" class="mt-2 hidden text-sm text-red-600 dark:text-red-400"></p>
-            <div class="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <p id="seller-shop-order-pw-err" class="ssopw-error hidden"></p>
+            <div class="ssopw-actions">
                 <button
                     type="button"
                     id="seller-shop-order-pw-btn-cancel"
-                    class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-800"
+                    class="ssopw-btn ssopw-btn--cancel"
                 >
                     @lang('admin::app.account.verify-password.cancel')
                 </button>
                 <button
                     type="button"
                     id="seller-shop-order-pw-btn-ok"
-                    class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-60"
+                    class="ssopw-btn ssopw-btn--ok"
                 >
                     @lang('admin::app.account.verify-password.submit-password')
                 </button>
@@ -358,6 +533,9 @@
                     const msg = data.message || (res.ok ? 'OK' : 'HTTP ' + res.status);
                     sellerFlash(res.ok ? 'success' : 'error', msg);
                     if (res.ok) {
+                        try {
+                            sessionStorage.setItem('seller_order_success_flash', msg);
+                        } catch (e) {}
                         window.location.reload();
                     }
                 }
@@ -386,6 +564,9 @@
                     const msg = data.message || (res.ok ? 'OK' : 'HTTP ' + res.status);
                     sellerFlash(res.ok ? 'success' : 'error', msg);
                     if (res.ok) {
+                        try {
+                            sessionStorage.setItem('seller_order_success_flash', msg);
+                        } catch (e) {}
                         window.location.reload();
                     }
                 }
@@ -484,8 +665,11 @@
 
             (function attachSellerOrdersTable() {
                 const tableBody = document.getElementById('seller-orders-table-body');
+                const cardsBody = document.getElementById('seller-orders-cards');
                 const tableMeta = document.getElementById('seller-orders-table-meta');
+                const tablePagination = document.getElementById('seller-orders-pagination');
                 const selectAllBox = document.getElementById('seller-orders-select-all');
+                const sortableHeaders = Array.from(document.querySelectorAll('.seller-sortable[data-sort-column]'));
                 const bulkToolbar = document.getElementById('seller-orders-bulk-toolbar');
                 const selectedCount = document.getElementById('seller-orders-selected-count');
                 const selectedPrincipalEl = document.getElementById('seller-selected-principal');
@@ -502,7 +686,9 @@
 
                 if (
                     ! tableBody
+                    || ! cardsBody
                     || ! tableMeta
+                    || ! tablePagination
                     || ! selectAllBox
                     || ! bulkToolbar
                     || ! selectedCount
@@ -526,6 +712,44 @@
 
                 function formatMoney(value) {
                     return toNumber(value).toFixed(2);
+                }
+
+                function formatOrderAge(hoursRaw) {
+                    const hours = parseInt(String(hoursRaw ?? 0), 10);
+
+                    if (! Number.isFinite(hours) || hours < 0) {
+                        return '—';
+                    }
+
+                    if (hours <= 72) {
+                        return `${hours} hours`;
+                    }
+
+                    if (hours < 24 * 30) {
+                        return `${Math.floor(hours / 24)} days`;
+                    }
+
+                    if (hours < 24 * 365) {
+                        return `${Math.floor(hours / (24 * 30))} months`;
+                    }
+
+                    return `${Math.floor(hours / (24 * 365))} years`;
+                }
+
+                function showSellerSuccessToastIfAny() {
+                    try {
+                        const msg = sessionStorage.getItem('seller_order_success_flash');
+
+                        if (! msg) {
+                            return;
+                        }
+
+                        if (window.emitter && window.emitter.emit) {
+                            window.emitter.emit('add-flash', { type: 'success', message: msg });
+                        }
+
+                        sessionStorage.removeItem('seller_order_success_flash');
+                    } catch (e) {}
                 }
 
                 function updateBulkToolbar() {
@@ -559,12 +783,94 @@
                         .replace(/'/g, '&#39;');
                 }
 
+                function renderSellerOrdersPagination(meta) {
+                    const last = Math.max(1, parseInt(String(meta?.last_page ?? 1), 10) || 1);
+                    const cur = Math.min(last, Math.max(1, parseInt(String(meta?.current_page ?? 1), 10) || 1));
+                    const perPage = Math.max(1, parseInt(String(meta?.per_page ?? 10), 10) || 10);
+                    const opts = Array.isArray(meta?.per_page_options) && meta.per_page_options.length
+                        ? meta.per_page_options
+                        : [10, 20, 30, 40, 50];
+
+                    const idle = 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200';
+                    const active = 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:border-indigo-400 dark:bg-indigo-950/40 dark:text-indigo-200';
+
+                    const pageButtons = [];
+                    for (let p = 1; p <= last; p++) {
+                        const cls = p === cur ? active : idle;
+                        pageButtons.push(
+                            `<button type="button" data-seller-page="${p}" class="seller-page-btn rounded-md border px-2.5 py-1 font-medium ${cls}"${p === cur ? ' aria-current="page"' : ''}>${p}</button>`
+                        );
+                    }
+
+                    const perOpts = opts
+                        .map((n) => `<option value="${n}"${Number(n) === perPage ? ' selected' : ''}>${n}</option>`)
+                        .join('');
+
+                    tablePagination.innerHTML = `
+                        <div class="flex min-w-0 flex-1 flex-wrap items-center gap-1">
+                            <button type="button" data-seller-page="${cur - 1}" class="seller-page-btn rounded-md border px-2.5 py-1 font-medium ${idle}"${cur <= 1 ? ' disabled' : ''}>Prev</button>
+                            ${pageButtons.join('')}
+                            <button type="button" data-seller-page="${cur + 1}" class="seller-page-btn rounded-md border px-2.5 py-1 font-medium ${idle}"${cur >= last ? ' disabled' : ''}>Next</button>
+                        </div>
+                        <div class="flex shrink-0 items-center gap-2">
+                            <span class="text-gray-500 dark:text-gray-400">Per page</span>
+                            <select data-seller-per-page class="rounded-md border border-gray-200 bg-white px-2 py-1 text-xs dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200">${perOpts}</select>
+                        </div>
+                    `;
+
+                    tablePagination.querySelectorAll('button[data-seller-page]').forEach((btn) => {
+                        btn.addEventListener('click', function () {
+                            if (this.disabled) {
+                                return;
+                            }
+                            const p = parseInt(this.getAttribute('data-seller-page') || '0', 10);
+                            if (! Number.isFinite(p) || p < 1 || p > last) {
+                                return;
+                            }
+                            const params = new URLSearchParams(window.location.search);
+                            params.set('pagination[page]', String(p));
+                            window.history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`);
+                            void loadTableData();
+                        });
+                    });
+
+                    const sel = tablePagination.querySelector('select[data-seller-per-page]');
+                    if (sel) {
+                        sel.addEventListener('change', function () {
+                            const v = parseInt(this.value, 10) || 10;
+                            const params = new URLSearchParams(window.location.search);
+                            params.set('pagination[per_page]', String(v));
+                            params.set('pagination[page]', '1');
+                            window.history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`);
+                            void loadTableData();
+                        });
+                    }
+                }
+
+                function updateSortableHeaders(params) {
+                    const activeColumn = params.get('sort[column]') || '';
+                    const activeOrder = (params.get('sort[order]') || 'desc').toLowerCase();
+
+                    sortableHeaders.forEach((th) => {
+                        const col = th.getAttribute('data-sort-column') || '';
+                        th.classList.add('cursor-pointer', 'select-none');
+
+                        const icon = col === activeColumn
+                            ? (activeOrder === 'asc' ? ' ↑' : ' ↓')
+                            : ' ↕';
+
+                        const label = (th.textContent || '').replace(/\s[↑↓↕]$/, '').trim();
+                        th.textContent = `${label}${icon}`;
+                    });
+                }
+
                 async function loadTableData() {
                     tableBody.innerHTML = `
                         <tr>
                             <td colspan="14" class="px-3 py-4 text-sm text-gray-500 dark:text-gray-400">Loading...</td>
                         </tr>
                     `;
+                    tablePagination.innerHTML = '';
 
                     try {
                         const params = new URLSearchParams(window.location.search);
@@ -575,6 +881,14 @@
 
                         if (! params.has('pagination[per_page]')) {
                             params.set('pagination[per_page]', '10');
+                        }
+
+                        if (! params.has('sort[column]')) {
+                            params.set('sort[column]', 'orders.created_at');
+                        }
+
+                        if (! params.has('sort[order]')) {
+                            params.set('sort[order]', 'desc');
                         }
 
                         const response = await fetch(`${window.location.pathname}?${params.toString()}`, {
@@ -590,6 +904,7 @@
                         const records = Array.isArray(payload?.records) ? payload.records : [];
                         const meta = payload?.meta || {};
                         latestRecords = records;
+                        updateSortableHeaders(params);
 
                         if (! records.length) {
                             tableBody.innerHTML = `
@@ -602,6 +917,8 @@
                             summaryPriceEl.textContent = '0.00';
                             summaryCommissionEl.textContent = '0.00';
                             summaryPayableEl.textContent = '0.00';
+                            tablePagination.innerHTML = '';
+                            cardsBody.innerHTML = '<div class="rounded-lg border border-gray-200 bg-white p-3 text-sm text-gray-500 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300">No records available.</div>';
                             return;
                         }
 
@@ -624,8 +941,13 @@
                             const actionUrl = record?.actions?.[0]?.url || '#';
                             const orderId = Number(record.id);
                             const statusRaw = String(record.order_status_raw || '').toLowerCase();
-                            const isSelectable = ! ['completed', 'processing'].includes(statusRaw);
-                            const canMakeOrder = !record.seller_make_order_at && ['pending', 'pending_payment', 'processing'].includes(statusRaw);
+                            const hasServerFlag = Object.prototype.hasOwnProperty.call(record, 'seller_can_make_order');
+                            const canMakeOrder = hasServerFlag
+                                ? String(record.seller_can_make_order).trim() === '1'
+                                : (! record.seller_make_order_at && ['pending', 'pending_payment', 'processing'].includes(statusRaw));
+                            const isSelectable = hasServerFlag
+                                ? String(record.seller_can_make_order).trim() === '1'
+                                : (! ['completed', 'closed', 'canceled', 'fraud'].includes(statusRaw));
 
                             const makeBtn = canMakeOrder
                                 ? `<button
@@ -653,7 +975,7 @@
                                     </td>
                                     <td class="px-3 py-3 text-sm text-gray-700 dark:text-gray-200">${escapeHtml(record.increment_id)}</td>
                                     <td class="px-3 py-3 text-sm text-gray-700 dark:text-gray-200">${escapeHtml(record.created_at)}</td>
-                                    <td class="px-3 py-3 text-sm font-medium tabular-nums text-indigo-700 dark:text-indigo-300">${escapeHtml(record.order_age_hours ?? '—')}</td>
+                                    <td class="px-3 py-3 text-sm font-medium tabular-nums text-indigo-700 dark:text-indigo-300">${escapeHtml(formatOrderAge(record.order_age_hours))}</td>
                                     <td class="px-3 py-3 text-sm text-gray-700 dark:text-gray-200">${record.status || ''}</td>
                                     <td class="px-3 py-3 text-sm font-semibold text-blue-700 dark:text-blue-400">${formatMoney(record.base_grand_total)}</td>
                                     <td class="px-3 py-3 text-sm text-gray-700 dark:text-gray-200">${escapeHtml(record.method)}</td>
@@ -673,10 +995,55 @@
                             `;
                         }).join('');
 
+                        cardsBody.innerHTML = records.map((record) => {
+                            const actionUrl = record?.actions?.[0]?.url || '#';
+                            const orderId = Number(record.id);
+                            const statusRaw = String(record.order_status_raw || '').toLowerCase();
+                            const hasServerFlag = Object.prototype.hasOwnProperty.call(record, 'seller_can_make_order');
+                            const canMakeOrder = hasServerFlag
+                                ? String(record.seller_can_make_order).trim() === '1'
+                                : (! record.seller_make_order_at && ['pending', 'pending_payment', 'processing'].includes(statusRaw));
+                            const isSelectable = hasServerFlag
+                                ? String(record.seller_can_make_order).trim() === '1'
+                                : (! ['completed', 'closed', 'canceled', 'fraud'].includes(statusRaw));
+
+                            return `
+                                <article class="rounded-xl border border-gray-200 bg-white p-3 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+                                    <div class="mb-2 flex items-center justify-between gap-2">
+                                        <input
+                                            type="checkbox"
+                                            class="seller-order-card-checkbox h-4 w-4 rounded border-gray-300"
+                                            data-order-id="${escapeHtml(record.id)}"
+                                            ${isSelectable ? '' : 'disabled'}
+                                            ${selectedOrderIds.has(record.id) ? 'checked' : ''}
+                                        >
+                                        <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">#${escapeHtml(record.increment_id)}</p>
+                                        <div class="text-xs">${record.status || ''}</div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-gray-600 dark:text-gray-300">
+                                        <p><span class="font-medium">Date:</span> ${escapeHtml(record.created_at)}</p>
+                                        <p><span class="font-medium">Age:</span> ${escapeHtml(formatOrderAge(record.order_age_hours))}</p>
+                                        <p><span class="font-medium">Total:</span> ${formatMoney(record.base_grand_total)}</p>
+                                        <p><span class="font-medium">Commission:</span> ${formatMoney(record.seller_commission_expected)}</p>
+                                        <p><span class="font-medium">Customer:</span> ${escapeHtml(record.full_name)}</p>
+                                        <p><span class="font-medium">Pay Via:</span> ${escapeHtml(record.method)}</p>
+                                    </div>
+                                    <div class="mt-3 flex flex-wrap gap-2">
+                                        <a href="${escapeHtml(actionUrl)}" class="seller-btn-secondary inline-flex items-center justify-center px-3 py-1.5 text-xs font-medium no-underline">${escapeHtml(actionLabels.view)}</a>
+                                        ${canMakeOrder
+                                            ? `<button type="button" class="seller-btn-primary text-xs" onclick="window.sellerSubmitMakeOrder(${orderId})">${escapeHtml(actionLabels.make)}</button>`
+                                            : `<button type="button" class="seller-btn-primary cursor-not-allowed text-xs opacity-50" disabled title="${escapeHtml(actionLabels.makeDisabled)}">${escapeHtml(actionLabels.make)}</button>`
+                                        }
+                                    </div>
+                                </article>
+                            `;
+                        }).join('');
+
                         const from = meta.from ?? 0;
                         const to = meta.to ?? 0;
                         const total = meta.total ?? records.length;
                         tableMeta.textContent = `Showing ${from} to ${to} of ${total} orders`;
+                        renderSellerOrdersPagination(meta);
                     } catch (error) {
                         tableBody.innerHTML = `
                             <tr>
@@ -686,6 +1053,8 @@
                             </tr>
                         `;
                         tableMeta.textContent = '';
+                        tablePagination.innerHTML = '';
+                        cardsBody.innerHTML = '';
                         summaryOrdersEl.textContent = '0';
                         summaryPriceEl.textContent = '0.00';
                         summaryCommissionEl.textContent = '0.00';
@@ -693,8 +1062,10 @@
                     }
 
                     const rowCheckboxes = tableBody.querySelectorAll('.seller-order-row-checkbox');
+                    const cardCheckboxes = cardsBody.querySelectorAll('.seller-order-card-checkbox');
+                    const allCheckboxes = Array.from(rowCheckboxes).concat(Array.from(cardCheckboxes));
                     const selectableIds = new Set(
-                        Array.from(rowCheckboxes)
+                        allCheckboxes
                             .filter((cb) => !cb.disabled)
                             .map((cb) => parseInt(cb.dataset.orderId || '0', 10))
                             .filter((id) => !Number.isNaN(id) && id > 0)
@@ -706,7 +1077,7 @@
                         }
                     });
 
-                    rowCheckboxes.forEach((checkbox) => {
+                    allCheckboxes.forEach((checkbox) => {
                         checkbox.addEventListener('change', function () {
                             if (this.disabled) {
                                 return;
@@ -720,15 +1091,26 @@
                                 } else {
                                     selectedOrderIds.delete(orderId);
                                 }
+
+                                allCheckboxes.forEach((peer) => {
+                                    if (peer === this || peer.disabled) {
+                                        return;
+                                    }
+
+                                    const peerId = parseInt(peer.dataset.orderId || '0', 10);
+                                    if (peerId === orderId) {
+                                        peer.checked = this.checked;
+                                    }
+                                });
                             }
 
-                            const allChecked = rowCheckboxes.length > 0 && Array.from(rowCheckboxes).every((cb) => cb.checked);
+                            const allChecked = allCheckboxes.length > 0 && allCheckboxes.filter((cb) => !cb.disabled).every((cb) => cb.checked);
                             selectAllBox.checked = allChecked;
                             updateBulkToolbar();
                         });
                     });
 
-                    const allChecked = rowCheckboxes.length > 0 && Array.from(rowCheckboxes).every((cb) => cb.checked);
+                    const allChecked = allCheckboxes.length > 0 && allCheckboxes.filter((cb) => !cb.disabled).every((cb) => cb.checked);
                     selectAllBox.checked = allChecked;
                     updateBulkToolbar();
                 }
@@ -736,8 +1118,10 @@
                 selectAllBox.addEventListener('change', function () {
                     const checked = this.checked;
                     const rowCheckboxes = tableBody.querySelectorAll('.seller-order-row-checkbox');
+                    const cardCheckboxes = cardsBody.querySelectorAll('.seller-order-card-checkbox');
+                    const allCheckboxes = Array.from(rowCheckboxes).concat(Array.from(cardCheckboxes));
 
-                    rowCheckboxes.forEach((checkbox) => {
+                    allCheckboxes.forEach((checkbox) => {
                         if (checkbox.disabled) {
                             return;
                         }
@@ -756,6 +1140,26 @@
                     });
 
                     updateBulkToolbar();
+                });
+
+                sortableHeaders.forEach((th) => {
+                    th.addEventListener('click', function () {
+                        const column = this.getAttribute('data-sort-column');
+                        if (! column) {
+                            return;
+                        }
+
+                        const params = new URLSearchParams(window.location.search);
+                        const prevColumn = params.get('sort[column]') || '';
+                        const prevOrder = (params.get('sort[order]') || 'desc').toLowerCase();
+                        const nextOrder = prevColumn === column && prevOrder === 'asc' ? 'desc' : 'asc';
+
+                        params.set('sort[column]', column);
+                        params.set('sort[order]', nextOrder);
+                        params.set('pagination[page]', '1');
+                        window.history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`);
+                        void loadTableData();
+                    });
                 });
 
                 window.getSellerSelectedOrderIds = function () {
@@ -780,6 +1184,7 @@
                     }
                 });
 
+                showSellerSuccessToastIfAny();
                 loadTableData();
             })();
         </script>

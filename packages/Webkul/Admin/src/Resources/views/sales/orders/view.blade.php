@@ -90,8 +90,8 @@
                         @foreach ($order->items as $item)
                             {!! view_render_event('bagisto.admin.sales.order.list.before', ['order' => $order]) !!}
 
-                            <div class="flex justify-between gap-2.5 border-b border-slate-300 px-4 py-6 dark:border-gray-800">
-                                <div class="flex gap-2.5">
+                            <div class="flex justify-between gap-2.5 border-b border-slate-300 px-4 py-6 max-sm:flex-col dark:border-gray-800">
+                                <div class="flex min-w-0 flex-1 gap-2.5">
                                     @php
                                         $itemImageUrl = $item?->product?->base_image_url
                                             ?? $item?->child?->product?->base_image_url
@@ -178,14 +178,14 @@
                                     </div>
                                 </div>
 
-                                <div class="grid place-content-start gap-1">
+                                <div class="grid place-content-start gap-1 max-sm:w-full">
                                     <div class="">
-                                        <p class="flex items-center justify-end gap-x-1 text-base font-semibold text-gray-800 dark:text-white">
+                                        <p class="flex items-center justify-end gap-x-1 text-base font-semibold text-gray-800 max-sm:justify-start dark:text-white">
                                             {{ core()->formatBasePrice($item->base_total + $item->base_tax_amount - $item->base_discount_amount) }}
                                         </p>
                                     </div>
 
-                                    <div class="flex flex-col place-items-start items-end gap-1.5">
+                                    <div class="flex flex-col place-items-start items-end gap-1.5 max-sm:items-start">
                                         @if (core()->getConfigData('sales.taxes.sales.display_prices') == 'including_tax')
                                             <p class="text-gray-600 dark:text-gray-300">
                                                 @lang('admin::app.sales.orders.view.price', ['price' => core()->formatBasePrice($item->base_price_incl_tax)])
@@ -243,8 +243,8 @@
                         @endforeach
                     </div>
 
-                    <div class="mt-4 flex flex-auto justify-end p-4">
-                        <div class="grid max-w-max gap-2 text-sm">
+                    <div class="mt-4 flex flex-auto justify-end p-4 max-sm:justify-start">
+                        <div class="grid w-full max-w-max gap-2 text-sm max-sm:max-w-full">
 
                             {!! view_render_event('bagisto.admin.sales.order.view.subtotal.before') !!}
 
@@ -610,7 +610,7 @@
                     </h2>
 
                     <div class="px-4 pb-4 pt-3">
-                        <div class="flex w-full justify-start gap-5">
+                        <div class="flex w-full justify-start gap-5 max-sm:flex-col max-sm:gap-2">
                             <div class="flex flex-col gap-y-1.5">
                                 <p class="text-gray-600 dark:text-gray-300">
                                     @lang('admin::app.sales.orders.view.order-date')

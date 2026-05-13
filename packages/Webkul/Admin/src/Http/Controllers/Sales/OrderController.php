@@ -36,7 +36,7 @@ class OrderController extends Controller
     ) {}
 
     /**
-     * Seller panel may only access orders attributed to them and approved by super admin.
+     * Seller panel may only access orders attributed to them.
      */
     protected function assertSellerCanAccessOrder(Order $order): void
     {
@@ -60,10 +60,7 @@ class OrderController extends Controller
             abort(403);
         }
 
-        if (
-            (int) $order->seller_id !== (int) $user->id
-            || $order->seller_approval_status !== 'approved'
-        ) {
+        if ((int) $order->seller_id !== (int) $user->id) {
             abort(403);
         }
     }
