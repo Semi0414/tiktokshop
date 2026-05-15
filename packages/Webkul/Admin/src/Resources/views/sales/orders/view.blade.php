@@ -3,6 +3,216 @@
         @lang('admin::app.sales.orders.view.title', ['order_id' => $order->increment_id])
     </x-slot>
 
+    <style>
+        .seller-order-view-page {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
+            box-sizing: border-box;
+        }
+
+        .seller-order-view-page .box-shadow,
+        .seller-order-view-page section {
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+
+        @media (min-width: 768px) {
+            .seller-order-view-page .order-view-layout {
+                flex-wrap: nowrap;
+                align-items: flex-start;
+            }
+
+            .seller-order-view-page .order-item-row {
+                align-items: flex-start;
+            }
+
+            .seller-order-view-page .order-item-pricing {
+                width: auto;
+                min-width: 11rem;
+                max-width: 20rem;
+                flex-shrink: 0;
+                margin-left: auto;
+            }
+
+            .seller-order-view-page .order-item-pricing p {
+                text-align: right;
+            }
+
+            .seller-order-view-page .order-item-pricing > div {
+                align-items: flex-end;
+            }
+
+            .seller-order-view-page .order-item-details .text-base.font-semibold {
+                word-break: normal;
+                overflow-wrap: break-word;
+            }
+
+            .seller-order-view-page .order-info-field {
+                display: block;
+                padding-bottom: 0;
+                border-bottom: none;
+            }
+
+            .seller-order-view-page .summary-row {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .seller-order-view-page .summary-row p {
+                width: auto;
+            }
+        }
+
+        @media (max-width: 767px) {
+            .seller-order-view-page .order-view-layout {
+                flex-direction: column !important;
+            }
+
+            .seller-order-view-page .order-view-right {
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+
+            .seller-order-view-page .order-items-header {
+                flex-direction: column;
+                align-items: flex-start !important;
+                gap: 0.5rem;
+            }
+
+            .seller-order-view-page .order-items-header h2,
+            .seller-order-view-page .order-items-header p {
+                width: 100%;
+                text-align: left !important;
+                margin: 0;
+            }
+
+            .seller-order-view-page .order-item-row {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 1rem;
+                padding-top: 1rem;
+                padding-bottom: 1rem;
+            }
+
+            .seller-order-view-page .order-item-main {
+                width: 100%;
+                min-width: 0;
+                align-items: flex-start;
+            }
+
+            .seller-order-view-page .order-item-details {
+                min-width: 0;
+                flex: 1;
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                gap: 0.35rem;
+            }
+
+            .seller-order-view-page .order-item-details > p,
+            .seller-order-view-page .order-item-details .order-item-meta p {
+                margin: 0;
+                line-height: 1.5;
+                word-break: break-word;
+                overflow-wrap: anywhere;
+            }
+
+            .seller-order-view-page .order-item-pricing {
+                width: 100%;
+                max-width: 100%;
+                min-width: 0;
+                border-top: 1px solid #e2e8f0;
+                padding-top: 0.75rem;
+                margin-top: 0.25rem;
+                place-content: start;
+            }
+
+            .seller-order-view-page .order-item-pricing p {
+                margin: 0;
+                line-height: 1.5;
+                word-break: break-word;
+                overflow-wrap: anywhere;
+                text-align: left !important;
+                justify-content: flex-start !important;
+            }
+
+            .seller-order-view-page .order-item-pricing > div {
+                align-items: flex-start !important;
+            }
+
+            .seller-order-view-page .summary-row {
+                flex-direction: column;
+                align-items: flex-start !important;
+                gap: 0.25rem;
+            }
+
+            .seller-order-view-page .summary-row p {
+                width: 100%;
+                line-height: 1.45;
+                word-break: break-word;
+            }
+
+            .seller-order-view-page .order-info-field {
+                display: flex;
+                flex-direction: column;
+                gap: 0.2rem;
+                padding-bottom: 0.65rem;
+                border-bottom: 1px solid #f1f5f9;
+            }
+
+            .seller-order-view-page .order-info-field:last-child {
+                border-bottom: none;
+                padding-bottom: 0;
+            }
+
+            .seller-order-view-page .comment-form-actions {
+                flex-direction: column;
+                align-items: stretch !important;
+                gap: 0.75rem;
+            }
+
+            .seller-order-view-page .comment-form-actions label {
+                width: 100%;
+            }
+
+            .seller-order-view-page .comment-form-actions button {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .seller-order-view-page .comment-status-line {
+                flex-wrap: wrap;
+                align-items: flex-start;
+                gap: 0.35rem;
+                line-height: 1.45;
+            }
+
+            .seller-order-view-page .item-qty-line {
+                display: block;
+            }
+
+            .seller-order-view-page section h2 {
+                font-size: 0.95rem;
+                line-height: 1.35;
+                word-break: break-word;
+            }
+
+            .seller-order-view-page section .px-4 {
+                padding-left: 0.875rem;
+                padding-right: 0.875rem;
+            }
+
+            .seller-order-view-page .order-view-right section p {
+                line-height: 1.45;
+                word-break: break-word;
+                overflow-wrap: anywhere;
+            }
+        }
+    </style>
+
+    <div class="seller-order-view-page">
     <!-- Header -->
     <header class="w-full min-w-0">
         <div class="flex flex-wrap items-center justify-between gap-4">
@@ -69,13 +279,13 @@
         </div>
 
         <!-- Order details -->
-        <div class="mt-0 flex min-w-0 gap-2.5 max-xl:flex-wrap sm:mt-2">
+        <div class="order-view-layout mt-0 flex min-w-0 gap-2.5 max-xl:flex-wrap sm:mt-2">
             <!-- Left Component -->
             <div class="flex flex-1 flex-col gap-2 max-xl:flex-auto">
                 {!! view_render_event('bagisto.admin.sales.order.left_component.before', ['order' => $order]) !!}
 
                 <div class="box-shadow overflow-hidden rounded bg-white dark:bg-gray-900">
-                    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 px-4 py-3 dark:border-gray-800">
+                    <div class="order-items-header flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 px-4 py-3 dark:border-gray-800">
                         <h2 class="m-0 text-base font-semibold text-gray-800 dark:text-white">
                             @lang('admin::app.sales.orders.view.items-with-count', ['count' => count($order->items)])
                         </h2>
@@ -90,8 +300,8 @@
                         @foreach ($order->items as $item)
                             {!! view_render_event('bagisto.admin.sales.order.list.before', ['order' => $order]) !!}
 
-                            <div class="flex justify-between gap-2.5 border-b border-slate-300 px-4 py-6 max-sm:flex-col dark:border-gray-800">
-                                <div class="flex min-w-0 flex-1 gap-2.5">
+                            <div class="order-item-row flex justify-between gap-2.5 border-b border-slate-300 px-4 py-6 max-sm:flex-col dark:border-gray-800">
+                                <div class="order-item-main flex min-w-0 flex-1 gap-2.5">
                                     @php
                                         $itemImageUrl = $item?->product?->base_image_url
                                             ?? $item?->child?->product?->base_image_url
@@ -100,7 +310,7 @@
 
                                     @if($itemImageUrl)
                                         <img
-                                            class="relative h-[60px] max-h-[60px] w-full max-w-[60px] rounded"
+                                            class="relative h-[60px] max-h-[60px] w-full max-w-[60px] shrink-0 rounded"
                                             src="{{ $itemImageUrl }}"
                                             alt=""
                                         >
@@ -117,15 +327,15 @@
                                         </div>
                                     @endif
 
-                                    <div class="grid place-content-start gap-1.5">
+                                    <div class="order-item-details flex min-w-0 flex-1 flex-col gap-1.5">
                                         <p
-                                            class="break-all text-base font-semibold text-gray-800 dark:text-white"
+                                            class="break-words text-base font-semibold text-gray-800 dark:text-white max-sm:break-all"
                                             v-pre
                                         >
                                             {{ $item->name }}
                                         </p>
 
-                                        <div class="flex flex-col place-items-start gap-1.5">
+                                        <div class="order-item-meta flex flex-col place-items-start gap-1.5">
                                             <p class="text-gray-600 dark:text-gray-300">
                                                 @lang('admin::app.sales.orders.view.amount-per-unit', [
                                                     'amount' => core()->formatBasePrice($item->base_price),
@@ -164,21 +374,27 @@
                                             </p>
 
                                             <p class="text-gray-600 dark:text-gray-300">
-                                                {{ $item->qty_ordered ? trans('admin::app.sales.orders.view.item-ordered', ['qty_ordered' => $item->qty_ordered]) : '' }}
-
-                                                {{ $item->qty_invoiced ? trans('admin::app.sales.orders.view.item-invoice', ['qty_invoiced' => $item->qty_invoiced]) : '' }}
-
-                                                {{ $item->qty_shipped ? trans('admin::app.sales.orders.view.item-shipped', ['qty_shipped' => $item->qty_shipped]) : '' }}
-
-                                                {{ $item->qty_refunded ? trans('admin::app.sales.orders.view.item-refunded', ['qty_refunded' => $item->qty_refunded]) : '' }}
-
-                                                {{ $item->qty_canceled ? trans('admin::app.sales.orders.view.item-canceled', ['qty_canceled' => $item->qty_canceled]) : '' }}
+                                                @if ($item->qty_ordered)
+                                                    <span class="item-qty-line">{{ trans('admin::app.sales.orders.view.item-ordered', ['qty_ordered' => $item->qty_ordered]) }}</span>
+                                                @endif
+                                                @if ($item->qty_invoiced)
+                                                    <span class="item-qty-line">{{ trans('admin::app.sales.orders.view.item-invoice', ['qty_invoiced' => $item->qty_invoiced]) }}</span>
+                                                @endif
+                                                @if ($item->qty_shipped)
+                                                    <span class="item-qty-line">{{ trans('admin::app.sales.orders.view.item-shipped', ['qty_shipped' => $item->qty_shipped]) }}</span>
+                                                @endif
+                                                @if ($item->qty_refunded)
+                                                    <span class="item-qty-line">{{ trans('admin::app.sales.orders.view.item-refunded', ['qty_refunded' => $item->qty_refunded]) }}</span>
+                                                @endif
+                                                @if ($item->qty_canceled)
+                                                    <span class="item-qty-line">{{ trans('admin::app.sales.orders.view.item-canceled', ['qty_canceled' => $item->qty_canceled]) }}</span>
+                                                @endif
                                             </p>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div class="grid place-content-start gap-1 max-sm:w-full">
+                                <div class="order-item-pricing flex w-auto min-w-0 max-w-full shrink-0 flex-col gap-1.5 max-sm:w-full sm:min-w-[11rem] sm:max-w-[20rem]">
                                     <div class="">
                                         <p class="flex items-center justify-end gap-x-1 text-base font-semibold text-gray-800 max-sm:justify-start dark:text-white">
                                             {{ core()->formatBasePrice($item->base_total + $item->base_tax_amount - $item->base_discount_amount) }}
@@ -250,7 +466,7 @@
 
                             <!-- Sub Total -->
                             @if (core()->getConfigData('sales.taxes.sales.display_subtotal') == 'including_tax')
-                                <div class="flex w-full justify-between gap-x-5">
+                                <div class="summary-row flex w-full justify-between gap-x-5">
                                     <p class="font-semibold !leading-5 text-gray-600 dark:text-gray-300">
                                         @lang('admin::app.sales.orders.view.summary-sub-total-incl-tax')
                                     </p>
@@ -260,7 +476,7 @@
                                     </p>
                                 </div>
                             @elseif (core()->getConfigData('sales.taxes.sales.display_subtotal') == 'both')
-                                <div class="flex w-full justify-between gap-x-5">
+                                <div class="summary-row flex w-full justify-between gap-x-5">
                                     <p class="font-semibold !leading-5 text-gray-600 dark:text-gray-300">
                                         @lang('admin::app.sales.orders.view.summary-sub-total-excl-tax')
                                     </p>
@@ -270,7 +486,7 @@
                                     </p>
                                 </div>
 
-                                <div class="flex w-full justify-between gap-x-5">
+                                <div class="summary-row flex w-full justify-between gap-x-5">
                                     <p class="font-semibold !leading-5 text-gray-600 dark:text-gray-300">
                                         @lang('admin::app.sales.orders.view.summary-sub-total-incl-tax')
                                     </p>
@@ -280,7 +496,7 @@
                                     </p>
                                 </div>
                             @else
-                                <div class="flex w-full justify-between gap-x-5">
+                                <div class="summary-row flex w-full justify-between gap-x-5">
                                     <p class="font-semibold !leading-5 text-gray-600 dark:text-gray-300">
                                         @lang('admin::app.sales.orders.view.summary-sub-total')
                                     </p>
@@ -298,7 +514,7 @@
                             <!-- Shipping And Handling -->
                             @if ($haveStockableItems = $order->haveStockableItems())
                                 @if (core()->getConfigData('sales.taxes.sales.display_shipping_amount') == 'including_tax')
-                                    <div class="flex w-full justify-between gap-x-5">
+                                    <div class="summary-row flex w-full justify-between gap-x-5">
                                         <p class="!leading-5 text-gray-600 dark:text-gray-300">
                                             @lang('admin::app.sales.orders.view.shipping-and-handling-incl-tax')
                                         </p>
@@ -308,7 +524,7 @@
                                         </p>
                                     </div>
                                 @elseif (core()->getConfigData('sales.taxes.sales.display_shipping_amount') == 'both')
-                                    <div class="flex w-full justify-between gap-x-5">
+                                    <div class="summary-row flex w-full justify-between gap-x-5">
                                         <p class="!leading-5 text-gray-600 dark:text-gray-300">
                                             @lang('admin::app.sales.orders.view.shipping-and-handling-excl-tax')
                                         </p>
@@ -318,7 +534,7 @@
                                         </p>
                                     </div>
 
-                                    <div class="flex w-full justify-between gap-x-5">
+                                    <div class="summary-row flex w-full justify-between gap-x-5">
                                         <p class="!leading-5 text-gray-600 dark:text-gray-300">
                                             @lang('admin::app.sales.orders.view.shipping-and-handling-incl-tax')
                                         </p>
@@ -328,7 +544,7 @@
                                         </p>
                                     </div>
                                 @else
-                                    <div class="flex w-full justify-between gap-x-5">
+                                    <div class="summary-row flex w-full justify-between gap-x-5">
                                         <p class="!leading-5 text-gray-600 dark:text-gray-300">
                                             @lang('admin::app.sales.orders.view.shipping-and-handling')
                                         </p>
@@ -345,7 +561,7 @@
                             {!! view_render_event('bagisto.admin.sales.order.view.tax-amount.before') !!}
 
                             <!-- Tax Amount -->
-                            <div class="flex w-full justify-between gap-x-5">
+                            <div class="summary-row flex w-full justify-between gap-x-5">
                                 <p class="!leading-5 text-gray-600 dark:text-gray-300">
                                     @lang('admin::app.sales.orders.view.summary-tax')
                                 </p>
@@ -360,7 +576,7 @@
                             {!! view_render_event('bagisto.admin.sales.order.view.discount.before') !!}
 
                             <!-- Discount -->
-                            <div class="flex w-full justify-between gap-x-5">
+                            <div class="summary-row flex w-full justify-between gap-x-5">
                                 <p class="!leading-5 text-gray-600 dark:text-gray-300">
                                     @lang('admin::app.sales.orders.view.summary-discount')
                                 </p>
@@ -375,7 +591,7 @@
                             {!! view_render_event('bagisto.admin.sales.order.view.grand-total.before') !!}
 
                             <!-- Grand Total -->
-                            <div class="flex w-full justify-between gap-x-5">
+                            <div class="summary-row flex w-full justify-between gap-x-5">
                                 <p class="text-base font-semibold !leading-5 text-gray-800 dark:text-white">
                                     @lang('admin::app.sales.orders.view.summary-grand-total')
                                 </p>
@@ -390,7 +606,7 @@
                             {!! view_render_event('bagisto.admin.sales.order.view.total-paid.before') !!}
 
                             <!-- Total Paid -->
-                            <div class="flex w-full justify-between gap-x-5">
+                            <div class="summary-row flex w-full justify-between gap-x-5">
                                 <p class="!leading-5 text-gray-600 dark:text-gray-300">
                                     @lang('admin::app.sales.orders.view.total-paid')
                                 </p>
@@ -405,7 +621,7 @@
                             {!! view_render_event('bagisto.admin.sales.order.view.total-refunded.before') !!}
 
                             <!-- Total Refund -->
-                            <div class="flex w-full justify-between gap-x-5">
+                            <div class="summary-row flex w-full justify-between gap-x-5">
                                 <p class="!leading-5 text-gray-600 dark:text-gray-300">
                                     @lang('admin::app.sales.orders.view.total-refund')
                                 </p>
@@ -466,7 +682,7 @@
                                 </x-admin::form.control-group>
                             </div>
 
-                            <div class="flex items-center justify-between">
+                            <div class="comment-form-actions flex items-center justify-between">
                                 <label
                                     class="flex w-max cursor-pointer select-none items-center gap-1 p-1.5"
                                     for="customer_notified"
@@ -515,7 +731,7 @@
                             </p>
 
                             <!-- Notes List Title and Time -->
-                            <p class="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                            <p class="comment-status-line flex items-center gap-2 text-gray-600 dark:text-gray-300">
                                 @if ($comment->customer_notified)
                                     <span class="icon-done h-fit rounded-full bg-blue-100 text-2xl text-blue-600"></span>
 
@@ -536,7 +752,7 @@
             </div>
 
             <!-- Right Component -->
-            <div class="flex w-[360px] max-w-full flex-col gap-2 max-sm:w-full">
+            <div class="order-view-right flex w-[360px] max-w-full flex-col gap-2 max-sm:w-full">
                 {!! view_render_event('bagisto.admin.sales.order.right_component.before', ['order' => $order]) !!}
 
                 <!-- Customer and address information (plain HTML — avoids v-accordion shimmer stuck state) -->
@@ -610,44 +826,32 @@
                     </h2>
 
                     <div class="px-4 pb-4 pt-3">
-                        <div class="flex w-full justify-start gap-5 max-sm:flex-col max-sm:gap-2">
-                            <div class="flex flex-col gap-y-1.5">
-                                <p class="text-gray-600 dark:text-gray-300">
+                        <div class="flex flex-col gap-3">
+                            <div class="order-info-field">
+                                <p class="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
                                     @lang('admin::app.sales.orders.view.order-date')
                                 </p>
-
-                                <p class="text-gray-600 dark:text-gray-300">
-                                    @lang('admin::app.sales.orders.view.order-status')
-                                </p>
-
-                                <p class="text-gray-600 dark:text-gray-300">
-                                    @lang('admin::app.sales.orders.view.channel')
+                                <p class="text-sm text-gray-800 dark:text-gray-200">
+                                    {{ core()->formatDate($order->created_at) }}
                                 </p>
                             </div>
 
-                            <div class="flex flex-col gap-y-1.5">
-                                {!! view_render_event('bagisto.admin.sales.order.created_at.before', ['order' => $order]) !!}
-
-                                <!-- Order Date -->
-                                <p class="text-gray-600 dark:text-gray-300">
-                                    {{ core()->formatDate($order->created_at) }}
+                            <div class="order-info-field">
+                                <p class="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                                    @lang('admin::app.sales.orders.view.order-status')
                                 </p>
-
-                                {!! view_render_event('bagisto.admin.sales.order.created_at.after', ['order' => $order]) !!}
-
-                                <!-- Order Status -->
-                                <p class="text-gray-600 dark:text-gray-300">
+                                <p class="text-sm text-gray-800 dark:text-gray-200">
                                     {{ $order->status_label }}
                                 </p>
+                            </div>
 
-                                {!! view_render_event('bagisto.admin.sales.order.status_label.after', ['order' => $order]) !!}
-
-                                <!-- Order Channel -->
-                                <p class="text-gray-600 dark:text-gray-300">
+                            <div class="order-info-field">
+                                <p class="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                                    @lang('admin::app.sales.orders.view.channel')
+                                </p>
+                                <p class="text-sm text-gray-800 dark:text-gray-200">
                                     {{ $order->channel_name }}
                                 </p>
-
-                                {!! view_render_event('bagisto.admin.sales.order.channel_name.after', ['order' => $order]) !!}
                             </div>
                         </div>
                     </div>
@@ -864,5 +1068,6 @@
                 {!! view_render_event('bagisto.admin.sales.order.right_component.after', ['order' => $order]) !!}
             </div>
         </div>
+    </div>
     </div>
 </x-admin::layouts>

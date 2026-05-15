@@ -45,9 +45,10 @@
             </div>
         </form>
 
-        <div class="seller-filter-card overflow-hidden p-0">
-            <div class="overflow-x-auto">
-                <table class="seller-data-table !border-0">
+        <x-admin::seller.responsive-table class="seller-filter-card overflow-hidden p-0">
+            <x-slot:table>
+                <div class="overflow-x-auto">
+                    <table class="seller-data-table !border-0">
                     <thead>
                         <tr>
                             <th>@lang('admin::app.seller-panel.purchase-history.order-no')</th>
@@ -70,11 +71,36 @@
                             </tr>
                         @endforelse
                     </tbody>
-                </table>
-            </div>
+                    </table>
+                </div>
+            </x-slot:table>
+
+            <x-slot:cards>
+                @forelse ($orders as $order)
+                    <article class="seller-mobile-card">
+                        <div class="seller-mobile-card__header">
+                            <p class="seller-mobile-card__title font-mono">{{ $order->increment_id }}</p>
+                            <span class="seller-pill seller-pill--blue">{{ $order->status }}</span>
+                        </div>
+                        <div class="seller-mobile-card__rows">
+                            <x-admin::seller.mobile-card-field :label="__('admin::app.seller-panel.table.date')">
+                                {{ $order->created_at?->format('Y-m-d H:i:s') ?? $order->created_at }}
+                            </x-admin::seller.mobile-card-field>
+                            <x-admin::seller.mobile-card-field :label="__('admin::app.seller-panel.purchase-history.total')">
+                                {{ core()->formatPrice($order->grand_total) }}
+                            </x-admin::seller.mobile-card-field>
+                        </div>
+                    </article>
+                @empty
+                    <p class="seller-mobile-card seller-mobile-card--empty text-center text-sm text-gray-500">@lang('admin::app.seller-panel.empty')</p>
+                @endforelse
+            </x-slot:cards>
+
             @if ($orders->hasPages())
-                <div class="border-t border-gray-100 px-4 py-3">{{ $orders->links() }}</div>
+                <x-slot:footer>
+                    <div class="border-t border-gray-100 px-4 py-3">{{ $orders->links() }}</div>
+                </x-slot:footer>
             @endif
-        </div>
+        </x-admin::seller.responsive-table>
     </x-admin::seller.panel>
 </x-admin::layouts>

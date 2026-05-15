@@ -155,7 +155,7 @@
     <v-sidebar-collapse></v-sidebar-collapse>
 </div>
 
-<?php if (! $__env->hasRenderedOnce('b6529870-ce83-4c41-8756-da04a9d85f81')): $__env->markAsRenderedOnce('b6529870-ce83-4c41-8756-da04a9d85f81');
+<?php if (! $__env->hasRenderedOnce('5df77f67-7600-44db-bd07-1349f23f2835')): $__env->markAsRenderedOnce('5df77f67-7600-44db-bd07-1349f23f2835');
 $__env->startPush('scripts'); ?>
     <script
         type="text/x-template"

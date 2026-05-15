@@ -38,10 +38,11 @@
             </div>
         </div>
 
-        {{-- Daily table --}}
-        <div class="seller-filter-card overflow-hidden p-0">
-            <div class="overflow-x-auto">
-                <table class="seller-data-table !border-0 table-fixed">
+        {{-- Daily table / mobile cards --}}
+        <x-admin::seller.responsive-table class="seller-filter-card overflow-hidden p-0">
+            <x-slot:table>
+                <div class="overflow-x-auto">
+                    <table class="seller-data-table !border-0 table-fixed">
                     <colgroup>
                         <col class="w-1/5">
                         <col class="w-1/5">
@@ -75,11 +76,39 @@
                             </tr>
                         @endforelse
                     </tbody>
-                </table>
-            </div>
-            <div class="flex items-center justify-center gap-2 border-t border-gray-100 px-4 py-3 text-sm text-gray-600">
-                <span>@lang('admin::app.seller-panel.pagination-total', ['n' => $dailyRows->count()])</span>
-            </div>
-        </div>
+                    </table>
+                </div>
+            </x-slot:table>
+
+            <x-slot:cards>
+                @forelse ($dailyRows as $row)
+                    <article class="seller-mobile-card">
+                        <div class="seller-mobile-card__header">
+                            <p class="seller-mobile-card__title">{{ $row->date }}</p>
+                            <span class="seller-pill seller-pill--blue">{{ $row->orders_count }}</span>
+                        </div>
+                        <div class="seller-mobile-card__rows">
+                            <x-admin::seller.mobile-card-field :label="__('admin::app.seller-panel.financial.total-sales')">
+                                {{ core()->formatPrice($row->sales) }}
+                            </x-admin::seller.mobile-card-field>
+                            <x-admin::seller.mobile-card-field :label="__('admin::app.seller-panel.financial.pending-amount')">
+                                {{ core()->formatPrice($row->pending_amount) }}
+                            </x-admin::seller.mobile-card-field>
+                            <x-admin::seller.mobile-card-field :label="__('admin::app.seller-panel.table.profit')">
+                                {{ core()->formatPrice($row->profit) }}
+                            </x-admin::seller.mobile-card-field>
+                        </div>
+                    </article>
+                @empty
+                    <p class="seller-mobile-card seller-mobile-card--empty text-center text-sm text-gray-500">@lang('admin::app.seller-panel.empty')</p>
+                @endforelse
+            </x-slot:cards>
+
+            <x-slot:footer>
+                <div class="flex items-center justify-center gap-2 px-4 py-3 text-sm text-gray-600">
+                    <span>@lang('admin::app.seller-panel.pagination-total', ['n' => $dailyRows->count()])</span>
+                </div>
+            </x-slot:footer>
+        </x-admin::seller.responsive-table>
     </x-admin::seller.panel>
 </x-admin::layouts>

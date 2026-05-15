@@ -74,9 +74,10 @@
             </div>
         </form>
 
-        <div class="seller-filter-card overflow-hidden p-0">
-            <div class="overflow-x-auto">
-                <table class="seller-data-table !border-0">
+        <x-admin::seller.responsive-table class="seller-filter-card overflow-hidden p-0">
+            <x-slot:table>
+                <div class="overflow-x-auto">
+                    <table class="seller-data-table !border-0">
                     <thead>
                         <tr>
                             <th>@lang('admin::app.seller.fund-record.col-order-type')</th>
@@ -90,37 +91,13 @@
                     <tbody>
                         @forelse ($transactions as $row)
                             @php
-                                $kind = $row->kind ?? \Webkul\User\Models\SellerWalletTransaction::KIND_LEGACY;
-                                $orderLabel = match ($kind) {
-                                    \Webkul\User\Models\SellerWalletTransaction::KIND_DEPOSIT_REQUEST => __('admin::app.seller.wallet.type-deposit'),
-                                    \Webkul\User\Models\SellerWalletTransaction::KIND_WITHDRAW_REQUEST => __('admin::app.seller.wallet.type-withdraw'),
-                                    \Webkul\User\Models\SellerWalletTransaction::KIND_WITHDRAW_REJECTION_REFUND => __('admin::app.seller.wallet.type-withdraw-refund'),
-                                    \Webkul\User\Models\SellerWalletTransaction::KIND_SELLER_PURCHASE => __('admin::app.seller.fund-record.type-product-purchase'),
-                                    \Webkul\User\Models\SellerWalletTransaction::KIND_ORDER_REJECTION_REFUND => __('admin::app.seller.fund-record.type-rejection-refund'),
-                                    \Webkul\User\Models\SellerWalletTransaction::KIND_ORDER_COMMISSION => __('admin::app.seller.fund-record.type-order-revenue'),
-                                    \Webkul\User\Models\SellerWalletTransaction::KIND_ORDER_REVENUE => __('admin::app.seller.fund-record.type-order-revenue'),
-                                    \Webkul\User\Models\SellerWalletTransaction::KIND_ORDER_REVENUE_APPROVAL => __('admin::app.seller.fund-record.type-order-revenue-approval'),
-                                    default => $row->type === 'credit'
-                                        ? __('admin::app.seller.fund-record.type-order-revenue')
-                                        : __('admin::app.seller.fund-record.type-procurement'),
-                                };
-                                $isGreen = in_array($kind, [
-                                    \Webkul\User\Models\SellerWalletTransaction::KIND_DEPOSIT_REQUEST,
-                                    \Webkul\User\Models\SellerWalletTransaction::KIND_ORDER_COMMISSION,
-                                    \Webkul\User\Models\SellerWalletTransaction::KIND_ORDER_REVENUE,
-                                    \Webkul\User\Models\SellerWalletTransaction::KIND_ORDER_REVENUE_APPROVAL,
-                                    \Webkul\User\Models\SellerWalletTransaction::KIND_WITHDRAW_REJECTION_REFUND,
-                                    \Webkul\User\Models\SellerWalletTransaction::KIND_ORDER_REJECTION_REFUND,
-                                ], true)
-                                    || ($kind === \Webkul\User\Models\SellerWalletTransaction::KIND_LEGACY && $row->type === 'credit');
-                                $sign = $isGreen ? '+' : '-';
-                                $cellClass = $isGreen ? 'font-semibold text-emerald-600' : 'font-semibold text-red-600';
+                                $walletMeta = \Webkul\Admin\Support\SellerWalletTransactionDisplay::meta($row, true);
                             @endphp
                             <tr>
-                                <td>{{ $orderLabel }}</td>
+                                <td>{{ $walletMeta['type_label'] }}</td>
                                 <td class="max-w-[200px] truncate font-mono text-xs">{{ 'ff'.str_pad((string) $row->id, 24, '0', STR_PAD_LEFT) }}</td>
-                                <td class="{{ $cellClass }}">
-                                    {{ $sign }}{{ core()->formatPrice($row->amount) }}
+                                <td class="{{ $walletMeta['amount_class'] }}">
+                                    {{ $walletMeta['amount_sign'] }}{{ core()->formatPrice($row->amount) }}
                                 </td>
                                 <td>{{ core()->formatPrice($row->balance_before ?? 0) }}</td>
                                 <td>{{ core()->formatPrice($row->balance_after ?? 0) }}</td>
@@ -132,13 +109,47 @@
                             </tr>
                         @endforelse
                     </tbody>
-                </table>
-            </div>
-            @if ($transactions->hasPages())
-                <div class="border-t border-gray-100 px-4 py-3 text-sm text-gray-600">
-                    {{ $transactions->links() }}
+                    </table>
                 </div>
+            </x-slot:table>
+
+            <x-slot:cards>
+                @forelse ($transactions as $row)
+                    @php
+                        $walletMeta = \Webkul\Admin\Support\SellerWalletTransactionDisplay::meta($row, true);
+                    @endphp
+                    <article class="seller-mobile-card">
+                        <div class="seller-mobile-card__header">
+                            <p class="seller-mobile-card__title">{{ $walletMeta['type_label'] }}</p>
+                            <span class="text-xs text-gray-500">{{ $row->created_at?->format('Y-m-d H:i') }}</span>
+                        </div>
+                        <div class="seller-mobile-card__rows">
+                            <x-admin::seller.mobile-card-field :label="__('admin::app.seller.fund-record.col-serial')">
+                                <span class="font-mono text-xs">{{ 'ff'.str_pad((string) $row->id, 24, '0', STR_PAD_LEFT) }}</span>
+                            </x-admin::seller.mobile-card-field>
+                            <x-admin::seller.mobile-card-field :label="__('admin::app.seller.fund-record.col-amount-change')">
+                                <span class="{{ $walletMeta['amount_class'] }}">{{ $walletMeta['amount_sign'] }}{{ core()->formatPrice($row->amount) }}</span>
+                            </x-admin::seller.mobile-card-field>
+                            <x-admin::seller.mobile-card-field :label="__('admin::app.seller.fund-record.col-before')">
+                                {{ core()->formatPrice($row->balance_before ?? 0) }}
+                            </x-admin::seller.mobile-card-field>
+                            <x-admin::seller.mobile-card-field :label="__('admin::app.seller.fund-record.col-after')">
+                                {{ core()->formatPrice($row->balance_after ?? 0) }}
+                            </x-admin::seller.mobile-card-field>
+                        </div>
+                    </article>
+                @empty
+                    <p class="seller-mobile-card seller-mobile-card--empty text-center text-sm text-gray-500">@lang('admin::app.seller.fund-record.empty')</p>
+                @endforelse
+            </x-slot:cards>
+
+            @if ($transactions->hasPages())
+                <x-slot:footer>
+                    <div class="border-t border-gray-100 px-4 py-3 text-sm text-gray-600">
+                        {{ $transactions->links() }}
+                    </div>
+                </x-slot:footer>
             @endif
-        </div>
+        </x-admin::seller.responsive-table>
     </x-admin::seller.panel>
 </x-admin::layouts>

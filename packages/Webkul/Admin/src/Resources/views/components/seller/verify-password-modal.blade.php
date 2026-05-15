@@ -1,6 +1,82 @@
 {{-- Reusable password confirmation before sensitive seller actions. Registers window.sellerVerifyPasswordThen(onSuccess, onCancel?) --}}
 @once
     <style>
+        #seller-verify-password-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 99990;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+            box-sizing: border-box;
+            background: rgba(2, 6, 23, 0.66);
+            -webkit-backdrop-filter: blur(1.5px);
+            backdrop-filter: blur(1.5px);
+        }
+
+        #seller-verify-password-modal.flex {
+            display: flex;
+        }
+
+        #seller-verify-password-modal .seller-verify-password-card {
+            width: min(560px, 100%);
+            max-height: min(90vh, calc(100dvh - 32px));
+            overflow-x: hidden;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            box-sizing: border-box;
+        }
+
+        #seller-verify-password-modal #seller-verify-password-input {
+            min-height: 44px;
+            font-size: 16px;
+        }
+
+        @media (max-width: 767px) {
+            #seller-verify-password-modal {
+                align-items: flex-end;
+                padding: 0;
+            }
+
+            #seller-verify-password-modal .seller-verify-password-card {
+                width: 100%;
+                max-height: min(92dvh, 100%);
+                border-radius: 1rem 1rem 0 0;
+                border-left: none;
+                border-right: none;
+                border-bottom: none;
+            }
+
+            #seller-verify-password-modal .seller-verify-password-card__header {
+                padding: 1rem 1rem 0.875rem;
+            }
+
+            #seller-verify-password-modal .seller-verify-password-card__header h2 {
+                font-size: 1.0625rem;
+                line-height: 1.35;
+            }
+
+            #seller-verify-password-modal .seller-verify-password-card__header p {
+                font-size: 0.8125rem;
+                line-height: 1.45;
+            }
+
+            #seller-verify-password-modal #seller-verify-password-form {
+                padding: 1rem 1rem max(1rem, env(safe-area-inset-bottom));
+            }
+
+            #seller-verify-password-modal .seller-verify-password-actions {
+                flex-direction: column-reverse;
+                gap: 0.5rem;
+            }
+
+            #seller-verify-password-modal .seller-verify-password-actions .seller-verify-password-btn {
+                width: 100%;
+                min-height: 44px;
+            }
+        }
+
         #seller-verify-password-modal #seller-verify-password-cancel {
             background-color: #ffffff !important;
             color: #334155 !important;
@@ -41,13 +117,13 @@
 @endonce
 <div
     id="seller-verify-password-modal"
-    class="fixed inset-0 z-[220] hidden items-center justify-center bg-slate-900/55 p-4 backdrop-blur-sm"
+    class="hidden"
     role="dialog"
     aria-modal="true"
     aria-labelledby="seller-verify-password-title"
 >
-    <div class="w-1/2 min-w-0 max-w-full overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-2xl max-sm:w-full dark:border-slate-700 dark:bg-slate-900">
-        <div class="border-b border-slate-100 bg-gradient-to-r from-indigo-600 to-violet-600 px-5 py-4 dark:border-slate-800">
+    <div class="seller-verify-password-card overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+        <div class="seller-verify-password-card__header border-b border-slate-100 bg-gradient-to-r from-indigo-600 to-violet-600 px-5 py-4 dark:border-slate-800">
             <h2 id="seller-verify-password-title" class="text-lg font-semibold text-white">
                 {{ __('admin::app.account.verify-password.title') }}
             </h2>
@@ -72,7 +148,7 @@
                 />
             </div>
             <p id="seller-verify-password-error" class="hidden text-sm text-red-600 dark:text-red-400"></p>
-            <div class="flex flex-col-reverse gap-2 pt-1 sm:flex-row sm:flex-wrap sm:justify-end">
+            <div class="seller-verify-password-actions flex flex-col-reverse gap-2 pt-1 sm:flex-row sm:flex-wrap sm:justify-end">
                 <button
                     type="button"
                     id="seller-verify-password-cancel"
@@ -149,6 +225,7 @@
                 input.value = '';
                 root.classList.remove('hidden');
                 root.classList.add('flex');
+                document.body.style.overflow = 'hidden';
                 setTimeout(function () {
                     input.focus();
                 }, 50);
@@ -166,6 +243,7 @@
                     root.classList.add('hidden');
                     root.classList.remove('flex');
                 }
+                document.body.style.overflow = '';
                 if (input) {
                     input.value = '';
                 }

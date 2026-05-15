@@ -41,8 +41,10 @@
     </div>
 
     <div class="mt-5 rounded-md bg-white p-4 shadow-sm dark:bg-gray-900 sm:p-5">
-        <div class="overflow-x-auto">
-            <table class="w-full min-w-[1120px] border-collapse">
+        <x-admin::seller.responsive-table>
+            <x-slot:table>
+                <div class="overflow-x-auto">
+                    <table class="w-full min-w-[1120px] border-collapse">
                 <thead>
                     <tr class="text-left text-sm text-gray-600 dark:text-gray-300">
                         <th class="border-b border-gray-200 px-3 py-2 font-medium">Seller Level</th>
@@ -148,8 +150,48 @@
                         </td>
                     </tr>
                 </tbody>
-            </table>
-        </div>
+                    </table>
+                </div>
+            </x-slot:table>
+
+            <x-slot:cards>
+                @php
+                    $sellerLevelRows = [
+                        ['level' => 'C Level', 'funds' => '5000', 'branches' => '1', 'profit' => '15.00%~18.00%', 'traffic' => '100~150', 'discount' => '1.00%', 'bonus' => '$50.00', 'service' => true, 'home' => false],
+                        ['level' => 'B Level', 'funds' => '10000', 'branches' => '2', 'profit' => '18.00%~21.00%', 'traffic' => '300~1000', 'discount' => '2.00%', 'bonus' => '$100.00', 'service' => true, 'home' => false],
+                        ['level' => 'A Level', 'funds' => '30000', 'branches' => '3', 'profit' => '21.00%~25.00%', 'traffic' => '500~2500', 'discount' => '3.00%', 'bonus' => '$300.00', 'service' => true, 'home' => false],
+                        ['level' => 'S Level', 'funds' => '50000', 'branches' => '4', 'profit' => '25.00%~30.00%', 'traffic' => '1000~3000', 'discount' => '4.00%', 'bonus' => '$500.00', 'service' => true, 'home' => true],
+                        ['level' => 'SS Level', 'funds' => '80000', 'branches' => '5', 'profit' => '30.00%~35.00%', 'traffic' => '1500~5000', 'discount' => '5.00%', 'bonus' => '$800.00', 'service' => true, 'home' => true],
+                        ['level' => 'SSS Level', 'funds' => '100000', 'branches' => '6', 'profit' => '35.00%~45.00%', 'traffic' => '3000~10000', 'discount' => '6.00%', 'bonus' => '$1,000.00', 'service' => true, 'home' => true],
+                    ];
+                @endphp
+                @foreach ($sellerLevelRows as $levelRow)
+                    <article class="seller-mobile-card">
+                        <div class="seller-mobile-card__header">
+                            <p class="seller-mobile-card__title">{{ $levelRow['level'] }}</p>
+                        </div>
+                        <div class="seller-mobile-card__rows">
+                            <x-admin::seller.mobile-card-field label="Operating Funds">{{ $levelRow['funds'] }}</x-admin::seller.mobile-card-field>
+                            <x-admin::seller.mobile-card-field label="Number of Branches">{{ $levelRow['branches'] }}</x-admin::seller.mobile-card-field>
+                            <x-admin::seller.mobile-card-field label="Sales Profit Ratio">{{ $levelRow['profit'] }}</x-admin::seller.mobile-card-field>
+                            <x-admin::seller.mobile-card-field label="Platform Traffic Support">{{ $levelRow['traffic'] }}</x-admin::seller.mobile-card-field>
+                            <x-admin::seller.mobile-card-field label="Purchase Discount">{{ $levelRow['discount'] }}</x-admin::seller.mobile-card-field>
+                            <x-admin::seller.mobile-card-field label="Upgrade Bonus">{{ $levelRow['bonus'] }}</x-admin::seller.mobile-card-field>
+                            <x-admin::seller.mobile-card-field label="Exclusive Service">
+                                <span class="icon-checked text-base text-emerald-600"></span>
+                            </x-admin::seller.mobile-card-field>
+                            <x-admin::seller.mobile-card-field label="Home Page Recommendation">
+                                @if ($levelRow['home'])
+                                    <span class="icon-checked text-base text-emerald-600"></span>
+                                @else
+                                    <span class="icon-cancel text-base text-red-500"></span>
+                                @endif
+                            </x-admin::seller.mobile-card-field>
+                        </div>
+                    </article>
+                @endforeach
+            </x-slot:cards>
+        </x-admin::seller.responsive-table>
     </div>
     </x-admin::seller.panel>
 </x-admin::layouts>

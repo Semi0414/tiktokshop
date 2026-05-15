@@ -17,6 +17,14 @@
             });
         @endphp
         @if ($visibleChildren->isEmpty())
+            <a
+                href="{{ $menuItem->getUrl() }}"
+                class="{{ $menuItem->isActive() ? 'bg-blue-50 text-blue-700 dark:bg-blue-950' : 'text-gray-800 dark:text-gray-100' }} mb-2 flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold no-underline hover:bg-gray-50 dark:hover:bg-gray-800"
+                onclick="if (typeof closeAdminMobileSidebar === 'function') { closeAdminMobileSidebar(); }"
+            >
+                <span class="{{ $menuItem->getIcon() }} shrink-0 text-xl"></span>
+                <span>{{ $menuItem->getName() }}</span>
+            </a>
             @continue
         @endif
 

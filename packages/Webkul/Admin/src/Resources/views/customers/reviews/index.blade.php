@@ -32,8 +32,10 @@
             </p>
         </div>
 
-        <div class="overflow-x-auto rounded-xl border border-gray-200 bg-white p-3 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
+        <x-admin::seller.responsive-table class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+            <x-slot:table>
+                <div class="overflow-x-auto p-3">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
                 <thead class="bg-gray-50 dark:bg-gray-900">
                     <tr>
                         <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">ID</th>
@@ -89,16 +91,60 @@
                         </tr>
                     @endforelse
                 </tbody>
-            </table>
-
-            <div class="mt-3 flex items-center justify-between gap-3 text-xs text-gray-600 dark:text-gray-300">
-                <span>
-                    Showing {{ $reviewsPaginator->firstItem() ?? 0 }} to {{ $reviewsPaginator->lastItem() ?? 0 }} of {{ $reviewsPaginator->total() ?? 0 }}
-                </span>
-                <div>
-                    {{ ($reviewsPaginator ?? null)?->links() }}
+                    </table>
                 </div>
-            </div>
-        </div>
+            </x-slot:table>
+
+            <x-slot:cards>
+                @forelse (($reviewsPaginator ?? null)?->items() ?? [] as $review)
+                    <article class="seller-mobile-card">
+                        <div class="seller-mobile-card__header">
+                            <p class="seller-mobile-card__title">{{ $review->product_name }}</p>
+                            <span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-700 dark:bg-gray-800 dark:text-gray-200">{{ ucfirst($review->status) }}</span>
+                        </div>
+                        <div class="seller-mobile-card__rows">
+                            <x-admin::seller.mobile-card-field label="ID">{{ $review->id }}</x-admin::seller.mobile-card-field>
+                            <x-admin::seller.mobile-card-field label="Customer">{{ $review->customer_name }}</x-admin::seller.mobile-card-field>
+                            <x-admin::seller.mobile-card-field label="Title">{{ $review->title }}</x-admin::seller.mobile-card-field>
+                            <x-admin::seller.mobile-card-field label="Comment">{{ $review->comment }}</x-admin::seller.mobile-card-field>
+                            <x-admin::seller.mobile-card-field label="Rating">{{ $review->rating }}</x-admin::seller.mobile-card-field>
+                            <x-admin::seller.mobile-card-field label="Date">{{ \Illuminate\Support\Carbon::parse($review->created_at)->format('Y-m-d H:i') }}</x-admin::seller.mobile-card-field>
+                        </div>
+                        <div class="seller-mobile-card__actions">
+                            <form method="post" action="{{ route('admin.customers.customers.review.update', $review->id) }}" class="flex w-full flex-col gap-2">
+                                @csrf
+                                @method('PUT')
+                                <select name="status" class="w-full rounded-md border border-gray-200 px-2 py-1.5 text-xs dark:border-gray-700 dark:bg-gray-900 dark:text-white">
+                                    <option value="approved" @selected($review->status === 'approved')>@lang('admin::app.customers.reviews.index.datagrid.approved')</option>
+                                    <option value="pending" @selected($review->status === 'pending')>@lang('admin::app.customers.reviews.index.datagrid.pending')</option>
+                                    <option value="disapproved" @selected($review->status === 'disapproved')>@lang('admin::app.customers.reviews.index.datagrid.disapproved')</option>
+                                </select>
+                                <button type="submit" class="seller-btn-primary text-xs">Save</button>
+                            </form>
+                            <form method="post" action="{{ route('admin.customers.customers.review.delete', $review->id) }}" onsubmit="return confirm('Delete this review?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="seller-btn-secondary w-full text-xs">Delete</button>
+                            </form>
+                        </div>
+                    </article>
+                @empty
+                    <p class="seller-mobile-card seller-mobile-card--empty text-center text-sm text-gray-500 dark:text-gray-400">
+                        @lang('admin::app.components.datagrid.table.no-records-available')
+                    </p>
+                @endforelse
+            </x-slot:cards>
+
+            <x-slot:footer>
+                <div class="flex items-center justify-between gap-3 border-t border-gray-100 px-3 py-3 text-xs text-gray-600 dark:border-gray-800 dark:text-gray-300">
+                    <span>
+                        Showing {{ $reviewsPaginator->firstItem() ?? 0 }} to {{ $reviewsPaginator->lastItem() ?? 0 }} of {{ $reviewsPaginator->total() ?? 0 }}
+                    </span>
+                    <div>
+                        {{ ($reviewsPaginator ?? null)?->links() }}
+                    </div>
+                </div>
+            </x-slot:footer>
+        </x-admin::seller.responsive-table>
     </x-admin::seller.panel>
 </x-admin::layouts>

@@ -24,6 +24,7 @@ return [
         'admin.seller-level.*',
         'admin.seller.purchase-history.*',
         'admin.sales.orders.index',
+        'admin.sales.orders.view',
         'admin.sales.refunds.index',
         'admin.catalog.products.*',
         'admin.seller.store-products.index',

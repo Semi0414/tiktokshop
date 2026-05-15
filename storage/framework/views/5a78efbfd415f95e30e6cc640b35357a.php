@@ -79,6 +79,8 @@
         />
     <?php endif; ?>
 
+    <?php echo $__env->make('admin::components.layouts.admin-workspace-surface-styles', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+
     <?php echo $__env->yieldPushContent('styles'); ?>
 
     <style>
@@ -267,7 +269,7 @@
 <?php endif; ?>
             </div>
 
-            <div class="flex min-h-[calc(100vh-62px)] max-w-full flex-1 flex-col transition-all duration-300 pt-3 px-2 sm:px-4 lg:pt-3 lg:px-4 lg:ltr:pl-[286px] lg:group-[.sidebar-collapsed]/container:ltr:pl-[85px] lg:rtl:pr-[286px] lg:group-[.sidebar-collapsed]/container:rtl:pr-[85px] <?php echo e(\Webkul\Admin\Support\SellerPanel::hideDefaultSubmenuTabs() ? 'bg-[#F4F6F9] dark:bg-gray-950' : 'bg-white dark:bg-gray-950'); ?>">
+            <div class="admin-workspace-surface <?php echo e(\Webkul\Admin\Support\SellerPanel::hideDefaultSubmenuTabs() ? 'seller-workspace-surface' : ''); ?> flex min-h-[calc(100vh-62px)] max-w-full flex-1 flex-col transition-all duration-300 pt-3 px-2 sm:px-4 lg:pt-3 lg:px-4 lg:ltr:pl-[286px] lg:group-[.sidebar-collapsed]/container:ltr:pl-[85px] lg:rtl:pr-[286px] lg:group-[.sidebar-collapsed]/container:rtl:pr-[85px]">
                 <!-- Added dynamic tabs for third level menus  -->
                 <div class="pb-4 lg:pb-6">
                     <!-- Todo @suraj-webkul need to optimize below statement. -->

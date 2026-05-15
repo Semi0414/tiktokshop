@@ -221,11 +221,21 @@
 
         @media (max-width: 767px) {
             #seller-orders-table-wrap {
-                display: none;
+                display: none !important;
+                visibility: hidden !important;
+                height: 0 !important;
+                max-height: 0 !important;
+                overflow: hidden !important;
+                pointer-events: none !important;
+                position: absolute !important;
+                width: 0 !important;
+                opacity: 0 !important;
             }
 
             #seller-orders-cards {
                 display: grid;
+                position: relative;
+                z-index: 1;
             }
         }
 
@@ -705,6 +715,22 @@
                     return;
                 }
 
+                if (! cardsBody.dataset.actionsBound) {
+                    cardsBody.dataset.actionsBound = '1';
+                    cardsBody.addEventListener('click', function (event) {
+                        const makeBtn = event.target.closest('[data-seller-make-order]');
+
+                        if (makeBtn && ! makeBtn.disabled) {
+                            event.preventDefault();
+                            const orderId = parseInt(makeBtn.getAttribute('data-seller-make-order') || '0', 10);
+
+                            if (! Number.isNaN(orderId) && orderId > 0 && typeof window.sellerSubmitMakeOrder === 'function') {
+                                window.sellerSubmitMakeOrder(orderId);
+                            }
+                        }
+                    });
+                }
+
                 function toNumber(value) {
                     const n = parseFloat(value ?? 0);
                     return Number.isFinite(n) ? n : 0;
@@ -1028,10 +1054,10 @@
                                         <p><span class="font-medium">Customer:</span> ${escapeHtml(record.full_name)}</p>
                                         <p><span class="font-medium">Pay Via:</span> ${escapeHtml(record.method)}</p>
                                     </div>
-                                    <div class="mt-3 flex flex-wrap gap-2">
+                                    <div class="seller-order-card-actions mt-3 flex flex-wrap gap-2">
                                         <a href="${escapeHtml(actionUrl)}" class="seller-btn-secondary inline-flex items-center justify-center px-3 py-1.5 text-xs font-medium no-underline">${escapeHtml(actionLabels.view)}</a>
                                         ${canMakeOrder
-                                            ? `<button type="button" class="seller-btn-primary text-xs" onclick="window.sellerSubmitMakeOrder(${orderId})">${escapeHtml(actionLabels.make)}</button>`
+                                            ? `<button type="button" class="seller-btn-primary text-xs" data-seller-make-order="${orderId}">${escapeHtml(actionLabels.make)}</button>`
                                             : `<button type="button" class="seller-btn-primary cursor-not-allowed text-xs opacity-50" disabled title="${escapeHtml(actionLabels.makeDisabled)}">${escapeHtml(actionLabels.make)}</button>`
                                         }
                                     </div>

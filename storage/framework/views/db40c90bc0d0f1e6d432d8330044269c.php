@@ -51,7 +51,7 @@ unset($__defined_vars); ?>
     $workspaceDashboardHref = Route::has('admin.dashboard.index') ? route('admin.dashboard.index') : url('/admin');
 ?>
 
-<div class="seller-panel-scope max-w-full min-w-0 overflow-x-hidden rounded-xl bg-[#F4F6F9] p-3 sm:p-4 dark:bg-gray-950">
+<div class="seller-panel-scope max-w-full min-w-0 overflow-x-hidden rounded-xl bg-transparent p-3 sm:p-4">
     
     <?php if($showWorkspaceTabs): ?>
         <div
@@ -213,7 +213,7 @@ unset($__defined_vars); ?>
     </div>
 </div>
 
-<?php if (! $__env->hasRenderedOnce('763b8ca8-bc3b-4e6f-8ca6-7b360a2a879a')): $__env->markAsRenderedOnce('763b8ca8-bc3b-4e6f-8ca6-7b360a2a879a');
+<?php if (! $__env->hasRenderedOnce('61001fbe-b23a-4940-8716-9ba58ba54721')): $__env->markAsRenderedOnce('61001fbe-b23a-4940-8716-9ba58ba54721');
 $__env->startPush('styles'); ?>
     <style>
         .seller-panel-scope {
@@ -307,6 +307,168 @@ $__env->startPush('styles'); ?>
         .seller-panel-scope .seller-pill--red {
             background: #fee2e2;
             color: #b91c1c;
+        }
+
+        .seller-panel-scope .seller-rt-table-wrap {
+            display: block;
+        }
+
+        .seller-panel-scope .seller-rt-cards {
+            display: none;
+        }
+
+        @media (max-width: 767px) {
+            .seller-panel-scope .seller-rt-table-wrap,
+            .seller-panel-scope #seller-orders-table-wrap {
+                display: none !important;
+                visibility: hidden !important;
+                height: 0 !important;
+                max-height: 0 !important;
+                overflow: hidden !important;
+                pointer-events: none !important;
+                position: absolute !important;
+                width: 0 !important;
+                opacity: 0 !important;
+            }
+
+            .seller-panel-scope .seller-rt-cards,
+            .seller-panel-scope #seller-orders-cards {
+                display: grid !important;
+                gap: 0.75rem;
+                padding: 0.75rem;
+                background: transparent;
+                position: relative;
+                z-index: 1;
+            }
+
+            .seller-panel-scope .seller-data-table {
+                background: transparent !important;
+                border: none !important;
+            }
+
+            .seller-panel-scope .seller-mobile-card {
+                -webkit-backdrop-filter: none;
+                backdrop-filter: none;
+            }
+
+            .seller-panel-scope .seller-mobile-card__actions,
+            .seller-panel-scope .seller-order-card-actions {
+                position: relative;
+                z-index: 2;
+                isolation: isolate;
+                transform: translateZ(0);
+                touch-action: manipulation;
+            }
+
+            .seller-panel-scope .seller-mobile-card__actions .seller-btn-primary,
+            .seller-panel-scope .seller-mobile-card__actions .seller-btn-secondary,
+            .seller-panel-scope .seller-mobile-card__actions form,
+            .seller-panel-scope .seller-order-card-actions .seller-btn-primary,
+            .seller-panel-scope .seller-order-card-actions .seller-btn-secondary,
+            .seller-panel-scope .seller-order-card-actions a {
+                touch-action: manipulation;
+                cursor: pointer;
+                pointer-events: auto !important;
+            }
+
+            .seller-panel-scope .seller-responsive-table {
+                pointer-events: auto;
+            }
+        }
+
+        .seller-panel-scope .seller-mobile-card {
+            border-radius: 0.5rem;
+            border: 1px solid #e5e7eb;
+            background: #fff;
+            padding: 0.875rem 1rem;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+        }
+
+        @media (min-width: 768px) {
+            .dark .seller-panel-scope .seller-mobile-card {
+                border-color: #374151;
+                background: #111827;
+            }
+        }
+
+        .seller-panel-scope .seller-mobile-card--empty {
+            border-style: dashed;
+            padding: 2rem 1rem;
+        }
+
+        .seller-panel-scope .seller-mobile-card__header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 0.5rem;
+            margin-bottom: 0.625rem;
+            padding-bottom: 0.625rem;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .dark .seller-panel-scope .seller-mobile-card__header {
+            border-bottom-color: #1f2937;
+        }
+
+        .seller-panel-scope .seller-mobile-card__title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #111827;
+            line-height: 1.35;
+        }
+
+        .dark .seller-panel-scope .seller-mobile-card__title {
+            color: #f9fafb;
+        }
+
+        .seller-panel-scope .seller-mobile-card__rows {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .seller-panel-scope .seller-mobile-card__row {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 0.75rem;
+            font-size: 0.8125rem;
+        }
+
+        .seller-panel-scope .seller-mobile-card__label {
+            flex-shrink: 0;
+            font-size: 0.6875rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            color: #6b7280;
+        }
+
+        .dark .seller-panel-scope .seller-mobile-card__label {
+            color: #9ca3af;
+        }
+
+        .seller-panel-scope .seller-mobile-card__value {
+            text-align: right;
+            color: #111827;
+            word-break: break-word;
+        }
+
+        .dark .seller-panel-scope .seller-mobile-card__value {
+            color: #e5e7eb;
+        }
+
+        .seller-panel-scope .seller-mobile-card__actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid #f3f4f6;
+        }
+
+        .dark .seller-panel-scope .seller-mobile-card__actions {
+            border-top-color: #1f2937;
         }
     </style>
 <?php $__env->stopPush(); endif; ?>

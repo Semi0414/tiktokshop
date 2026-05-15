@@ -3,6 +3,10 @@
         @lang('admin::app.seller-panel.tabs.store-products')
     </x-slot>
 
+    @php
+        $storeProductRemovalBlocked = ! ($canRemoveStoreProducts ?? false);
+    @endphp
+
     <x-admin::seller.panel
         active="store_products"
         :breadcrumb="[__('admin::app.components.layouts.sidebar.product-management'), __('admin::app.seller-panel.tabs.store-products')]"
@@ -82,82 +86,238 @@
             </p>
         </div>
 
-        <div id="seller-store-native-edit-modal" class="fixed inset-0 z-[10050] hidden items-center justify-center bg-black/50 p-4">
-            <div class="w-[50%] max-w-none rounded-lg border border-gray-200 bg-white p-5 shadow-xl max-md:w-full dark:border-gray-700 dark:bg-gray-900">
-                <div class="mb-4 flex items-center justify-between">
-                    <p class="text-sm font-semibold text-gray-800 dark:text-white">
-                        @lang('admin::app.seller-panel.store-products.edit-modal-title')
-                    </p>
-                    <button type="button" id="seller-store-native-modal-close" class="text-2xl leading-none text-gray-500 hover:text-gray-800">&times;</button>
-                </div>
+        @include('admin::seller.store-products.partials.edit-modal')
 
-                <p id="seller-store-native-product-label" class="mb-3 text-xs text-gray-600 dark:text-gray-400"></p>
+        <script>
+            (function registerStoreProductEditHandler() {
+                function mountSellerModalToBody(modal) {
+                    if (!modal || modal.parentNode === document.body) {
+                        return;
+                    }
 
-                <div class="mb-3">
-                    <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">
-                        @lang('admin::app.seller-panel.product-warehouse.commission-title') (%)
-                    </label>
-                    <input id="seller-store-native-commission" type="number" step="0.01" class="w-full rounded-md border border-gray-200 px-2.5 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white" />
-                    <p id="seller-store-native-range-hint" class="mt-1 text-[11px] text-gray-500"></p>
-                </div>
+                    document.body.appendChild(modal);
+                }
 
-                <div class="mb-4 flex items-center gap-2">
-                    <input type="checkbox" id="seller-store-native-recommended" class="rounded border-gray-300" />
-                    <label for="seller-store-native-recommended" class="text-sm text-gray-800 dark:text-gray-200">
-                        @lang('admin::app.seller-panel.store-products.recommended')
-                    </label>
-                </div>
+                var sseModalCloseMs = 320;
 
-                <div class="mb-4">
-                    <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Status</label>
-                    <select id="seller-store-native-status" class="w-full rounded-md border border-gray-200 px-2.5 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white">
-                        <option value="1">Active</option>
-                        <option value="0">Inactive</option>
-                    </select>
-                </div>
+                function showStoreProductEditModal(modal) {
+                    if (!modal) {
+                        return;
+                    }
 
-                <div class="flex justify-end gap-2">
-                    <button type="button" id="seller-store-native-cancel" class="seller-btn-secondary text-xs">@lang('admin::app.acl.cancel')</button>
-                    <button type="button" id="seller-store-native-save" class="seller-btn-primary text-xs">@lang('admin::app.account.edit.save-btn')</button>
-                </div>
-            </div>
-        </div>
+                    mountSellerModalToBody(modal);
+                    modal.classList.remove('hidden', 'sse-modal--closing');
+                    modal.classList.add('flex', 'admin-seller-add-modal-layer');
+                    modal.style.display = 'flex';
+                    modal.setAttribute('aria-hidden', 'false');
+                    document.body.classList.add('seller-store-edit-modal-open');
 
-        <div
-            id="seller-store-remove-blocked-modal"
-            class="fixed inset-0 z-[10055] hidden items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="seller-store-remove-blocked-title"
-        >
-            <div class="w-1/2 min-w-0 max-w-full overflow-hidden rounded-2xl border border-amber-200/90 bg-white shadow-2xl max-sm:w-full dark:border-amber-900/50 dark:bg-slate-900">
-                <div class="border-b border-amber-100 bg-gradient-to-r from-amber-500 to-orange-600 px-5 py-4 dark:border-amber-900/40">
-                    <div class="flex items-start gap-3">
-                        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/20 text-xl text-white" aria-hidden="true">!</span>
-                        <div>
-                            <h2 id="seller-store-remove-blocked-title" class="text-lg font-semibold text-white">
-                                @lang('admin::app.seller-panel.store-products.remove-not-allowed-title')
-                            </h2>
-                            <p class="mt-1 text-sm text-amber-50">
-                                @lang('admin::app.seller-panel.store-products.remove-not-allowed-description', [
-                                    'required' => (int) ($storeProductRemovalMinAccountDays ?? 90),
-                                    'current' => (int) ($sellerAccountAgeDays ?? 0),
-                                ])
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                <div class="flex justify-end border-t border-gray-100 px-5 py-4 dark:border-gray-800">
-                    <button
-                        type="button"
-                        id="seller-store-remove-blocked-close"
-                        class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
-                    >
-                        @lang('admin::app.seller-panel.store-products.remove-not-allowed-dismiss')
-                    </button>
-                </div>
-            </div>
-        </div>
+                    requestAnimationFrame(function () {
+                        requestAnimationFrame(function () {
+                            modal.classList.add('sse-modal--open');
+                        });
+                    });
+                }
+
+                function hideStoreProductEditModal(modal) {
+                    if (!modal) {
+                        return;
+                    }
+
+                    if (!modal.classList.contains('sse-modal--open')) {
+                        modal.classList.add('hidden');
+                        modal.classList.remove('flex', 'admin-seller-add-modal-layer');
+                        modal.style.display = 'none';
+                        modal.setAttribute('aria-hidden', 'true');
+                        document.body.classList.remove('seller-store-edit-modal-open');
+                        return;
+                    }
+
+                    modal.classList.remove('sse-modal--open');
+                    modal.classList.add('sse-modal--closing');
+
+                    setTimeout(function () {
+                        modal.classList.remove('sse-modal--closing', 'flex', 'admin-seller-add-modal-layer');
+                        modal.classList.add('hidden');
+                        modal.style.display = 'none';
+                        modal.setAttribute('aria-hidden', 'true');
+                        document.body.classList.remove('seller-store-edit-modal-open');
+                    }, sseModalCloseMs);
+                }
+
+                document.addEventListener('click', function (event) {
+                    if (!event.target || !event.target.closest) {
+                        return;
+                    }
+
+                    if (
+                        event.target.closest('[data-sse-modal-dismiss]')
+                        || event.target.closest('[data-sse-remove-blocked-dismiss]')
+                    ) {
+                        document.querySelectorAll('.sse-modal.sse-modal--open').forEach(function (openModal) {
+                            hideStoreProductEditModal(openModal);
+                        });
+                    }
+                });
+
+                window.sellerShowStoreProductEditModal = showStoreProductEditModal;
+                window.sellerHideStoreProductEditModal = hideStoreProductEditModal;
+                window.sellerMountStoreProductModalsToBody = function () {
+                    mountSellerModalToBody(document.getElementById('seller-store-native-edit-modal'));
+                    mountSellerModalToBody(document.getElementById('seller-store-remove-blocked-modal'));
+                };
+
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', window.sellerMountStoreProductModalsToBody, { once: true });
+                } else {
+                    window.sellerMountStoreProductModalsToBody();
+                }
+
+                window.openStoreProductRemovalBlockedModal = function () {
+                    var blockedModal = document.getElementById('seller-store-remove-blocked-modal');
+                    if (blockedModal) {
+                        showStoreProductEditModal(blockedModal);
+                    }
+                };
+
+                window.sellerStoreProductEditFromButton = async function (btn) {
+                    if (!btn) {
+                        return;
+                    }
+
+                    if (btn.dataset.editOpening === '1') {
+                        return;
+                    }
+
+                    btn.dataset.editOpening = '1';
+                    setTimeout(function () {
+                        btn.dataset.editOpening = '0';
+                    }, 800);
+
+                    var modal = document.getElementById('seller-store-native-edit-modal');
+                    var label = document.getElementById('seller-store-native-product-label');
+                    var commission = document.getElementById('seller-store-native-commission');
+                    var recommended = document.getElementById('seller-store-native-recommended');
+                    var status = document.getElementById('seller-store-native-status');
+                    var hint = document.getElementById('seller-store-native-range-hint');
+                    var saveBtn = document.getElementById('seller-store-native-save');
+                    var closeBtn = document.getElementById('seller-store-native-modal-close');
+                    var cancelBtn = document.getElementById('seller-store-native-cancel');
+                    var url = btn.getAttribute('data-modal-url') || btn.dataset.modalUrl || '';
+
+                    if (!modal || !commission || !recommended || !status || !saveBtn || !url) {
+                        alert('Modal elements missing.');
+                        return;
+                    }
+
+                    if (label) {
+                        label.textContent = (btn.getAttribute('data-product-name') || btn.dataset.productName || '')
+                            + ((btn.getAttribute('data-product-sku') || btn.dataset.productSku) ? (' · ' + (btn.getAttribute('data-product-sku') || btn.dataset.productSku)) : '');
+                    }
+
+                    commission.value = String(btn.getAttribute('data-commission') || btn.dataset.commission || '15');
+                    recommended.checked = String(btn.getAttribute('data-recommended') || btn.dataset.recommended || '0') === '1';
+                    status.value = String(btn.getAttribute('data-status') || btn.dataset.status || '1');
+
+                    try {
+                        var response = await fetch(url, {
+                            headers: { 'X-Requested-With': 'XMLHttpRequest', Accept: 'application/json' },
+                            credentials: 'same-origin',
+                        });
+                        var data = await response.json().catch(function () { return {}; });
+
+                        if (data.product_name || data.sku) {
+                            if (label) {
+                                label.textContent = (data.product_name || '') + (data.sku ? (' · ' + data.sku) : '');
+                            }
+                        }
+
+                        if (data.commission_percent !== undefined && data.commission_percent !== null) {
+                            commission.value = String(data.commission_percent);
+                        }
+
+                        recommended.checked = !!data.is_recommended;
+                        status.value = String(data.status ?? status.value ?? '1');
+
+                        if (data.commission_rule) {
+                            commission.readOnly = !!data.commission_rule.readonly;
+                            commission.min = String(data.commission_rule.min ?? 0);
+                            commission.max = String(data.commission_rule.max ?? 100);
+
+                            if (hint) {
+                                hint.textContent = data.commission_rule.readonly
+                                    ? 'Fixed commission for your level.'
+                                    : ('Allowed range: ' + String(data.commission_rule.min ?? 0) + '% to ' + String(data.commission_rule.max ?? 100) + '%');
+                            }
+                        }
+
+                        showStoreProductEditModal(modal);
+
+                        var closeModal = function () {
+                            hideStoreProductEditModal(modal);
+                        };
+
+                        if (closeBtn) {
+                            closeBtn.onclick = closeModal;
+                        }
+
+                        if (cancelBtn) {
+                            cancelBtn.onclick = closeModal;
+                        }
+
+                        modal.onclick = function (event) {
+                            if (
+                                event.target === modal
+                                || (event.target && event.target.getAttribute && event.target.getAttribute('data-sse-modal-dismiss') !== null)
+                            ) {
+                                closeModal();
+                            }
+                        };
+
+                        saveBtn.onclick = async function () {
+                            var payload = {
+                                commission_percent: parseFloat(commission.value || '0'),
+                                is_recommended: recommended.checked ? 1 : 0,
+                                status: parseInt(status.value || '1', 10),
+                            };
+
+                            var saveResponse = await fetch(data.update_url || url, {
+                                method: 'PUT',
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    Accept: 'application/json',
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': (document.querySelector('meta[name=csrf-token]') || {}).content || '',
+                                },
+                                credentials: 'same-origin',
+                                body: JSON.stringify(payload),
+                            });
+
+                            var saveData = await saveResponse.json().catch(function () { return {}; });
+
+                            if (!saveResponse.ok) {
+                                alert(saveData.message || 'Unable to save.');
+                                return;
+                            }
+
+                            if (window.emitter && typeof window.emitter.emit === 'function') {
+                                window.emitter.emit('add-flash', { type: 'success', message: saveData.message || 'Saved.' });
+                            } else {
+                                alert(saveData.message || 'Saved.');
+                            }
+
+                            closeModal();
+                            window.location.reload();
+                        };
+                    } catch (e) {
+                        alert('Failed to load modal data.');
+                    }
+                };
+
+            })();
+        </script>
+
+        @include('admin::seller.store-products.partials.remove-blocked-modal')
 
         <div id="seller-store-product-grid">
             @php
@@ -228,12 +388,22 @@
                                     : ('Allowed range: ' + String(min) + '% to ' + String(max) + '%');
                             }
 
-                            modal.classList.remove('hidden');
-                            modal.classList.add('flex');
+                            if (window.sellerShowStoreProductEditModal) {
+                                window.sellerShowStoreProductEditModal(modal);
+                            } else {
+                                modal.classList.remove('hidden');
+                                modal.classList.add('flex');
+                                modal.style.display = 'flex';
+                            }
 
                             var closeModal = function () {
-                                modal.classList.add('hidden');
-                                modal.classList.remove('flex');
+                                if (window.sellerHideStoreProductEditModal) {
+                                    window.sellerHideStoreProductEditModal(modal);
+                                } else {
+                                    modal.classList.add('hidden');
+                                    modal.classList.remove('flex');
+                                    modal.style.display = 'none';
+                                }
                             };
                             if (closeBtn) closeBtn.onclick = closeModal;
                             if (cancelBtn) cancelBtn.onclick = closeModal;
@@ -294,14 +464,24 @@
 
                 <form id="store-products-bulk-remove-form" method="post" action="{{ route('admin.seller.store-products.mass-destroy') }}">
                     @csrf
-                    <button type="submit" class="seller-btn-secondary text-xs" onclick="return window.submitStoreProductsBulkRemove && window.submitStoreProductsBulkRemove(event);">
+                    <button
+                        type="submit"
+                        class="seller-btn-secondary text-xs"
+                        @if ($storeProductRemovalBlocked)
+                            onclick="event.preventDefault(); window.openStoreProductRemovalBlockedModal && window.openStoreProductRemovalBlockedModal(); return false;"
+                        @else
+                            onclick="return window.submitStoreProductsBulkRemove && window.submitStoreProductsBulkRemove(event);"
+                        @endif
+                    >
                         Remove Selected
                     </button>
                 </form>
             </div>
 
-            <div class="overflow-x-auto rounded-xl border border-gray-200 bg-white p-3 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
+            <x-admin::seller.responsive-table class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+                <x-slot:table>
+                    <div class="overflow-x-auto p-3">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
                     <thead class="bg-gray-50 dark:bg-gray-900">
                         <tr>
                             <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">
@@ -365,110 +545,7 @@
                                             data-commission="{{ number_format((float) ($row->commission_percent ?? 0), 2, '.', '') }}"
                                             data-recommended="{{ (int) ($row->is_recommended ?? 0) }}"
                                             data-status="{{ (int) ($row->status ?? 0) === 1 ? '1' : '0' }}"
-                                            onclick="
-                                                (async function (btn) {
-                                                    var modal = document.getElementById('seller-store-native-edit-modal');
-                                                    var label = document.getElementById('seller-store-native-product-label');
-                                                    var commission = document.getElementById('seller-store-native-commission');
-                                                    var recommended = document.getElementById('seller-store-native-recommended');
-                                                    var status = document.getElementById('seller-store-native-status');
-                                                    var hint = document.getElementById('seller-store-native-range-hint');
-                                                    var saveBtn = document.getElementById('seller-store-native-save');
-                                                    var closeBtn = document.getElementById('seller-store-native-modal-close');
-                                                    var cancelBtn = document.getElementById('seller-store-native-cancel');
-                                                    var url = btn.dataset.modalUrl || '';
-
-                                                    if (!modal || !commission || !recommended || !status || !saveBtn || !url) {
-                                                        alert('Modal elements missing.');
-                                                        return;
-                                                    }
-
-                                                    label && (label.textContent = (btn.dataset.productName || '') + (btn.dataset.productSku ? (' · ' + btn.dataset.productSku) : ''));
-                                                    commission.value = String(btn.dataset.commission || '15');
-                                                    recommended.checked = String(btn.dataset.recommended || '0') === '1';
-                                                    status.value = String(btn.dataset.status || '1');
-
-                                                    try {
-                                                        var response = await fetch(url, {
-                                                            headers: { 'X-Requested-With': 'XMLHttpRequest', Accept: 'application/json' },
-                                                            credentials: 'same-origin',
-                                                        });
-                                                        var data = await response.json().catch(function () { return {}; });
-
-                                                        if (data.product_name || data.sku) {
-                                                            label && (label.textContent = (data.product_name || '') + (data.sku ? (' · ' + data.sku) : ''));
-                                                        }
-
-                                                        if (data.commission_percent !== undefined && data.commission_percent !== null) {
-                                                            commission.value = String(data.commission_percent);
-                                                        }
-
-                                                        recommended.checked = !!data.is_recommended;
-                                                        status.value = String(data.status ?? status.value ?? '1');
-
-                                                        if (data.commission_rule) {
-                                                            commission.readOnly = !!data.commission_rule.readonly;
-                                                            commission.min = String(data.commission_rule.min ?? 0);
-                                                            commission.max = String(data.commission_rule.max ?? 100);
-                                                            if (hint) {
-                                                                hint.textContent = data.commission_rule.readonly
-                                                                    ? 'Fixed commission for your level.'
-                                                                    : ('Allowed range: ' + String(data.commission_rule.min ?? 0) + '% to ' + String(data.commission_rule.max ?? 100) + '%');
-                                                            }
-                                                        }
-
-                                                        modal.classList.remove('hidden');
-                                                        modal.classList.add('flex');
-
-                                                        var closeModal = function () {
-                                                            modal.classList.add('hidden');
-                                                            modal.classList.remove('flex');
-                                                        };
-
-                                                        if (closeBtn) closeBtn.onclick = closeModal;
-                                                        if (cancelBtn) cancelBtn.onclick = closeModal;
-                                                        modal.onclick = function (event) { if (event.target === modal) closeModal(); };
-
-                                                        saveBtn.onclick = async function () {
-                                                            var payload = {
-                                                                commission_percent: parseFloat(commission.value || '0'),
-                                                                is_recommended: recommended.checked ? 1 : 0,
-                                                                status: parseInt(status.value || '1', 10),
-                                                            };
-
-                                                            var saveResponse = await fetch(data.update_url || url, {
-                                                                method: 'PUT',
-                                                                headers: {
-                                                                    'X-Requested-With': 'XMLHttpRequest',
-                                                                    Accept: 'application/json',
-                                                                    'Content-Type': 'application/json',
-                                                                    'X-CSRF-TOKEN': (document.querySelector('meta[name=csrf-token]') || {}).content || '',
-                                                                },
-                                                                credentials: 'same-origin',
-                                                                body: JSON.stringify(payload),
-                                                            });
-
-                                                            var saveData = await saveResponse.json().catch(function () { return {}; });
-
-                                                            if (!saveResponse.ok) {
-                                                                alert(saveData.message || 'Unable to save.');
-                                                                return;
-                                                            }
-
-                                                            if (window.emitter && typeof window.emitter.emit === 'function') {
-                                                                window.emitter.emit('add-flash', { type: 'success', message: saveData.message || 'Saved.' });
-                                                            } else {
-                                                                alert(saveData.message || 'Saved.');
-                                                            }
-
-                                                            closeModal();
-                                                            window.location.reload();
-                                                        };
-                                                    } catch (e) {
-                                                        alert('Failed to load modal data.');
-                                                    }
-                                                })(this);
-                                            "
+                                            onclick="window.sellerStoreProductEditFromButton && window.sellerStoreProductEditFromButton(this); return false;"
                                         >
                                             Edit
                                         </button>
@@ -476,7 +553,13 @@
                                         <form method="post" action="{{ route('admin.seller.store-products.destroy', ['sellerStoreProduct' => (int) ($row->ssp_id ?? 0)]) }}" onsubmit="return window.handleStoreProductRemoveSubmit && window.handleStoreProductRemoveSubmit(event);">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="seller-btn-secondary text-xs">
+                                            <button
+                                                type="submit"
+                                                class="seller-btn-secondary text-xs"
+                                                @if ($storeProductRemovalBlocked)
+                                                    onclick="event.preventDefault(); window.openStoreProductRemovalBlockedModal && window.openStoreProductRemovalBlockedModal(); return false;"
+                                                @endif
+                                            >
                                                 Remove
                                             </button>
                                         </form>
@@ -491,17 +574,78 @@
                             </tr>
                         @endforelse
                     </tbody>
-                </table>
-
-                <div class="mt-3 flex items-center justify-between gap-3 text-xs text-gray-600 dark:text-gray-300">
-                    <span>
-                        Showing {{ $storeMeta['from'] ?? 0 }} to {{ $storeMeta['to'] ?? 0 }} of {{ $storeMeta['total'] ?? 0 }}
-                    </span>
-                    <div>
-                        {{ ($debugPaginator ?? null)?->links() }}
+                        </table>
                     </div>
-                </div>
-            </div>
+                </x-slot:table>
+
+                <x-slot:cards>
+                    @forelse ($storeRows as $row)
+                        <article class="seller-mobile-card">
+                            <div class="seller-mobile-card__header">
+                                <div class="flex min-w-0 flex-1 items-start gap-2">
+                                    <input
+                                        type="checkbox"
+                                        class="store-products-row-checkbox mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300"
+                                        value="{{ (int) ($row->ssp_id ?? 0) }}"
+                                        data-commission="{{ number_format((float) ($row->commission_percent ?? 0), 2, '.', '') }}"
+                                        data-recommended="{{ (int) ($row->is_recommended ?? 0) }}"
+                                        data-status="{{ (int) ($row->status ?? 0) === 1 ? '1' : '0' }}"
+                                    />
+                                    <span class="seller-mobile-card__title min-w-0">{{ $row->name ?? '—' }}</span>
+                                </div>
+                                @if ((int) ($row->status ?? 0) === 1)
+                                    <span class="rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700">Active</span>
+                                @else
+                                    <span class="rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700">Inactive</span>
+                                @endif
+                            </div>
+                            <div class="seller-mobile-card__rows">
+                                <x-admin::seller.mobile-card-field label="Product ID">{{ $row->product_id ?? '—' }}</x-admin::seller.mobile-card-field>
+                                <x-admin::seller.mobile-card-field label="SKU">{{ $row->sku ?? '—' }}</x-admin::seller.mobile-card-field>
+                                <x-admin::seller.mobile-card-field label="Price">{{ isset($row->price) ? core()->formatPrice((float) $row->price) : '—' }}</x-admin::seller.mobile-card-field>
+                                <x-admin::seller.mobile-card-field label="Commission %">{{ isset($row->commission_percent) ? number_format((float) $row->commission_percent, 2) . '%' : '—' }}</x-admin::seller.mobile-card-field>
+                                <x-admin::seller.mobile-card-field label="Recommended">{{ (int) ($row->is_recommended ?? 0) === 1 ? 'Yes' : 'No' }}</x-admin::seller.mobile-card-field>
+                            </div>
+                            <div class="seller-mobile-card__actions" style="position:relative;z-index:5;pointer-events:auto;">
+                                <button
+                                    type="button"
+                                    class="seller-btn-primary text-xs store-products-edit-btn"
+                                    style="touch-action:manipulation;cursor:pointer;pointer-events:auto;"
+                                    data-modal-url="{{ route('admin.seller.store-products.modal-data', ['sellerStoreProduct' => (int) ($row->ssp_id ?? 0)]) }}"
+                                    data-product-name="{{ $row->name ?? '' }}"
+                                    data-product-sku="{{ $row->sku ?? '' }}"
+                                    data-commission="{{ number_format((float) ($row->commission_percent ?? 0), 2, '.', '') }}"
+                                    data-recommended="{{ (int) ($row->is_recommended ?? 0) }}"
+                                    data-status="{{ (int) ($row->status ?? 0) === 1 ? '1' : '0' }}"
+                                    onclick="window.sellerStoreProductEditFromButton && window.sellerStoreProductEditFromButton(this); return false;"
+                                    ontouchstart="void 0"
+                                    ontouchend="event.preventDefault(); event.stopPropagation(); window.sellerStoreProductEditFromButton && window.sellerStoreProductEditFromButton(this); return false;"
+                                >Edit</button>
+                                <form method="post" action="{{ route('admin.seller.store-products.destroy', ['sellerStoreProduct' => (int) ($row->ssp_id ?? 0)]) }}" onsubmit="return window.handleStoreProductRemoveSubmit && window.handleStoreProductRemoveSubmit(event);">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button
+                                        type="submit"
+                                        class="seller-btn-secondary text-xs"
+                                        @if ($storeProductRemovalBlocked)
+                                            onclick="event.preventDefault(); window.openStoreProductRemovalBlockedModal && window.openStoreProductRemovalBlockedModal(); return false;"
+                                        @endif
+                                    >Remove</button>
+                                </form>
+                            </div>
+                        </article>
+                    @empty
+                        <p class="seller-mobile-card seller-mobile-card--empty text-center text-sm text-gray-500">@lang('admin::app.components.datagrid.table.no-records-available')</p>
+                    @endforelse
+                </x-slot:cards>
+
+                <x-slot:footer>
+                    <div class="flex items-center justify-between gap-3 border-t border-gray-100 px-3 py-3 text-xs text-gray-600 dark:text-gray-300">
+                        <span>Showing {{ $storeMeta['from'] ?? 0 }} to {{ $storeMeta['to'] ?? 0 }} of {{ $storeMeta['total'] ?? 0 }}</span>
+                        <div>{{ ($debugPaginator ?? null)?->links() }}</div>
+                    </div>
+                </x-slot:footer>
+            </x-admin::seller.responsive-table>
         </div>
     </x-admin::seller.panel>
 </x-admin::layouts>
@@ -540,6 +684,10 @@
                 if (!modal) {
                     return;
                 }
+                if (typeof window.sellerHideStoreProductEditModal === 'function') {
+                    window.sellerHideStoreProductEditModal(modal);
+                    return;
+                }
                 modal.classList.add('hidden');
                 modal.classList.remove('flex');
             }
@@ -547,6 +695,10 @@
             window.openStoreProductRemovalBlockedModal = function () {
                 const modal = document.getElementById('seller-store-remove-blocked-modal');
                 if (!modal) {
+                    return;
+                }
+                if (typeof window.sellerShowStoreProductEditModal === 'function') {
+                    window.sellerShowStoreProductEditModal(modal);
                     return;
                 }
                 modal.classList.remove('hidden');
@@ -583,15 +735,27 @@
             function openModal() {
                 const { modal } = getEls();
                 if (!modal) return;
+                if (typeof window.sellerShowStoreProductEditModal === 'function') {
+                    window.sellerShowStoreProductEditModal(modal);
+                    return;
+                }
                 modal.classList.remove('hidden');
                 modal.classList.add('flex');
+                modal.style.display = 'flex';
+                modal.setAttribute('aria-hidden', 'false');
             }
 
             function closeModal() {
                 const { modal } = getEls();
                 if (!modal) return;
+                if (typeof window.sellerHideStoreProductEditModal === 'function') {
+                    window.sellerHideStoreProductEditModal(modal);
+                    return;
+                }
                 modal.classList.add('hidden');
                 modal.classList.remove('flex');
+                modal.style.display = 'none';
+                modal.setAttribute('aria-hidden', 'true');
             }
 
             function selectedIds() {
@@ -737,7 +901,6 @@
                 const selectAll = document.getElementById('store-products-select-all');
                 const bulkEditBtn = document.getElementById('store-products-bulk-edit-btn');
                 const bulkRemoveForm = document.getElementById('store-products-bulk-remove-form');
-                const editButtons = Array.from(document.querySelectorAll('.store-products-edit-btn'));
                 const { close, cancel, modal, save } = getEls();
                 const removalBlockedModal = document.getElementById('seller-store-remove-blocked-modal');
                 const removalBlockedClose = document.getElementById('seller-store-remove-blocked-close');
@@ -745,13 +908,10 @@
                 if (removalBlockedClose) {
                     removalBlockedClose.addEventListener('click', closeRemovalBlockedModal);
                 }
-                if (removalBlockedModal) {
-                    removalBlockedModal.addEventListener('click', function (e) {
-                        if (e.target === removalBlockedModal) {
-                            closeRemovalBlockedModal();
-                        }
-                    });
-                }
+
+                document.querySelectorAll('[data-sse-remove-blocked-dismiss]').forEach(function (btn) {
+                    btn.addEventListener('click', closeRemovalBlockedModal);
+                });
 
                 if (selectAll) {
                     selectAll.addEventListener('change', function () {
@@ -770,15 +930,6 @@
                         });
                     });
                 }
-
-                editButtons.forEach((btn) => {
-                    btn.addEventListener('click', function () {
-                        window.openSellerStoreProductModal({
-                            mode: 'single',
-                            url: btn.dataset.modalUrl || '',
-                        });
-                    });
-                });
 
                 if (close) close.addEventListener('click', closeModal);
                 if (cancel) cancel.addEventListener('click', closeModal);
