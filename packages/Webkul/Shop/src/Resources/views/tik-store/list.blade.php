@@ -2,11 +2,12 @@
 <html lang="{{ app()->getLocale() }}">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="csrf-token" content="{{ csrf_token() }}" />
     <title>{{ $title }} — {{ $__sfStoreLabel }}</title>
     <link rel="icon" type="image/webp" href="{{ asset('storage/theme/1/favicon.webp') }}" />
     @include('shop::tik-store.partials.styles')
+    @include('shop::tik-store.partials.styles-mobile')
 </head>
 <body class="tik-store-page">
 @php
@@ -44,7 +45,7 @@
     </div>
 </header>
 
-<main class="page" style="display:block;max-width:1240px;margin:0 auto;padding:1.25rem;">
+<main class="page page--list">
     <a href="{{ $backUrl }}" class="back-link">← Back to {{ $__sfStoreLabel }}</a>
     <h1 class="list-page-title">{{ $title }}</h1>
     @if($seller)
@@ -126,6 +127,7 @@
 })();
 </script>
 @include('shop::tik-store.partials.wishlist-script')
+@include('shop::tik-store.partials.cart-script')
 @include('shop::components.layouts.storefront-chat-widgets')
 </body>
 </html>

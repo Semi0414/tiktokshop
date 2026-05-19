@@ -40,20 +40,8 @@
             </div>
 
             <div class="flex gap-1.5">
+                {{-- Reorder hidden for customer order view --}}
                 {!! view_render_event('bagisto.shop.customers.account.orders.reorder_button.before', ['order' => $order]) !!}
-
-                @if (
-                    $order->canReorder()
-                    && core()->getConfigData('sales.order_settings.reorder.shop')
-                )
-                    <a
-                        href="{{ route('shop.customers.account.orders.reorder', $order->id) }}"
-                        class="secondary-button border-zinc-200 px-5 py-3 font-normal max-md:hidden"
-                    >
-                        @lang('shop::app.customers.account.orders.view.reorder-btn-title')
-                    </a>
-                @endif
-
                 {!! view_render_event('bagisto.shop.customers.account.orders.reorder_button.after', ['order' => $order]) !!}
 
                 {!! view_render_event('bagisto.shop.customers.account.orders.cancel_button.before', ['order' => $order]) !!}
@@ -464,22 +452,9 @@
                                 </div>
                             </div>
 
-                            <!-- Reorder and Cancel Button -->
+                            <!-- Cancel Button (reorder hidden) -->
                             <div class="flex w-full justify-center rounded-b-lg border-t text-center">
-                                @if ($order->canReorder())
-                                    <a
-                                        href="{{ route('shop.customers.account.orders.reorder', $order->id) }}"
-                                        class="mx-auto w-full py-3 text-sm font-medium text-navyBlue hover:bg-zinc-100 max-sm:py-2"
-                                    >
-                                        @lang('shop::app.customers.account.orders.view.reorder-btn-title')
-                                    </a>
-                                @endif
-
                                 @if ($order->canCancel())
-                                    @if ($order->canReorder())
-                                        <!-- Seperator -->
-                                        <span class="my-auto h-5 w-0.5 bg-zinc-200 py-3"></span>
-                                    @endif
 
                                     <form
                                         method="POST"

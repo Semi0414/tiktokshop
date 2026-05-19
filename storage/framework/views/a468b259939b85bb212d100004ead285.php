@@ -1,0 +1,2 @@
+<?php echo $__env->make('superadmin::catalog.products.edit.customizable-options', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+<?php /**PATH /Users/hhtraders/tiktokshop/packages/Webkul/SuperAdmin/src/Providers/../Resources/views/catalog/products/edit/types/simple.blade.php ENDPATH**/ ?>

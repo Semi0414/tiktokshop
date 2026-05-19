@@ -1,5 +1,7 @@
 @php
-    $cartFormOk = !!($supportsHtmlCartForm && core()->getConfigData('sales.checkout.shopping_cart.cart_page'));
+    $insideCartForm = (bool) ($insideCartForm ?? false);
+    $cartPageEnabled = (bool) core()->getConfigData('sales.checkout.shopping_cart.cart_page');
+    $showAddToCart = $insideCartForm && $cartPageEnabled;
     $tikRatingTotal = isset($tikStoreDisplay) ? (string) ($tikStoreDisplay->tik_reviews_total ?? '') : '';
     $tikRatingAvg = isset($tikStoreDisplay) ? (string) ($tikStoreDisplay->tik_rating ?? '0') : '0';
 @endphp
@@ -9,33 +11,7 @@
         @include('shop::products.view.gallery-html')
 
         <div class="relative max-w-[590px] max-1180:w-full max-1180:max-w-full max-1180:px-5 max-sm:px-4">
-            @if (session()->has('success'))
-                <div role="status" class="mb-6 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
-                    {{ session('success') }}
-                </div>
-            @endif
-
-            @if (session()->has('warning'))
-                <div role="alert" class="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-                    {{ session('warning') }}
-                </div>
-            @endif
-
-            @if (session()->has('error'))
-                <div role="alert" class="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">
-                    {{ session('error') }}
-                </div>
-            @endif
-
-            @if ($errors->any())
-                <div role="alert" class="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">
-                    <ul class="list-disc space-y-1 pl-4">
-                        @foreach ($errors->all() as $message)
-                            <li>{{ $message }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
+            @include('shop::products.view.partials.product-order-notice')
 
             {!! view_render_event('bagisto.shop.products.name.before', ['product' => $product]) !!}
 
@@ -153,27 +129,15 @@
 
             {!! view_render_event('bagisto.shop.products.short_description.after', ['product' => $product]) !!}
 
-            @if (! $supportsHtmlCartForm)
-                @if ($isProductCustomizable ?? false)
-                    <p role="alert" class="mt-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-                        {{ __('This product has customization options. Please finish your purchase using the storefront tools that support them.') }}
-                    </p>
-                @else
-                    <p role="alert" class="mt-6 rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-800">
-                        {{ __('This product type cannot be ordered from this simplified product page.') }}
-                    </p>
-                @endif
-            @else
-                @if ($product->type === 'configurable')
-                    @include('shop::products.view.types.configurable-html')
-                @elseif ($product->type === 'simple' || $product->type === 'virtual')
-                    @include('shop::products.view.types.simple')
-                @elseif ($product->type === 'grouped')
-                    @include('shop::products.view.types.grouped')
-                @endif
+            @if ($product->type === 'configurable')
+                @include('shop::products.view.types.configurable-html')
+            @elseif ($product->type === 'simple' || $product->type === 'virtual')
+                @include('shop::products.view.types.simple')
+            @elseif ($product->type === 'grouped')
+                @include('shop::products.view.types.grouped')
             @endif
 
-            @if ($cartFormOk && $supportsHtmlCartForm && $product->isSaleable())
+            @if ($showAddToCart)
                 <div class="mt-8 flex max-w-[470px] flex-wrap items-center gap-4 max-sm:mt-4">
                     {!! view_render_event('bagisto.shop.products.view.quantity.before', ['product' => $product]) !!}
 
@@ -199,8 +163,7 @@
                         type="submit"
                         name="checkout_action"
                         value="cart"
-                        class="primary-button inline-flex justify-center rounded-lg px-10 py-3 text-center text-base font-semibold text-white max-sm:rounded-lg max-sm:py-1.5 disabled:opacity-50"
-                        @disabled(! $product->isSaleable())
+                        class="primary-button inline-flex justify-center rounded-lg px-10 py-3 text-center text-base font-semibold text-white max-sm:rounded-lg max-sm:py-1.5"
                     >
                         @lang('shop::app.products.view.add-to-cart')
                     </button>
@@ -211,10 +174,6 @@
 
                     {!! view_render_event('bagisto.shop.products.view.add_to_cart.after', ['product' => $product]) !!}
                 </div>
-            @elseif ($cartFormOk && $supportsHtmlCartForm && ! $product->isSaleable())
-                <p class="mt-8 text-base font-medium text-red-600">
-                    {{ __('This product cannot be ordered right now.') }}
-                </p>
             @endif
 
             @if (! empty(core()->getConfigData('catalog.products.settings.compare_option')))

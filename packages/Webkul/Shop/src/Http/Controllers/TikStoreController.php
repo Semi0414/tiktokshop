@@ -533,7 +533,7 @@ class TikStoreController extends Controller
      */
     protected function decorateProductRows(Collection $rows): Collection
     {
-        return $rows->map(function ($row) {
+        $rows = $rows->map(function ($row) {
             $path = $row->img_path ?? null;
             $row->image_url = $path ? Storage::url($path) : '';
             $row->product_url = $row->url_key
@@ -543,6 +543,47 @@ class TikStoreController extends Controller
             $row->show_strike = $this->tikStoreDummy->shouldShowStrikePrice($row);
 
             return $this->tikStoreDummy->enrich($row);
+        });
+
+        return $this->enrichCartMeta($rows);
+    }
+
+    /**
+     * Product type + default variant for TikStore quick add-to-cart.
+     *
+     * @param  Collection<int, object>  $rows
+     * @return Collection<int, object>
+     */
+    protected function enrichCartMeta(Collection $rows): Collection
+    {
+        $productIds = $rows->pluck('product_id')->map(fn ($id) => (int) $id)->filter()->unique()->values()->all();
+
+        if ($productIds === []) {
+            return $rows;
+        }
+
+        $types = DB::table('products')
+            ->whereIn('id', $productIds)
+            ->pluck('type', 'id');
+
+        $defaultVariants = DB::table('products')
+            ->whereIn('parent_id', $productIds)
+            ->where('type', 'simple')
+            ->selectRaw('parent_id, MIN(id) as variant_id')
+            ->groupBy('parent_id')
+            ->pluck('variant_id', 'parent_id');
+
+        return $rows->map(function ($row) use ($types, $defaultVariants) {
+            $pid = (int) ($row->product_id ?? 0);
+            $type = (string) ($types[$pid] ?? 'simple');
+            $variantId = (int) ($defaultVariants[$pid] ?? 0);
+
+            $row->product_type = $type;
+            $row->default_variant_id = $type === 'configurable' && $variantId > 0 ? $variantId : null;
+            $row->can_quick_add = in_array($type, ['simple', 'virtual'], true)
+                || ($type === 'configurable' && $variantId > 0);
+
+            return $row;
         });
     }
 

@@ -309,6 +309,10 @@ class Configurable extends AbstractType
             return true;
         }
 
+        if (! $cartItem->child) {
+            return $this->simpleTypeForProduct($cartItem->product)->haveSufficientQuantity($cartItem->quantity);
+        }
+
         return $cartItem->child->getTypeInstance()->haveSufficientQuantity($cartItem->quantity);
     }
 
@@ -383,12 +387,25 @@ class Configurable extends AbstractType
     {
         $data['quantity'] = parent::handleQuantity((int) $data['quantity']);
 
+        $this->product->loadMissing('variants');
+
+        // Imported/catalog rows marked configurable but with no variant children — sell as simple.
+        if ($this->product->variants->isEmpty()) {
+            $simple = app(Simple::class);
+            $simple->setProduct($this->product);
+
+            return $simple->prepareForCart($data);
+        }
+
         if (empty($data['selected_configurable_option'])) {
             if (ShopCheckoutInventory::shouldSkipInventoryChecks()) {
-                $fallback = $this->product->variants->first(fn ($v) => (bool) $v->status);
+                $fallback = $this->product->variants->first(fn ($v) => (bool) $v->status)
+                    ?? $this->product->variants->first();
+
                 if (! $fallback) {
                     return trans('product::app.checkout.cart.missing-options');
                 }
+
                 $data['selected_configurable_option'] = $fallback->id;
             } else {
                 return trans('product::app.checkout.cart.missing-options');
@@ -405,6 +422,8 @@ class Configurable extends AbstractType
 
         $price = $childProduct->getTypeInstance()->getFinalPrice();
 
+        $weight = $this->resolveCartWeight($childProduct);
+
         return [
             [
                 'product_id' => $this->product->id,
@@ -420,9 +439,9 @@ class Configurable extends AbstractType
                 'total_incl_tax' => $convertedPrice * $data['quantity'],
                 'base_total' => $price * $data['quantity'],
                 'base_total_incl_tax' => $price * $data['quantity'],
-                'weight' => $childProduct->weight,
-                'total_weight' => $childProduct->weight * $data['quantity'],
-                'base_total_weight' => $childProduct->weight * $data['quantity'],
+                'weight' => $weight,
+                'total_weight' => $weight * $data['quantity'],
+                'base_total_weight' => $weight * $data['quantity'],
                 'additional' => $this->getAdditionalOptions($data),
             ], [
                 'parent_id' => $this->product->id,
@@ -498,7 +517,7 @@ class Configurable extends AbstractType
      */
     public function getOrderedItem($item)
     {
-        return $item->child;
+        return $item->child ?? $item;
     }
 
     /**
@@ -515,10 +534,8 @@ class Configurable extends AbstractType
             if (isset($item->additional['selected_configurable_option'])) {
                 $product = $this->productRepository->find($item->additional['selected_configurable_option']);
             }
-        } else {
-            if (count($item->child->product->images)) {
-                $product = $item->child->product;
-            }
+        } elseif ($item->child && count($item->child->product->images)) {
+            $product = $item->child->product;
         }
 
         return ProductImage::getProductBaseImage($product);
@@ -531,6 +548,10 @@ class Configurable extends AbstractType
      */
     public function validateCartItem(CartItemModel $item): CartItemValidationResult
     {
+        if (! $item->child) {
+            return $this->simpleTypeForProduct($item->product)->validateCartItem($item);
+        }
+
         $validation = new CartItemValidationResult;
 
         if ($this->isCartItemInactive($item)) {
@@ -594,7 +615,15 @@ class Configurable extends AbstractType
         }
 
         if (ShopCheckoutInventory::shouldSkipInventoryChecks()) {
+            if ($this->product->variants->isEmpty()) {
+                return true;
+            }
+
             return $this->product->variants->contains(fn ($variant) => (bool) $variant->status);
+        }
+
+        if ($this->product->variants->isEmpty()) {
+            return (bool) $this->product->status;
         }
 
         foreach ($this->product->variants as $variant) {
@@ -632,5 +661,26 @@ class Configurable extends AbstractType
     public function getPriceIndexer()
     {
         return app(ConfigurableIndexer::class);
+    }
+
+    /**
+     * Simple type helper for configurable parents sold without variant children.
+     */
+    protected function simpleTypeForProduct(Product $product): Simple
+    {
+        $simple = app(Simple::class);
+        $simple->setProduct($product);
+
+        return $simple;
+    }
+
+    /**
+     * Imported variants often have null weight — cart_items.weight is NOT NULL.
+     */
+    protected function resolveCartWeight(Product $childProduct): float
+    {
+        $weight = $childProduct->weight ?? $this->product->weight ?? 0;
+
+        return max(0, (float) $weight);
     }
 }

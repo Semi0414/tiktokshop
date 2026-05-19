@@ -2,13 +2,14 @@
 <html lang="{{ app()->getLocale() }}">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="csrf-token" content="{{ csrf_token() }}" />
     <title>{{ $__sfStoreLabel }} — {{ $seller ? $seller->name : __('Browse') }}</title>
     <link rel="icon" type="image/webp" href="{{ asset('storage/theme/1/favicon.webp') }}" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
     @include('shop::tik-store.partials.styles')
+    @include('shop::tik-store.partials.styles-mobile')
 </head>
 <body class="tik-store-page">
 @php
@@ -80,7 +81,11 @@
 @endif
 
 <main class="page">
-    <aside class="sidebar sidebar-filters">
+    <div class="mobile-filter-backdrop" id="mobileFilterBackdrop" aria-hidden="true"></div>
+
+    <aside class="sidebar sidebar-filters" id="tikStoreSidebar">
+        <button type="button" class="sidebar-mobile-close" id="sidebarMobileClose" aria-label="{{ __('Close') }}">×</button>
+
         <form class="sidebar-card filter-form" method="get" action="{{ route('shop.tik-store.index', $linkParams ?? []) }}" id="tikStoreFilterForm">
             @if($seller)
                 <input type="hidden" name="seller" value="{{ $seller->id }}" />
@@ -179,6 +184,11 @@
                 </a>
             @endif
         </div>
+
+        <button type="button" class="mobile-filter-toggle" id="mobileFilterToggle" aria-expanded="false" aria-controls="tikStoreSidebar">
+            <span class="mobile-filter-toggle__icon" aria-hidden="true">☰</span>
+            <span>{{ __('Filters & categories') }}</span>
+        </button>
 
         <div class="category-carousel-wrap">
             <div class="category-carousel-title">{{ __('Shop by category') }}</div>
@@ -380,6 +390,39 @@
         resetAuto();
     }
 
+    const filterToggle = document.getElementById('mobileFilterToggle');
+    const filterBackdrop = document.getElementById('mobileFilterBackdrop');
+
+    function setMobileFiltersOpen(open) {
+        document.body.classList.toggle('tik-store-filters-open', open);
+        if (filterToggle) {
+            filterToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        }
+        if (filterBackdrop) {
+            filterBackdrop.setAttribute('aria-hidden', open ? 'false' : 'true');
+        }
+        document.body.style.overflow = open ? 'hidden' : '';
+    }
+
+    if (filterToggle) {
+        filterToggle.addEventListener('click', function () {
+            setMobileFiltersOpen(!document.body.classList.contains('tik-store-filters-open'));
+        });
+    }
+
+    if (filterBackdrop) {
+        filterBackdrop.addEventListener('click', function () {
+            setMobileFiltersOpen(false);
+        });
+    }
+
+    const sidebarClose = document.getElementById('sidebarMobileClose');
+    if (sidebarClose) {
+        sidebarClose.addEventListener('click', function () {
+            setMobileFiltersOpen(false);
+        });
+    }
+
     const backToTop = document.getElementById('backToTop');
     if (backToTop) {
         window.addEventListener('scroll', function () {
@@ -393,6 +436,7 @@
 })();
 </script>
 @include('shop::tik-store.partials.wishlist-script')
+@include('shop::tik-store.partials.cart-script')
 @include('shop::components.layouts.storefront-chat-widgets')
 </body>
 </html>

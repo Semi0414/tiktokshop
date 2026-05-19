@@ -391,8 +391,8 @@
                             if (window.sellerShowStoreProductEditModal) {
                                 window.sellerShowStoreProductEditModal(modal);
                             } else {
-                                modal.classList.remove('hidden');
-                                modal.classList.add('flex');
+                            modal.classList.remove('hidden');
+                            modal.classList.add('flex');
                                 modal.style.display = 'flex';
                             }
 
@@ -400,8 +400,8 @@
                                 if (window.sellerHideStoreProductEditModal) {
                                     window.sellerHideStoreProductEditModal(modal);
                                 } else {
-                                    modal.classList.add('hidden');
-                                    modal.classList.remove('flex');
+                                modal.classList.add('hidden');
+                                modal.classList.remove('flex');
                                     modal.style.display = 'none';
                                 }
                             };
@@ -481,7 +481,7 @@
             <x-admin::seller.responsive-table class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
                 <x-slot:table>
                     <div class="overflow-x-auto p-3">
-                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
                     <thead class="bg-gray-50 dark:bg-gray-900">
                         <tr>
                             <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">
@@ -574,7 +574,7 @@
                             </tr>
                         @endforelse
                     </tbody>
-                        </table>
+                </table>
                     </div>
                 </x-slot:table>
 
@@ -592,20 +592,20 @@
                                         data-status="{{ (int) ($row->status ?? 0) === 1 ? '1' : '0' }}"
                                     />
                                     <span class="seller-mobile-card__title min-w-0">{{ $row->name ?? '—' }}</span>
-                                </div>
+                    </div>
                                 @if ((int) ($row->status ?? 0) === 1)
                                     <span class="rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700">Active</span>
                                 @else
                                     <span class="rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700">Inactive</span>
                                 @endif
-                            </div>
+                </div>
                             <div class="seller-mobile-card__rows">
                                 <x-admin::seller.mobile-card-field label="Product ID">{{ $row->product_id ?? '—' }}</x-admin::seller.mobile-card-field>
                                 <x-admin::seller.mobile-card-field label="SKU">{{ $row->sku ?? '—' }}</x-admin::seller.mobile-card-field>
                                 <x-admin::seller.mobile-card-field label="Price">{{ isset($row->price) ? core()->formatPrice((float) $row->price) : '—' }}</x-admin::seller.mobile-card-field>
                                 <x-admin::seller.mobile-card-field label="Commission %">{{ isset($row->commission_percent) ? number_format((float) $row->commission_percent, 2) . '%' : '—' }}</x-admin::seller.mobile-card-field>
                                 <x-admin::seller.mobile-card-field label="Recommended">{{ (int) ($row->is_recommended ?? 0) === 1 ? 'Yes' : 'No' }}</x-admin::seller.mobile-card-field>
-                            </div>
+            </div>
                             <div class="seller-mobile-card__actions" style="position:relative;z-index:5;pointer-events:auto;">
                                 <button
                                     type="button"

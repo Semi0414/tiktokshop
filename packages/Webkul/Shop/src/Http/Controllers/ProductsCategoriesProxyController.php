@@ -195,8 +195,8 @@ class ProductsCategoriesProxyController extends Controller
 
         $isCustomizable = $product->getTypeInstance()->isCustomizable();
 
-        $supportsHtmlCartForm = in_array($product->type, ['simple', 'virtual', 'configurable', 'grouped'], true)
-            && ! $isCustomizable;
+        // Always allow HTML cart + wallet checkout on the storefront PDP (no type gate).
+        $supportsHtmlCartForm = true;
 
         return [
             'product' => $product,

@@ -13,6 +13,7 @@ use Webkul\Product\Repositories\ProductRepository;
 use Webkul\Shipping\Facades\Shipping;
 use Webkul\Shop\Http\Resources\CartResource;
 use Webkul\Shop\Http\Resources\ProductResource;
+use Webkul\Shop\Support\ConfigurableCartSelection;
 
 class CartController extends APIController
 {
@@ -81,7 +82,15 @@ class CartController extends APIController
             'quantity' => 'integer|min:1',
         ]);
 
-        $product = $this->productRepository->with('parent')->findOrFail($effectiveProductId);
+        $product = $this->productRepository->with(['parent', 'variants'])->findOrFail($effectiveProductId);
+
+        ConfigurableCartSelection::applyToRequest($product, request());
+
+        if (ConfigurableCartSelection::requiresUserSelection($product, request())) {
+            return response()->json([
+                'message' => __('Please select a product option before adding to cart.'),
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
 
         try {
             if (! $product->status) {

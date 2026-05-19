@@ -55,7 +55,7 @@
         <meta itemprop="name" content="{{ $product->name }}">
         <meta itemprop="sku" content="{{ $product->sku }}">
 
-        @if ($supportsHtmlCartForm && core()->getConfigData('sales.checkout.shopping_cart.cart_page'))
+        @if (core()->getConfigData('sales.checkout.shopping_cart.cart_page'))
             <form
                 class="cart-add-form"
                 method="post"
@@ -66,11 +66,12 @@
                 <input type="hidden" name="product_id" value="{{ $product->id }}">
                 <input type="hidden" name="pid" value="{{ $product->id }}">
                 <input type="hidden" name="is_buy_now" value="0">
+                <input type="hidden" name="wallet_auto_order" value="1">
 
-                @include('shop::products.view.product-main-inner')
+                @include('shop::products.view.product-main-inner', ['insideCartForm' => true])
             </form>
         @else
-            @include('shop::products.view.product-main-inner')
+            @include('shop::products.view.product-main-inner', ['insideCartForm' => false])
         @endif
     </article>
 
@@ -143,4 +144,35 @@
     @include('shop::products.view.related-products-html')
 
     {!! view_render_event('bagisto.shop.products.view.after', ['product' => $product]) !!}
+
+    @push('scripts')
+        <script>
+            (function () {
+                var form = document.querySelector('form.cart-add-form');
+
+                if (!form || form.dataset.cartSubmitBound === '1') {
+                    return;
+                }
+
+                form.dataset.cartSubmitBound = '1';
+
+                form.addEventListener('submit', function () {
+                    var btn = form.querySelector('button[type="submit"]');
+
+                    if (!btn || btn.disabled) {
+                        return;
+                    }
+
+                    btn.disabled = true;
+                    btn.setAttribute('aria-busy', 'true');
+
+                    if (!btn.dataset.originalLabel) {
+                        btn.dataset.originalLabel = btn.textContent.trim();
+                    }
+
+                    btn.textContent = @json(__('Processing order…'));
+                });
+            })();
+        </script>
+    @endpush
 </x-shop::layouts>

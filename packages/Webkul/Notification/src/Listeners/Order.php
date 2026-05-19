@@ -2,6 +2,7 @@
 
 namespace Webkul\Notification\Listeners;
 
+use Illuminate\Support\Facades\Schema;
 use Webkul\Notification\Events\CreateOrderNotification;
 use Webkul\Notification\Events\UpdateOrderNotification;
 use Webkul\Notification\Repositories\NotificationRepository;
@@ -22,13 +23,22 @@ class Order
      */
     public function createOrder($order)
     {
-        $this->notificationRepository->create([
-            'type'      => 'order',
-            'order_id'  => $order->id,
-            'seller_id' => $order->seller_id,
-        ]);
+        try {
+            $payload = [
+                'type'     => 'order',
+                'order_id' => $order->id,
+            ];
 
-        event(new CreateOrderNotification);
+            if (Schema::hasColumn('notifications', 'seller_id')) {
+                $payload['seller_id'] = $order->seller_id;
+            }
+
+            $this->notificationRepository->create($payload);
+
+            event(new CreateOrderNotification);
+        } catch (\Throwable $exception) {
+            report($exception);
+        }
     }
 
     /**

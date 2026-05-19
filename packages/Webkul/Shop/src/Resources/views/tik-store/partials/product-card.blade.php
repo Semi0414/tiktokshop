@@ -69,7 +69,15 @@
                 <span></span>
                 <span>{{ $product->tik_ship_label ?? __('Free shipping') }}</span>
             </div>
-            <a href="{{ $product->product_url }}" class="add-btn" onclick="event.stopPropagation();">+ {{ __('Add') }}</a>
+            <button
+                type="button"
+                class="add-btn tik-store-add-cart-btn"
+                data-product-id="{{ $pid }}"
+                data-product-type="{{ $product->product_type ?? 'simple' }}"
+                data-variant-id="{{ $product->default_variant_id ?? '' }}"
+                data-product-url="{{ $product->product_url }}"
+                data-can-quick-add="{{ ! empty($product->can_quick_add) ? '1' : '0' }}"
+            >+ {{ __('Add') }}</button>
         </div>
     </div>
 </article>

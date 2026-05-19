@@ -1,0 +1,69 @@
+<?php if (isset($component)) { $__componentOriginal0c35c2591d22d4fd3701fd00e3a3e491 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal0c35c2591d22d4fd3701fd00e3a3e491 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'superadmin::components.layouts.index','data' => []] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('superadmin::layouts'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes([]); ?>
+     <?php $__env->slot('title', null, []); ?> 
+        <?php echo app('translator')->get('superadmin::app.catalog.attributes.index.title'); ?>
+     <?php $__env->endSlot(); ?>
+
+    <div class="flex items-center justify-between gap-4 max-sm:flex-wrap">
+        <!-- Title -->
+        <p class="text-xl font-bold text-gray-800 dark:text-white">
+            <?php echo app('translator')->get('superadmin::app.catalog.attributes.index.title'); ?>
+        </p>
+
+        <div class="flex items-center gap-x-2.5">
+            <?php if(bouncer()->hasPermission('catalog.attributes.create')): ?>
+                <a href="<?php echo e(route('superadmin.catalog.attributes.create')); ?>">
+                    <div class="primary-button">
+                        <?php echo app('translator')->get('superadmin::app.catalog.attributes.index.create-btn'); ?>
+                    </div>
+                </a>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <?php echo view_render_event('bagisto.admin.catalog.attributes.list.before'); ?>
+
+
+    <?php if (isset($component)) { $__componentOriginald3fcfed31d8a223d9284f5993c9ecea0 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginald3fcfed31d8a223d9284f5993c9ecea0 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'superadmin::components.datagrid.ssr','data' => ['datagridPayload' => $datagridPayload,'src' => route('superadmin.catalog.attributes.index')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('superadmin::datagrid.ssr'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['datagrid-payload' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute($datagridPayload),'src' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(route('superadmin.catalog.attributes.index'))]); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginald3fcfed31d8a223d9284f5993c9ecea0)): ?>
+<?php $attributes = $__attributesOriginald3fcfed31d8a223d9284f5993c9ecea0; ?>
+<?php unset($__attributesOriginald3fcfed31d8a223d9284f5993c9ecea0); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginald3fcfed31d8a223d9284f5993c9ecea0)): ?>
+<?php $component = $__componentOriginald3fcfed31d8a223d9284f5993c9ecea0; ?>
+<?php unset($__componentOriginald3fcfed31d8a223d9284f5993c9ecea0); ?>
+<?php endif; ?>
+
+    <?php echo view_render_event('bagisto.admin.catalog.attributes.list.after'); ?>
+
+
+ <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal0c35c2591d22d4fd3701fd00e3a3e491)): ?>
+<?php $attributes = $__attributesOriginal0c35c2591d22d4fd3701fd00e3a3e491; ?>
+<?php unset($__attributesOriginal0c35c2591d22d4fd3701fd00e3a3e491); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal0c35c2591d22d4fd3701fd00e3a3e491)): ?>
+<?php $component = $__componentOriginal0c35c2591d22d4fd3701fd00e3a3e491; ?>
+<?php unset($__componentOriginal0c35c2591d22d4fd3701fd00e3a3e491); ?>
+<?php endif; ?>
+<?php /**PATH /Users/hhtraders/tiktokshop/packages/Webkul/SuperAdmin/src/Providers/../Resources/views/catalog/attributes/index.blade.php ENDPATH**/ ?>

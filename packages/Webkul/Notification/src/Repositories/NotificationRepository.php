@@ -4,6 +4,7 @@ namespace Webkul\Notification\Repositories;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Webkul\Core\Eloquent\Repository;
 use Webkul\User\Models\Admin;
 
@@ -44,15 +45,55 @@ class NotificationRepository extends Repository
         $table = $this->model->getTable();
 
         return $query->where(function (Builder $q) use ($user, $table) {
-            $q->where($table.'.seller_id', $user->id)
-                ->orWhere(function (Builder $q2) use ($user, $table) {
-                    $q2->whereNotNull($table.'.order_id')
-                        ->whereHas('order', function ($oq) use ($user) {
-                            $oq->where('seller_id', $user->id)
-                                ->where('seller_approval_status', 'approved');
-                        });
-                });
+            $orderScope = function (Builder $q2) use ($user, $table) {
+                $q2->whereNotNull($table.'.order_id')
+                    ->whereHas('order', function ($oq) use ($user) {
+                        $oq->where('seller_id', $user->id);
+
+                        if (Schema::hasColumn('orders', 'seller_approval_status')) {
+                            $oq->where('seller_approval_status', 'approved');
+                        }
+                    });
+            };
+
+            if ($this->notificationsTableHasSellerId()) {
+                $q->where($table.'.seller_id', $user->id)
+                    ->orWhere($orderScope);
+            } else {
+                $orderScope($q);
+            }
         });
+    }
+
+    protected function notificationsTableHasSellerId(): bool
+    {
+        static $hasColumn = null;
+
+        if ($hasColumn === null) {
+            $hasColumn = Schema::hasTable('notifications')
+                && Schema::hasColumn('notifications', 'seller_id');
+        }
+
+        return $hasColumn;
+    }
+
+    /**
+     * Only persist attributes that exist on the current notifications table (no migration required).
+     */
+    protected function filterToExistingColumns(array $attributes): array
+    {
+        static $columns = null;
+
+        if ($columns === null) {
+            $columns = array_flip(Schema::getColumnListing($this->model->getTable()));
+        }
+
+        return array_intersect_key($attributes, $columns);
+    }
+
+    public function create(array $attributes)
+    {
+        return parent::create($this->filterToExistingColumns($attributes));
     }
 
     /**
@@ -100,7 +141,7 @@ class NotificationRepository extends Repository
     {
         return $this->create(array_merge([
             'read' => 0,
-        ], $attributes));
+        ], $this->filterToExistingColumns($attributes)));
     }
 
     /**

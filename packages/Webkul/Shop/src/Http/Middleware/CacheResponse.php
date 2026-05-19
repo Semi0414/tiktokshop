@@ -59,6 +59,10 @@ class CacheResponse extends BaseCacheResponseMiddleware
          * Redirect to the target path if the url rewrite is found.
          */
         if ($request->route()->getName() == 'shop.product_or_category.index') {
+            if ($request->query('cart_notice') && $request->query('cart_msg')) {
+                $request->attributes->set('responsecache.doNotCache', true);
+            }
+
             $slugOrPath = urldecode(trim($request->getPathInfo(), '/'));
 
             $categoryURLRewrite = app(URLRewriteRepository::class)->findOneWhere([

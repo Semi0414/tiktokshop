@@ -5,7 +5,9 @@
 
     {!! view_render_event('bagisto.shop.products.view.configurable-options.before', ['product' => $product]) !!}
 
-    @if ($variants->isNotEmpty())
+    @if ($variants->count() === 1)
+        <input type="hidden" name="selected_configurable_option" value="{{ $variants->first()->id }}">
+    @elseif ($variants->isNotEmpty())
         <div class="mt-5 w-full max-w-[455px] max-sm:w-full">
             <label for="selected_configurable_option" class="mb-2 block text-base font-medium text-zinc-800 max-sm:text-sm">
                 @lang('shop::app.products.view.type.configurable.select-options')
